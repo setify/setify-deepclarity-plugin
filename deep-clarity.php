@@ -1,6 +1,7 @@
 <?php
+
 /**
- * Plugin Name: Deep Clarity
+ * Plugin Name: Deep Clarity 2 
  * Plugin URI: https://example.com/deep-clarity
  * Description: A powerful analytics and visualization plugin for WordPress.
  * Version: 1.0.0
@@ -15,30 +16,30 @@
  */
 
 // Prevent direct access
-if ( ! defined( 'ABSPATH' ) ) {
+if (! defined('ABSPATH')) {
     exit;
 }
 
 // Plugin constants
-define( 'DEEP_CLARITY_VERSION', '1.0.0' );
-define( 'DEEP_CLARITY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'DEEP_CLARITY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'DEEP_CLARITY_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+define('DEEP_CLARITY_VERSION', '1.0.0');
+define('DEEP_CLARITY_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('DEEP_CLARITY_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('DEEP_CLARITY_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 // Autoloader for classes
-spl_autoload_register( function( $class ) {
+spl_autoload_register(function ($class) {
     $prefix = 'DeepClarity\\';
     $base_dir = DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/';
 
-    $len = strlen( $prefix );
-    if ( strncmp( $prefix, $class, $len ) !== 0 ) {
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
         return;
     }
 
-    $relative_class = substr( $class, $len );
-    $file = $base_dir . 'class-' . strtolower( str_replace( '\\', '-', $relative_class ) ) . '.php';
+    $relative_class = substr($class, $len);
+    $file = $base_dir . 'class-' . strtolower(str_replace('\\', '-', $relative_class)) . '.php';
 
-    if ( file_exists( $file ) ) {
+    if (file_exists($file)) {
         require $file;
     }
 });
@@ -51,7 +52,8 @@ require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-admin.php';
 /**
  * Main plugin class
  */
-final class Deep_Clarity {
+final class Deep_Clarity
+{
 
     /**
      * Single instance of the class
@@ -86,8 +88,9 @@ final class Deep_Clarity {
      *
      * @return Deep_Clarity
      */
-    public static function instance() {
-        if ( is_null( self::$instance ) ) {
+    public static function instance()
+    {
+        if (is_null(self::$instance)) {
             self::$instance = new self();
         }
         return self::$instance;
@@ -96,25 +99,27 @@ final class Deep_Clarity {
     /**
      * Constructor
      */
-    private function __construct() {
+    private function __construct()
+    {
         $this->init();
     }
 
     /**
      * Initialize the plugin
      */
-    private function init() {
+    private function init()
+    {
         // Initialize classes
         $this->loader = new DeepClarity\Loader();
         $this->assets = new DeepClarity\Assets();
         $this->admin  = new DeepClarity\Admin();
 
         // Load textdomain
-        add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
+        add_action('plugins_loaded', array($this, 'load_textdomain'));
 
         // Register activation/deactivation hooks
-        register_activation_hook( __FILE__, array( $this, 'activate' ) );
-        register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
+        register_activation_hook(__FILE__, array($this, 'activate'));
+        register_deactivation_hook(__FILE__, array($this, 'deactivate'));
 
         // Run the loader
         $this->loader->run();
@@ -123,18 +128,20 @@ final class Deep_Clarity {
     /**
      * Load plugin textdomain
      */
-    public function load_textdomain() {
+    public function load_textdomain()
+    {
         load_plugin_textdomain(
             'deep-clarity',
             false,
-            dirname( DEEP_CLARITY_PLUGIN_BASENAME ) . '/languages/'
+            dirname(DEEP_CLARITY_PLUGIN_BASENAME) . '/languages/'
         );
     }
 
     /**
      * Plugin activation
      */
-    public function activate() {
+    public function activate()
+    {
         // Activation logic here
         flush_rewrite_rules();
     }
@@ -142,7 +149,8 @@ final class Deep_Clarity {
     /**
      * Plugin deactivation
      */
-    public function deactivate() {
+    public function deactivate()
+    {
         // Deactivation logic here
         flush_rewrite_rules();
     }
@@ -155,8 +163,9 @@ final class Deep_Clarity {
     /**
      * Prevent unserializing
      */
-    public function __wakeup() {
-        throw new \Exception( 'Cannot unserialize singleton' );
+    public function __wakeup()
+    {
+        throw new \Exception('Cannot unserialize singleton');
     }
 }
 
@@ -165,7 +174,8 @@ final class Deep_Clarity {
  *
  * @return Deep_Clarity
  */
-function deep_clarity() {
+function deep_clarity()
+{
     return Deep_Clarity::instance();
 }
 
