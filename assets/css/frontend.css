@@ -84,17 +84,17 @@
 }
 
 /* Buttons */
-.button-small {
+.button-small .elementor-button {
   padding: 8px 16px;
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 0.9rem;
+  line-height: 1.2;
   border-radius: var(--dc-radius-small);
 }
 
-.button-tiny {
+.button-tiny .elementor-button {
   padding: 4px 10px;
-  font-size: 12px;
-  line-height: 1.3;
+  font-size: 0.8rem;
+  line-height: 1.2;
   border-radius: var(--dc-radius-xsmall);
 }
 
