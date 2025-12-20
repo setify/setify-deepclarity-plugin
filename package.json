@@ -1,0 +1,28 @@
+{
+  "name": "deep-clarity",
+  "version": "1.0.0",
+  "description": "A powerful analytics and visualization WordPress plugin",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run copy-vendor",
+    "copy-vendor": "node scripts/copy-vendor.js",
+    "watch": "npm run build"
+  },
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "analytics",
+    "charts"
+  ],
+  "author": "",
+  "license": "GPL-2.0+",
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "chart.js": "^4.4.1",
+    "sweetalert2": "^11.10.1",
+    "tippy.js": "^6.3.7"
+  },
+  "devDependencies": {
+    "fs-extra": "^11.2.0"
+  }
+}

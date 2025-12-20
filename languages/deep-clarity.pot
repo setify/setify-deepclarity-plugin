@@ -1,0 +1,81 @@
+# Copyright (C) 2024 Deep Clarity
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: Deep Clarity 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: deep-clarity.php
+msgid "Deep Clarity"
+msgstr ""
+
+#: includes/classes/class-admin.php
+msgid "Dashboard"
+msgstr ""
+
+#: includes/classes/class-admin.php
+msgid "Settings"
+msgstr ""
+
+#: includes/classes/class-admin.php
+msgid "General Settings"
+msgstr ""
+
+#: includes/classes/class-admin.php
+msgid "Enable Tracking"
+msgstr ""
+
+#: includes/classes/class-admin.php
+msgid "Enable data tracking functionality."
+msgstr ""
+
+#: includes/classes/class-admin.php
+msgid "Configure the general settings for Deep Clarity."
+msgstr ""
+
+#: admin/views/dashboard.php
+msgid "Welcome to Deep Clarity"
+msgstr ""
+
+#: admin/views/dashboard.php
+msgid "Your analytics dashboard is ready."
+msgstr ""
+
+#: admin/views/dashboard.php
+msgid "Statistics"
+msgstr ""
+
+#: admin/views/dashboard.php
+msgid "Quick Actions"
+msgstr ""
+
+#: admin/views/dashboard.php
+msgid "Show Demo Alert"
+msgstr ""
+
+#: admin/views/dashboard.php
+msgid "Hover for Tooltip"
+msgstr ""
+
+#: admin/views/dashboard.php
+msgid "This is a tooltip!"
+msgstr ""
+
+#: assets/js/admin.js
+msgid "Are you sure you want to delete this?"
+msgstr ""
+
+#: assets/js/admin.js
+msgid "Success!"
+msgstr ""
+
+#: assets/js/admin.js
+msgid "Error!"
+msgstr ""

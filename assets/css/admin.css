@@ -1,0 +1,147 @@
+/**
+ * Deep Clarity - Admin Styles
+ *
+ * @package DeepClarity
+ */
+
+/* General Wrapper */
+.deep-clarity-wrap {
+    margin: 20px 20px 20px 0;
+}
+
+.deep-clarity-wrap h1 {
+    font-size: 23px;
+    font-weight: 400;
+    margin: 0 0 20px;
+    padding: 9px 0 4px;
+    line-height: 1.3;
+}
+
+/* Dashboard Layout */
+.deep-clarity-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Card Component */
+.deep-clarity-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.deep-clarity-card h2 {
+    margin: 0 0 15px;
+    padding: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.deep-clarity-card h3 {
+    margin: 0 0 15px;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.deep-clarity-card p {
+    margin: 0;
+    color: #50575e;
+}
+
+/* Buttons */
+.deep-clarity-card .button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+/* Chart Container */
+#deep-clarity-chart {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Settings Form */
+.deep-clarity-settings-form {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 20px;
+    max-width: 800px;
+}
+
+.deep-clarity-settings-form h2 {
+    margin-top: 0;
+    padding-top: 0;
+    border-bottom: 1px solid #c3c4c7;
+    padding-bottom: 10px;
+}
+
+.deep-clarity-settings-form table.form-table th {
+    padding-left: 0;
+}
+
+/* Tooltips Override */
+.tippy-box {
+    background-color: #1d2327;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.tippy-arrow {
+    color: #1d2327;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .deep-clarity-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .deep-clarity-wrap {
+        margin-right: 10px;
+    }
+}
+
+/* Animations */
+@keyframes deep-clarity-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.deep-clarity-card {
+    animation: deep-clarity-fade-in 0.3s ease-out;
+}
+
+/* SweetAlert2 Custom Theme */
+.swal2-popup.deep-clarity-popup {
+    border-radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.swal2-popup.deep-clarity-popup .swal2-title {
+    color: #1d2327;
+}
+
+.swal2-popup.deep-clarity-popup .swal2-confirm {
+    background-color: #2271b1;
+    border-radius: 3px;
+}
+
+.swal2-popup.deep-clarity-popup .swal2-confirm:hover {
+    background-color: #135e96;
+}
