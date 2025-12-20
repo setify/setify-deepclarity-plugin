@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: Deep Clarity 2 
+ * Plugin Name: Deep Clarity 2
  * Plugin URI: https://example.com/deep-clarity
  * Description: A powerful analytics and visualization plugin for WordPress.
  * Version: 1.0.0
