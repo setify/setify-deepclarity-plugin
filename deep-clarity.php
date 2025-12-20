@@ -49,6 +49,7 @@ require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-loader.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-assets.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-admin.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-sessions.php';
+require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-shortcodes.php';
 
 /**
  * Main plugin class
@@ -92,6 +93,13 @@ final class Deep_Clarity
     public $sessions;
 
     /**
+     * Shortcodes instance
+     *
+     * @var DeepClarity\Shortcodes
+     */
+    public $shortcodes;
+
+    /**
      * Get single instance of the class
      *
      * @return Deep_Clarity
@@ -118,10 +126,11 @@ final class Deep_Clarity
     private function init()
     {
         // Initialize classes
-        $this->loader   = new DeepClarity\Loader();
-        $this->assets   = new DeepClarity\Assets();
-        $this->admin    = new DeepClarity\Admin();
-        $this->sessions = new DeepClarity\Sessions();
+        $this->loader     = new DeepClarity\Loader();
+        $this->assets     = new DeepClarity\Assets();
+        $this->admin      = new DeepClarity\Admin();
+        $this->sessions   = new DeepClarity\Sessions();
+        $this->shortcodes = new DeepClarity\Shortcodes();
 
         // Load textdomain
         add_action('plugins_loaded', array($this, 'load_textdomain'));
