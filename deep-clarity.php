@@ -48,6 +48,7 @@ spl_autoload_register(function ($class) {
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-loader.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-assets.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-admin.php';
+require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-sessions.php';
 
 /**
  * Main plugin class
@@ -84,6 +85,13 @@ final class Deep_Clarity
     public $admin;
 
     /**
+     * Sessions instance
+     *
+     * @var DeepClarity\Sessions
+     */
+    public $sessions;
+
+    /**
      * Get single instance of the class
      *
      * @return Deep_Clarity
@@ -110,9 +118,10 @@ final class Deep_Clarity
     private function init()
     {
         // Initialize classes
-        $this->loader = new DeepClarity\Loader();
-        $this->assets = new DeepClarity\Assets();
-        $this->admin  = new DeepClarity\Admin();
+        $this->loader   = new DeepClarity\Loader();
+        $this->assets   = new DeepClarity\Assets();
+        $this->admin    = new DeepClarity\Admin();
+        $this->sessions = new DeepClarity\Sessions();
 
         // Load textdomain
         add_action('plugins_loaded', array($this, 'load_textdomain'));
