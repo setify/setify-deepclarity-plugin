@@ -85,17 +85,17 @@
 
 /* Buttons */
 .button-small {
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  line-height: 1.2;
-  border-radius: var(--dc-radius-small);
+  padding: 8px 16px !important;
+  font-size: 0.9rem !important;
+  line-height: 1.2 !important;
+  border-radius: var(--dc-radius-small) !important;
 }
 
 .button-tiny {
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  line-height: 1.2;
-  border-radius: var(--dc-radius-xsmall);
+  padding: 4px 10px !important;
+  font-size: 0.8rem !important;
+  line-height: 1.2 !important;
+  border-radius: var(--dc-radius-xsmall) !important;
 }
 
 /* ==========================================================================
