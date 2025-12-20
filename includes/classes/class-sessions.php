@@ -63,11 +63,22 @@ class Sessions
      */
     private function register_save_hooks()
     {
-        // WordPress Backend save
+        // WordPress Backend save (ACF)
         add_action('acf/save_post', array($this, 'process_transcript_file'), 20);
 
-        // Frontend Admin plugin support
-        add_action('frontend_admin/save_post', array($this, 'process_transcript_file'), 20);
+        // Frontend Admin plugin support (has 2 params: $form, $post_id)
+        add_action('frontend_admin/save_post', array($this, 'process_transcript_file_frontend_admin'), 20, 2);
+    }
+
+    /**
+     * Wrapper for Frontend Admin plugin hook
+     *
+     * @param array $form    Form data.
+     * @param int   $post_id Post ID.
+     */
+    public function process_transcript_file_frontend_admin($form, $post_id)
+    {
+        $this->process_transcript_file($post_id);
     }
 
     /**
