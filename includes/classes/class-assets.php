@@ -24,7 +24,8 @@ class Assets {
      */
     public function __construct() {
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+        // Priority 100 to load after Elementor (default 10) and Elementor Pro
+        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 100 );
     }
 
     /**
@@ -117,11 +118,22 @@ class Assets {
      * Enqueue frontend scripts and styles
      */
     public function enqueue_frontend_assets() {
-        // Frontend styles
+        // Build dependencies array - only add if styles are registered
+        $style_deps = array();
+
+        if ( wp_style_is( 'elementor-frontend', 'registered' ) ) {
+            $style_deps[] = 'elementor-frontend';
+        }
+
+        if ( wp_style_is( 'elementor-pro', 'registered' ) ) {
+            $style_deps[] = 'elementor-pro';
+        }
+
+        // Frontend styles - loads after Elementor
         wp_enqueue_style(
             'deep-clarity-frontend',
             DEEP_CLARITY_PLUGIN_URL . 'assets/css/frontend.css',
-            array(),
+            $style_deps,
             DEEP_CLARITY_VERSION
         );
 
