@@ -254,6 +254,7 @@ class Sessions
      * Parse VTT file content
      *
      * Extracts text content from VTT format, removing timestamps and metadata.
+     * Preserves paragraph breaks between cue blocks.
      *
      * @param string $content The raw VTT file content.
      * @return string The parsed transcript text.
@@ -266,15 +267,22 @@ class Sessions
         // Split into lines
         $lines = preg_split('/\r\n|\r|\n/', $content);
 
-        $transcript_lines = array();
+        $transcript_blocks = array();
+        $current_block = array();
         $skip_next = false;
+        $in_cue = false;
 
         foreach ($lines as $line) {
             $line = trim($line);
 
-            // Skip empty lines
+            // Empty line marks end of a cue block
             if (empty($line)) {
+                if (! empty($current_block)) {
+                    $transcript_blocks[] = implode(' ', $current_block);
+                    $current_block = array();
+                }
                 $skip_next = false;
+                $in_cue = false;
                 continue;
             }
 
@@ -289,13 +297,14 @@ class Sessions
                 continue;
             }
 
-            // Skip cue identifiers (numeric or alphanumeric)
+            // Skip cue identifiers (numeric or alphanumeric without spaces)
             if (preg_match('/^[\d\w-]+$/', $line) && strpos($line, ' ') === false) {
                 continue;
             }
 
-            // Skip timestamp lines (00:00:00.000 --> 00:00:00.000)
+            // Timestamp line marks start of cue content
             if (preg_match('/^\d{2}:\d{2}[:\.][\d\.]+\s*-->\s*\d{2}:\d{2}[:\.][\d\.]+/', $line)) {
+                $in_cue = true;
                 continue;
             }
 
@@ -304,15 +313,24 @@ class Sessions
                 continue;
             }
 
-            // Remove inline tags like <v Speaker> or <c>
-            $line = preg_replace('/<[^>]+>/', '', $line);
-            $line = trim($line);
+            // Only collect text if we're in a cue
+            if ($in_cue) {
+                // Remove inline tags like <v Speaker> or <c>
+                $line = preg_replace('/<[^>]+>/', '', $line);
+                $line = trim($line);
 
-            if (! empty($line)) {
-                $transcript_lines[] = $line;
+                if (! empty($line)) {
+                    $current_block[] = $line;
+                }
             }
         }
 
-        return implode("\n", $transcript_lines);
+        // Don't forget the last block
+        if (! empty($current_block)) {
+            $transcript_blocks[] = implode(' ', $current_block);
+        }
+
+        // Join blocks with double newline for paragraph separation
+        return implode("\n\n", $transcript_blocks);
     }
 }
