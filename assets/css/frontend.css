@@ -38,11 +38,11 @@
   --dc-color-primary-dark: var(--dc-color-crimson-violet);
 
   /* Border Radius */
-  --dc-radius-large: 32px;
-  --dc-radius-medium: 16px;
-  --dc-radius-small: 8px;
-  --dc-radius-xsmall: 6px;
-  --dc-radius-tiny: 4px;
+  --dc-radius-large: 16px;
+  --dc-radius-medium: 8px;
+  --dc-radius-small: 6px;
+  --dc-radius-xsmall: 4px;
+  --dc-radius-tiny: 2px;
 
   /* Padding / Spacing */
   --dc-spacing-large: 64px;
