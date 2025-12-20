@@ -31,7 +31,7 @@ class Sessions {
      *
      * @var string
      */
-    const ACF_CLIENT_FIELD = 'client'; // Adjust field name as needed
+    const ACF_CLIENT_FIELD = 'client';
 
     /**
      * Constructor
@@ -41,42 +41,35 @@ class Sessions {
     }
 
     /**
-     * Register custom query filters for Elementor
+     * Register custom query filters for Unlimited Elements
      */
     private function register_query_filters() {
-        // Custom query: sessions_current_client
-        add_filter( 'elementor/query/sessions_current_client', array( $this, 'query_sessions_current_client' ), 10, 2 );
+        // Unlimited Elements custom query filter
+        add_filter( 'sessions_current_client', array( $this, 'query_sessions_current_client' ), 10, 2 );
     }
 
     /**
-     * Query sessions for current client
+     * Query sessions for current client (Unlimited Elements)
      *
      * Returns sessions where the ACF relation field contains the current post ID.
      *
-     * @param \WP_Query $query      The query object.
-     * @param array     $widget_data Widget settings.
-     * @return \WP_Query Modified query.
+     * @param array $args        The query arguments array.
+     * @param array $widget_data Widget settings.
+     * @return array Modified query arguments.
      */
-    public function query_sessions_current_client( $query, $widget_data ) {
+    public function query_sessions_current_client( $args, $widget_data ) {
         // Get current post ID
         $current_post_id = get_the_ID();
 
         if ( ! $current_post_id ) {
-            return $query;
+            return $args;
         }
 
-        // Modify query arguments
-        $query->set( 'post_type', self::POST_TYPE );
+        // Set post type
+        $args['post_type'] = self::POST_TYPE;
 
-        // Get existing meta query or create new array
-        $meta_query = $query->get( 'meta_query' );
-        if ( ! is_array( $meta_query ) ) {
-            $meta_query = array();
-        }
-
-        // Add meta query for ACF relation field
-        // ACF stores relation field values as serialized arrays
-        $meta_query[] = array(
+        // Build meta query for ACF relation field
+        $meta_query = array(
             'relation' => 'OR',
             // For serialized array (multiple values)
             array(
@@ -92,9 +85,14 @@ class Sessions {
             ),
         );
 
-        $query->set( 'meta_query', $meta_query );
+        // Merge with existing meta_query if present
+        if ( isset( $args['meta_query'] ) && is_array( $args['meta_query'] ) ) {
+            $args['meta_query'][] = $meta_query;
+        } else {
+            $args['meta_query'] = array( $meta_query );
+        }
 
-        return $query;
+        return $args;
     }
 
     /**
