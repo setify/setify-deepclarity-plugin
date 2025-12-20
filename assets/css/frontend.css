@@ -4,132 +4,214 @@
  * @package DeepClarity
  */
 
+/* ==========================================================================
+   CSS Custom Properties (Design Tokens)
+   ========================================================================== */
+
+:root {
+  /* Primary Colors */
+  --dc-color-royal-plum: #753054;
+  --dc-color-crimson-violet: #62203a;
+
+  /* Grey Scale */
+  --dc-color-carbon-black: #1c1d1f;
+  --dc-color-shadow-grey: #27282b;
+  --dc-color-iron-grey: #494c51;
+  --dc-color-cool-steel: #a0a3a7;
+  --dc-color-pale-slate: #ccced2;
+  --dc-color-platinum: #e9ebec;
+
+  /* Warm Neutrals */
+  --dc-color-dark-coffee: #332a22;
+  --dc-color-taupe: #4a3f36;
+  --dc-color-olive-wood: #7e6d54;
+  --dc-color-khaki-beige: #b9ae9b;
+  --dc-color-dust-grey: #e0d9d0;
+  --dc-color-parchment: #f1ede9;
+  --dc-color-soft-linen: #f1ede4;
+
+  /* Semantic Colors */
+  --dc-color-heading: var(--dc-color-carbon-black);
+  --dc-color-text: var(--dc-color-shadow-grey);
+  --dc-color-text-muted: var(--dc-color-iron-grey);
+  --dc-color-primary: var(--dc-color-royal-plum);
+  --dc-color-primary-dark: var(--dc-color-crimson-violet);
+
+  /* Border Radius */
+  --dc-radius-large: 32px;
+  --dc-radius-medium: 16px;
+  --dc-radius-small: 8px;
+  --dc-radius-xsmall: 6px;
+  --dc-radius-tiny: 4px;
+
+  /* Padding / Spacing */
+  --dc-spacing-large: 64px;
+  --dc-spacing-medium: 32px;
+  --dc-spacing-small: 16px;
+  --dc-spacing-xsmall: 8px;
+}
+
+/* ==========================================================================
+   Basics
+   ========================================================================== */
+
+.border-radius-medium {
+  border-radius: var(--dc-radius-medium);
+}
+.border-radius-lage {
+  border-radius: var(--dc-radius-large);
+}
+.border-radius-small {
+  border-radius: var(--dc-radius-small);
+}
+.border-radius-xsmall {
+  border-radius: var(--dc-radius-xsmall);
+}
+.border-radius-tiny {
+  border-radius: var(--dc-radius-tiny);
+}
+.padding-large {
+  padding: var(--dc-spacing-large);
+}
+.padding-medium {
+  padding: var(--dc-spacing-medium);
+}
+.padding-small {
+  padding: var(--dc-spacing-small);
+}
+.padding-xsmall {
+  padding: var(--dc-spacing-xsmall);
+}
+
+/* ==========================================================================
+   Components
+   ========================================================================== */
+
 /* Deep Clarity Widget */
 .deep-clarity-widget {
-    margin: 20px 0;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
+  margin: 20px 0;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
 }
 
 .deep-clarity-widget h3 {
-    margin: 0 0 15px;
-    font-size: 18px;
-    font-weight: 600;
+  margin: 0 0 15px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 /* Chart Container */
 .deep-clarity-chart-container {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .deep-clarity-chart-container canvas {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Loading State */
 .deep-clarity-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
 }
 
 .deep-clarity-loading::after {
-    content: "";
-    width: 40px;
-    height: 40px;
-    border: 3px solid #e0e0e0;
-    border-top-color: #2271b1;
-    border-radius: 50%;
-    animation: deep-clarity-spin 1s linear infinite;
+  content: "";
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #2271b1;
+  border-radius: 50%;
+  animation: deep-clarity-spin 1s linear infinite;
 }
 
 @keyframes deep-clarity-spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error State */
 .deep-clarity-error {
-    padding: 20px;
-    background: #fef7f1;
-    border-left: 4px solid #d63638;
-    color: #8a2424;
+  padding: 20px;
+  background: #fef7f1;
+  border-left: 4px solid #d63638;
+  color: #8a2424;
 }
 
 /* Success State */
 .deep-clarity-success {
-    padding: 20px;
-    background: #edfaef;
-    border-left: 4px solid #00a32a;
-    color: #1e4620;
+  padding: 20px;
+  background: #edfaef;
+  border-left: 4px solid #00a32a;
+  color: #1e4620;
 }
 
 /* Panel Component */
 .panel {
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-    padding: 24px;
-    margin-bottom: 24px;
+  background: #ffffff;
+  border-radius: var(--dc-radius-medium);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  padding: var(--dc-spacing-medium);
 }
 
 .panel-header {
-    margin: -24px -24px 24px;
-    padding: 16px 24px;
-    border-bottom: 1px solid #e5e7eb;
+  margin: -24px -24px 24px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .panel-header h2,
 .panel-header h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #1f2937;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .panel-body {
-    color: #4b5563;
-    line-height: 1.6;
+  color: #4b5563;
+  line-height: 1.6;
 }
 
 .panel-footer {
-    margin: 24px -24px -24px;
-    padding: 16px 24px;
-    border-top: 1px solid #e5e7eb;
-    background: #f9fafb;
-    border-radius: 0 0 8px 8px;
+  margin: 24px -24px -24px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 8px 8px;
 }
 
 /* Panel Variants */
 .panel--bordered {
-    border: 1px solid #e5e7eb;
-    box-shadow: none;
+  border: 1px solid #e5e7eb;
+  box-shadow: none;
 }
 
 .panel--flat {
-    box-shadow: none;
-    background: #f9fafb;
+  box-shadow: none;
+  background: #f9fafb;
 }
 
 .panel--primary {
-    border-top: 3px solid #2271b1;
+  border-top: 3px solid #2271b1;
 }
 
 .panel--success {
-    border-top: 3px solid #00a32a;
+  border-top: 3px solid #00a32a;
 }
 
 .panel--warning {
-    border-top: 3px solid #dba617;
+  border-top: 3px solid #dba617;
 }
 
 .panel--danger {
-    border-top: 3px solid #d63638;
+  border-top: 3px solid #d63638;
 }
