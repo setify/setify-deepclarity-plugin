@@ -2,10 +2,18 @@
  * Deep Clarity - Frontend Styles
  *
  * @package DeepClarity
+ *
+ * Table of Contents:
+ * 1. CSS Custom Properties (Design Tokens)
+ * 2. Utility Classes
+ * 3. Buttons
+ * 4. Third-Party Overrides (TinyMCE, ACF)
+ * 5. Components
+ * 6. States
  */
 
 /* ==========================================================================
-   CSS Custom Properties (Design Tokens)
+   1. CSS Custom Properties (Design Tokens)
    ========================================================================== */
 
 :root {
@@ -44,7 +52,7 @@
   --dc-radius-xsmall: 4px;
   --dc-radius-tiny: 2px;
 
-  /* Padding / Spacing */
+  /* Spacing */
   --dc-spacing-large: 64px;
   --dc-spacing-medium: 32px;
   --dc-spacing-small: 16px;
@@ -52,38 +60,52 @@
 }
 
 /* ==========================================================================
-   Basics
+   2. Utility Classes
    ========================================================================== */
+
+/* Border Radius */
+.border-radius-large {
+  border-radius: var(--dc-radius-large);
+}
 
 .border-radius-medium {
   border-radius: var(--dc-radius-medium);
 }
-.border-radius-lage {
-  border-radius: var(--dc-radius-large);
-}
+
 .border-radius-small {
   border-radius: var(--dc-radius-small);
 }
+
 .border-radius-xsmall {
   border-radius: var(--dc-radius-xsmall);
 }
+
 .border-radius-tiny {
   border-radius: var(--dc-radius-tiny);
 }
+
+/* Padding */
 .padding-large {
   padding: var(--dc-spacing-large);
 }
+
 .padding-medium {
   padding: var(--dc-spacing-medium);
 }
+
 .padding-small {
   padding: var(--dc-spacing-small);
 }
+
 .padding-xsmall {
   padding: var(--dc-spacing-xsmall);
 }
 
-/* Buttons */
+/* ==========================================================================
+   3. Buttons
+   ========================================================================== */
+
+/* Elementor Button Sizes */
 .button-small .elementor-button {
   padding: 12px 16px !important;
   font-size: 0.9rem !important;
@@ -98,16 +120,36 @@
   border-radius: var(--dc-radius-xsmall) !important;
 }
 
-/* TinyMCE Editor Buttons */
+/* ==========================================================================
+   4. Third-Party Overrides
+   ========================================================================== */
+
+/* TinyMCE Editor */
 .mce-btn button {
   background-color: transparent !important;
 }
 
+/* ACF Tabs */
+.acf-tab-group li a,
+.acf-tab-group li a:hover,
+.acf-tab-group li a:focus,
+.acf-tab-group li a:active {
+  font-size: 14px !important;
+}
+
 /* ==========================================================================
-   Components
+   5. Components
    ========================================================================== */
 
-/* Deep Clarity Widget */
+/* Panel */
+.panel {
+  background: #ffffff;
+  border-radius: var(--dc-radius-medium);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  padding: var(--dc-spacing-medium);
+}
+
+/* Widget */
 .deep-clarity-widget {
   margin: 20px 0;
   padding: 20px;
@@ -134,7 +176,11 @@
   height: auto;
 }
 
-/* Loading State */
+/* ==========================================================================
+   6. States
+   ========================================================================== */
+
+/* Loading */
 .deep-clarity-loading {
   display: flex;
   align-items: center;
@@ -158,7 +204,7 @@
   }
 }
 
-/* Error State */
+/* Error */
 .deep-clarity-error {
   padding: 20px;
   background: #fef7f1;
@@ -166,18 +212,10 @@
   color: #8a2424;
 }
 
-/* Success State */
+/* Success */
 .deep-clarity-success {
   padding: 20px;
   background: #edfaef;
   border-left: 4px solid #00a32a;
   color: #1e4620;
-}
-
-/* Panel Component */
-.panel {
-  background: #ffffff;
-  border-radius: var(--dc-radius-small);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  padding: var(--dc-spacing-medium);
 }
