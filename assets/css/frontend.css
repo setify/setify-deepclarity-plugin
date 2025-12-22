@@ -121,11 +121,13 @@
 }
 
 .elementor-element.elementor-button-info .elementor-button {
-  background-color: var(--dc-color-parchment) !important;
+  background-color: var(--dc-color-dust-grey) !important;
+  color: var(--dc-color-dark-coffee) !important;
 }
 
 .elementor-element.elementor-button-info .elementor-button:hover {
-  background-color: var(--dc-color-dust-grey) !important;
+  background-color: var(--dc-color-khaki-beige) !important;
+  color: #ffffff !important;
 }
 
 /* ==========================================================================
