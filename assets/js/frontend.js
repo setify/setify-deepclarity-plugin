@@ -23,7 +23,7 @@
          */
         bindEvents: function() {
             // Referal link - go back in history or use referrer
-            $('.referal-link').on('click', function(e) {
+            $('.referal-link a').on('click', function(e) {
                 e.preventDefault();
                 if (document.referrer && document.referrer !== '') {
                     window.location.href = document.referrer;
