@@ -115,23 +115,23 @@
   padding: 12px 16px !important;
   font-size: 0.9rem !important;
   line-height: 1.2 !important;
-  border-radius: var(--dc-radius-small) !important;
+  border-radius: var(--dc-radius-xsmall) !important;
 }
 
 .button-tiny .elementor-button {
   padding: 8px 12px !important;
   font-size: 0.8rem !important;
   line-height: 1.2 !important;
-  border-radius: var(--dc-radius-xsmall) !important;
+  border-radius: var(--dc-radius-tiny) !important;
 }
 
 .elementor-element.elementor-button-info .elementor-button {
-  background-color: var(--dc-color-dust-grey) !important;
+  background-color: var(--dc-color-khaki-beige) !important;
   color: var(--dc-color-dark-coffee) !important;
 }
 
 .elementor-element.elementor-button-info .elementor-button:hover {
-  background-color: var(--dc-color-khaki-beige) !important;
+  background-color: var(--dc-color-olive-wood) !important;
   color: #ffffff !important;
 }
 
