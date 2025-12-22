@@ -108,6 +108,7 @@
 /* Elementor Button Sizes */
 .elementor-button {
   padding: 16px 32px !important;
+  font-weight: bold !important;
 }
 .button-small .elementor-button {
   padding: 12px 16px !important;
