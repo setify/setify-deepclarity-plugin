@@ -22,7 +22,15 @@
          * Bind events
          */
         bindEvents: function() {
-            // Add frontend event bindings here
+            // Referal link - go back in history or use referrer
+            $('.referal-link').on('click', function(e) {
+                e.preventDefault();
+                if (document.referrer && document.referrer !== '') {
+                    window.location.href = document.referrer;
+                } else {
+                    window.history.back();
+                }
+            });
         },
 
         /**
