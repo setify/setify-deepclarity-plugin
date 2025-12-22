@@ -120,6 +120,14 @@
   border-radius: var(--dc-radius-xsmall) !important;
 }
 
+.elementor-element.elementor-button-info .elementor-button {
+  background-color: var(--dc-color-parchment) !important;
+}
+
+.elementor-element.elementor-button-info .elementor-button:hover {
+  background-color: var(--dc-color-dust-grey) !important;
+}
+
 /* ==========================================================================
    4. Third-Party Overrides
    ========================================================================== */
