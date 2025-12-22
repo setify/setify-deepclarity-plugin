@@ -133,7 +133,8 @@
 .acf-tab-group li a,
 .acf-tab-group li a:hover,
 .acf-tab-group li a:focus,
-.acf-tab-group li a:active {
+.acf-tab-group li a:active,
+.acf-fields > .acf-tab-wrap .acf-tab-group li a:hover {
   font-size: 14px !important;
 }
 
