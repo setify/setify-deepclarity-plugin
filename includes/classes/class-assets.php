@@ -119,7 +119,7 @@ class Assets {
      */
     public function enqueue_frontend_assets() {
         // Build dependencies array - only add if styles are registered
-        $style_deps = array();
+        $style_deps = array( 'sweetalert2' );
 
         if ( wp_style_is( 'elementor-frontend', 'registered' ) ) {
             $style_deps[] = 'elementor-frontend';
@@ -129,6 +129,14 @@ class Assets {
             $style_deps[] = 'elementor-pro';
         }
 
+        // Vendor styles
+        wp_enqueue_style(
+            'sweetalert2',
+            DEEP_CLARITY_PLUGIN_URL . 'assets/css/vendor/sweetalert2.min.css',
+            array(),
+            DEEP_CLARITY_VERSION
+        );
+
         // Frontend styles - loads after Elementor
         wp_enqueue_style(
             'deep-clarity-frontend',
@@ -137,11 +145,20 @@ class Assets {
             DEEP_CLARITY_VERSION
         );
 
+        // Vendor scripts
+        wp_enqueue_script(
+            'sweetalert2',
+            DEEP_CLARITY_PLUGIN_URL . 'assets/js/vendor/sweetalert2.min.js',
+            array(),
+            DEEP_CLARITY_VERSION,
+            true
+        );
+
         // Frontend scripts
         wp_enqueue_script(
             'deep-clarity-frontend',
             DEEP_CLARITY_PLUGIN_URL . 'assets/js/frontend.js',
-            array( 'jquery' ),
+            array( 'jquery', 'sweetalert2' ),
             DEEP_CLARITY_VERSION,
             true
         );
@@ -152,7 +169,7 @@ class Assets {
             'deepClarityFrontend',
             array(
                 'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-                'nonce'   => wp_create_nonce( 'deep_clarity_frontend_nonce' ),
+                'nonce'   => wp_create_nonce( 'deep_clarity_frontend' ),
             )
         );
     }
