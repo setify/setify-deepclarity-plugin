@@ -134,6 +134,17 @@
   background-color: var(--dc-color-olive-wood) !important;
 }
 
+/* Secondary Button */
+.button-secondary {
+  background-color: var(--dc-color-pale-slate) !important;
+  color: var(--dc-color-iron-grey) !important;
+}
+
+.button-secondary:hover {
+  background-color: var(--dc-color-cool-steel) !important;
+  color: var(--dc-color-carbon-black) !important;
+}
+
 /* ==========================================================================
    4. Third-Party Overrides
    ========================================================================== */
@@ -287,20 +298,28 @@
 }
 
 .dc-mail-close {
-  width: 28px;
-  height: 28px;
+  width: auto;
+  height: auto;
   padding: 0;
+  margin: 0;
   border: none;
-  background: transparent;
-  font-size: 24px;
+  background: none;
+  font-size: 20px;
+  font-weight: 300;
   line-height: 1;
-  color: var(--dc-color-iron-grey);
+  color: var(--dc-color-cool-steel);
   cursor: pointer;
   transition: color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .dc-mail-close:hover {
   color: var(--dc-color-carbon-black);
+}
+
+.dc-mail-close:focus {
+  outline: none;
 }
 
 /* Body */
@@ -329,8 +348,9 @@
 .dc-mail-field input[type="text"] {
   display: block;
   width: 100%;
-  padding: 8px 20px 12px;
+  padding: 12px 20px;
   border: none;
+  border-radius: 0;
   background: transparent;
   font-family: inherit;
   font-size: 14px;
@@ -534,23 +554,24 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 12px 16px;
   border: none;
-  border-radius: var(--dc-radius-small);
+  border-radius: var(--dc-radius-xsmall);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.85rem;
   font-weight: 500;
+  line-height: 1.2;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .dc-mail-btn-cancel {
-  background: transparent;
+  background: var(--dc-color-pale-slate);
   color: var(--dc-color-iron-grey);
 }
 
 .dc-mail-btn-cancel:hover {
-  background: var(--dc-color-pale-slate);
+  background: var(--dc-color-cool-steel);
   color: var(--dc-color-carbon-black);
 }
 
@@ -569,7 +590,7 @@
 }
 
 .dc-mail-btn-send svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   fill: currentColor;
 }
