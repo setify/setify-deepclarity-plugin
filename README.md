@@ -81,3 +81,98 @@ Button mit Icon, kleine Größe, Info-Farbe:
     </a>
 </div>
 ```
+
+## Mail Compose Modal
+
+Das Plugin bietet ein modernes E-Mail Compose Modal, das über SweetAlert2 geöffnet wird.
+
+### Verwendung
+
+Füge die Klasse `mail-swal` zu einem beliebigen Element hinzu:
+
+```html
+<button class="mail-swal">E-Mail schreiben</button>
+```
+
+### Vorausgefüllte Werte
+
+Über Data-Attribute können Empfänger, Betreff und Nachricht vorausgefüllt werden:
+
+| Attribut | Beschreibung |
+|----------|--------------|
+| `data-mail-to` | E-Mail-Adresse des Empfängers |
+| `data-mail-subject` | Betreff der E-Mail |
+| `data-mail-message` | Nachricht (HTML erlaubt) |
+
+### Beispiele
+
+Einfacher Button:
+
+```html
+<button class="mail-swal">Kontakt aufnehmen</button>
+```
+
+Mit vorausgefülltem Empfänger:
+
+```html
+<button class="mail-swal" data-mail-to="info@example.com">
+    Support kontaktieren
+</button>
+```
+
+Vollständig vorausgefüllt:
+
+```html
+<button class="mail-swal"
+    data-mail-to="kunde@example.com"
+    data-mail-subject="Ihre Anfrage"
+    data-mail-message="<p>Sehr geehrte Damen und Herren,</p>">
+    E-Mail senden
+</button>
+```
+
+Als Link:
+
+```html
+<a href="#" class="mail-swal" data-mail-to="sales@example.com">
+    Angebot anfordern
+</a>
+```
+
+Als Container mit Link (z.B. für Elementor Buttons):
+
+```html
+<div class="mail-swal" data-mail-to="kunde@example.com" data-mail-subject="Anfrage">
+    <a href="#" class="button">Mail Button</a>
+</div>
+```
+
+### Features
+
+- Modernes, schlichtes Design (wie eine E-Mail App)
+- WYSIWYG Editor mit H1, H2, H3, Fett, Kursiv, Listen
+- Drag & Drop Dateianhänge
+- Validierung aller Felder
+- Erfolgs-/Fehlermeldungen
+- Responsive Design
+
+### PHP API
+
+E-Mails können auch programmatisch versendet werden:
+
+```php
+// Einfache E-Mail
+deep_clarity()->mail->send(
+    'empfaenger@example.com',
+    'Betreff',
+    '<p>Nachricht als HTML</p>'
+);
+
+// Mit Anhängen
+deep_clarity()->mail->send(
+    'empfaenger@example.com',
+    'Betreff',
+    '<p>Nachricht</p>',
+    array('/pfad/zur/datei.pdf')
+);
+```

@@ -10,6 +10,7 @@
  * 4. Third-Party Overrides (TinyMCE, ACF)
  * 5. Components
  * 6. States
+ * 7. Mail Compose Modal
  */
 
 /* ==========================================================================
@@ -235,4 +236,334 @@
   background: #edfaef;
   border-left: 4px solid #00a32a;
   color: #1e4620;
+}
+
+/* ==========================================================================
+   7. Mail Compose Modal
+   ========================================================================== */
+
+/* SweetAlert2 Overrides */
+.dc-mail-popup {
+  padding: 0 !important;
+  border-radius: var(--dc-radius-medium) !important;
+  overflow: hidden;
+}
+
+.dc-mail-popup .swal2-html-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.dc-mail-popup .swal2-validation-message {
+  margin: 0;
+  padding: 12px 20px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+}
+
+/* Mail Compose Layout */
+.dc-mail-compose {
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+  text-align: left;
+}
+
+/* Header */
+.dc-mail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--dc-color-platinum);
+  border-bottom: 1px solid var(--dc-color-pale-slate);
+}
+
+.dc-mail-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-mail-close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--dc-color-iron-grey);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.dc-mail-close:hover {
+  color: var(--dc-color-carbon-black);
+}
+
+/* Body */
+.dc-mail-body {
+  flex: 1;
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* Fields */
+.dc-mail-field {
+  border-bottom: 1px solid var(--dc-color-platinum);
+}
+
+.dc-mail-field label {
+  display: block;
+  padding: 12px 20px 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--dc-color-cool-steel);
+}
+
+.dc-mail-field input[type="email"],
+.dc-mail-field input[type="text"] {
+  display: block;
+  width: 100%;
+  padding: 8px 20px 12px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--dc-color-carbon-black);
+  outline: none;
+}
+
+.dc-mail-field input::placeholder {
+  color: var(--dc-color-pale-slate);
+}
+
+/* Editor Field */
+.dc-mail-field-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 180px;
+}
+
+/* Toolbar */
+.dc-mail-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--dc-color-platinum);
+  background: var(--dc-color-parchment);
+}
+
+.dc-mail-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--dc-radius-xsmall);
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--dc-color-iron-grey);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dc-mail-toolbar button:hover {
+  background: var(--dc-color-platinum);
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-mail-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--dc-color-pale-slate);
+}
+
+/* Editor */
+#dc-mail-editor {
+  flex: 1;
+  padding: 16px 20px;
+  min-height: 120px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--dc-color-carbon-black);
+  outline: none;
+  overflow-y: auto;
+}
+
+#dc-mail-editor:empty::before {
+  content: attr(placeholder);
+  color: var(--dc-color-pale-slate);
+  pointer-events: none;
+}
+
+#dc-mail-editor h1,
+#dc-mail-editor h2,
+#dc-mail-editor h3 {
+  margin: 0.5em 0;
+  font-weight: 600;
+}
+
+#dc-mail-editor h1 { font-size: 1.5em; }
+#dc-mail-editor h2 { font-size: 1.25em; }
+#dc-mail-editor h3 { font-size: 1.1em; }
+
+#dc-mail-editor ul,
+#dc-mail-editor ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+/* Dropzone */
+.dc-mail-dropzone {
+  margin: 12px 20px;
+  padding: 24px;
+  border: 2px dashed var(--dc-color-pale-slate);
+  border-radius: var(--dc-radius-small);
+  background: var(--dc-color-parchment);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dc-mail-dropzone:hover,
+.dc-mail-dropzone-active {
+  border-color: var(--dc-color-primary);
+  background: #faf7f8;
+}
+
+.dc-mail-dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--dc-color-cool-steel);
+  font-size: 13px;
+  text-align: center;
+}
+
+.dc-mail-dropzone-content svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.5;
+}
+
+.dc-mail-dropzone-content strong {
+  color: var(--dc-color-primary);
+}
+
+/* Attachments */
+.dc-mail-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px 12px;
+}
+
+.dc-mail-attachment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--dc-color-platinum);
+  border-radius: var(--dc-radius-xsmall);
+  font-size: 12px;
+}
+
+.dc-mail-attachment-name {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-mail-attachment-size {
+  color: var(--dc-color-cool-steel);
+}
+
+.dc-mail-attachment-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--dc-color-pale-slate);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--dc-color-iron-grey);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dc-mail-attachment-remove:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Footer */
+.dc-mail-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--dc-color-platinum);
+  border-top: 1px solid var(--dc-color-pale-slate);
+}
+
+.dc-mail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--dc-radius-small);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dc-mail-btn-cancel {
+  background: transparent;
+  color: var(--dc-color-iron-grey);
+}
+
+.dc-mail-btn-cancel:hover {
+  background: var(--dc-color-pale-slate);
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-mail-btn-send {
+  background: var(--dc-color-primary);
+  color: #fff;
+}
+
+.dc-mail-btn-send:hover {
+  background: var(--dc-color-primary-dark);
+}
+
+.dc-mail-btn-send:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dc-mail-btn-send svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }

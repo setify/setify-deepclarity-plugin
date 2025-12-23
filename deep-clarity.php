@@ -51,6 +51,7 @@ require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-admin.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-sessions.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-shortcodes.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-helpers.php';
+require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-mail.php';
 
 /**
  * Main plugin class
@@ -108,6 +109,13 @@ final class Deep_Clarity
     public $helpers;
 
     /**
+     * Mail instance
+     *
+     * @var DeepClarity\Mail
+     */
+    public $mail;
+
+    /**
      * Get single instance of the class
      *
      * @return Deep_Clarity
@@ -140,6 +148,7 @@ final class Deep_Clarity
         $this->sessions   = new DeepClarity\Sessions();
         $this->shortcodes = new DeepClarity\Shortcodes();
         $this->helpers    = new DeepClarity\Helpers();
+        $this->mail       = DeepClarity\Mail::get_instance();
 
         // Load textdomain
         add_action('plugins_loaded', array($this, 'load_textdomain'));
