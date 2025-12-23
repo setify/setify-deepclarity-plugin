@@ -271,7 +271,7 @@ class Mail
 
         // Create mail post if email was sent successfully
         if ($result) {
-            $this->create_mail_post($to, $subject, $message, $author_id);
+            $this->create_mail_post($to, $subject, $message, $author_id, $attachments);
         }
 
         return $result;
@@ -356,9 +356,10 @@ class Mail
      * @param string $subject Email subject
      * @param string $message Email message (HTML)
      * @param int|null $author_id Author user ID (null = current user, 0 = system/user 1)
+     * @param array $attachments Array of file paths that were attached to the email
      * @return int|false Post ID on success, false on failure
      */
-    public function create_mail_post($to, $subject, $message, $author_id = null)
+    public function create_mail_post($to, $subject, $message, $author_id = null, $attachments = array())
     {
         // Determine author
         if ($author_id === null) {
@@ -394,7 +395,70 @@ class Mail
         // Store recipient email as meta (useful for reference)
         update_post_meta($post_id, '_mail_recipient', $to);
 
+        // Upload attachments to media library and save to ACF field
+        if (!empty($attachments)) {
+            $attachment_ids = $this->upload_attachments_to_media($attachments, $post_id);
+            if (!empty($attachment_ids)) {
+                update_field('mail_attachments', $attachment_ids, $post_id);
+            }
+        }
+
         return $post_id;
+    }
+
+    /**
+     * Upload attachment files to WordPress media library
+     *
+     * @param array $file_paths Array of file paths
+     * @param int $parent_post_id Parent post ID for attachments
+     * @return array Array of attachment IDs
+     */
+    private function upload_attachments_to_media($file_paths, $parent_post_id)
+    {
+        $attachment_ids = array();
+
+        // Require WordPress file handling functions
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+        require_once(ABSPATH . 'wp-admin/includes/media.php');
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+        foreach ($file_paths as $file_path) {
+            if (!file_exists($file_path)) {
+                continue;
+            }
+
+            // Get file info
+            $filename = basename($file_path);
+            $filetype = wp_check_filetype($filename);
+
+            // Prepare upload directory
+            $upload_dir = wp_upload_dir();
+            $target_path = $upload_dir['path'] . '/' . $filename;
+
+            // Copy file to uploads directory (original will be cleaned up separately)
+            if (copy($file_path, $target_path)) {
+                // Prepare attachment data
+                $attachment_data = array(
+                    'post_mime_type' => $filetype['type'],
+                    'post_title'     => sanitize_file_name(pathinfo($filename, PATHINFO_FILENAME)),
+                    'post_content'   => '',
+                    'post_status'    => 'inherit',
+                );
+
+                // Insert attachment
+                $attachment_id = wp_insert_attachment($attachment_data, $target_path, $parent_post_id);
+
+                if (!is_wp_error($attachment_id)) {
+                    // Generate metadata
+                    $attach_data = wp_generate_attachment_metadata($attachment_id, $target_path);
+                    wp_update_attachment_metadata($attachment_id, $attach_data);
+
+                    $attachment_ids[] = $attachment_id;
+                }
+            }
+        }
+
+        return $attachment_ids;
     }
 
     /**
