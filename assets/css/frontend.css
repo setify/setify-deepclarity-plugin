@@ -344,8 +344,6 @@
   border: none !important;
   border-radius: 0 !important;
   background: transparent !important;
-  font-size: 0.9rem !important;
-  color: var(--dc-color-carbon-black);
   outline: none;
 }
 
@@ -383,6 +381,7 @@
   background: transparent;
   font-family: inherit;
   font-size: 12px;
+  font-weight: bold;
   color: var(--dc-color-iron-grey);
   cursor: pointer;
   transition: all 0.15s;
