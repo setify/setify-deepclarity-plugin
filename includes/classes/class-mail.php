@@ -68,7 +68,39 @@ class Mail
      */
     private function __construct()
     {
+        $this->register_post_type();
         $this->register_ajax_handlers();
+    }
+
+    /**
+     * Register mail post type
+     */
+    private function register_post_type()
+    {
+        add_action('init', function () {
+            register_post_type('mail', array(
+                'labels' => array(
+                    'name'               => __('E-Mails', 'deep-clarity'),
+                    'singular_name'      => __('E-Mail', 'deep-clarity'),
+                    'add_new'            => __('Neue E-Mail', 'deep-clarity'),
+                    'add_new_item'       => __('Neue E-Mail erstellen', 'deep-clarity'),
+                    'edit_item'          => __('E-Mail bearbeiten', 'deep-clarity'),
+                    'new_item'           => __('Neue E-Mail', 'deep-clarity'),
+                    'view_item'          => __('E-Mail ansehen', 'deep-clarity'),
+                    'search_items'       => __('E-Mails suchen', 'deep-clarity'),
+                    'not_found'          => __('Keine E-Mails gefunden', 'deep-clarity'),
+                    'not_found_in_trash' => __('Keine E-Mails im Papierkorb', 'deep-clarity'),
+                ),
+                'public'              => false,
+                'show_ui'             => true,
+                'show_in_menu'        => true,
+                'menu_icon'           => 'dashicons-email',
+                'supports'            => array('title', 'editor', 'author'),
+                'capability_type'     => 'post',
+                'has_archive'         => false,
+                'exclude_from_search' => true,
+            ));
+        });
     }
 
     /**
@@ -210,9 +242,10 @@ class Mail
      * @param string $message Email message (HTML)
      * @param array $attachments Optional attachments
      * @param array $headers Optional headers
+     * @param int|null $author_id Author for mail post (null = current user, 0 = system)
      * @return bool
      */
-    public function send($to, $subject, $message, $attachments = array(), $headers = array())
+    public function send($to, $subject, $message, $attachments = array(), $headers = array(), $author_id = null)
     {
         // Default headers for HTML email
         if (empty($headers)) {
@@ -234,7 +267,14 @@ class Mail
         $headers = apply_filters('deep_clarity_mail_headers', $headers, $to, $subject);
         $attachments = apply_filters('deep_clarity_mail_attachments', $attachments, $to, $subject);
 
-        return wp_mail($to, $subject, $html_message, $headers, $attachments);
+        $result = wp_mail($to, $subject, $html_message, $headers, $attachments);
+
+        // Create mail post if email was sent successfully
+        if ($result) {
+            $this->create_mail_post($to, $subject, $message, $author_id);
+        }
+
+        return $result;
     }
 
     /**
@@ -307,5 +347,88 @@ class Mail
         $message = ob_get_clean();
 
         return $this->send($to, $subject, $message, $attachments);
+    }
+
+    /**
+     * Create mail post after sending
+     *
+     * @param string $to Recipient email
+     * @param string $subject Email subject
+     * @param string $message Email message (HTML)
+     * @param int|null $author_id Author user ID (null = current user, 0 = system/user 1)
+     * @return int|false Post ID on success, false on failure
+     */
+    public function create_mail_post($to, $subject, $message, $author_id = null)
+    {
+        // Determine author
+        if ($author_id === null) {
+            $author_id = get_current_user_id();
+        }
+
+        // If no user is logged in or system mail, use user 1
+        if (empty($author_id) || $author_id === 0) {
+            $author_id = 1;
+        }
+
+        // Create the mail post
+        $post_data = array(
+            'post_type'    => 'mail',
+            'post_title'   => $subject,
+            'post_content' => $message,
+            'post_status'  => 'publish',
+            'post_author'  => $author_id,
+        );
+
+        $post_id = wp_insert_post($post_data);
+
+        if (is_wp_error($post_id) || empty($post_id)) {
+            return false;
+        }
+
+        // Find client by email and set ACF relation field
+        $client_id = $this->find_client_by_email($to);
+        if ($client_id) {
+            update_field('mail_client', $client_id, $post_id);
+        }
+
+        // Store recipient email as meta (useful for reference)
+        update_post_meta($post_id, '_mail_recipient', $to);
+
+        return $post_id;
+    }
+
+    /**
+     * Find client post by email address
+     *
+     * @param string $email Email address to search for
+     * @return int|false Client post ID or false if not found
+     */
+    public function find_client_by_email($email)
+    {
+        if (empty($email) || !is_email($email)) {
+            return false;
+        }
+
+        // Query for client posts with matching email in ACF field
+        $args = array(
+            'post_type'      => 'client',
+            'posts_per_page' => 1,
+            'post_status'    => 'any',
+            'meta_query'     => array(
+                array(
+                    'key'     => 'client_email',
+                    'value'   => $email,
+                    'compare' => '=',
+                ),
+            ),
+        );
+
+        $query = new \WP_Query($args);
+
+        if ($query->have_posts()) {
+            return $query->posts[0]->ID;
+        }
+
+        return false;
     }
 }
