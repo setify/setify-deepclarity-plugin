@@ -286,38 +286,187 @@ class Mail
      */
     private function wrap_html_template($message, $subject)
     {
-        $template = '<!DOCTYPE html>
-<html>
+        $template = '<!--
+* This email was built using Tabular.
+* For more information, visit https://tabular.email
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>' . esc_html($subject) . '</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1, h2, h3 {
-            color: #111;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
-        }
-        h1 { font-size: 24px; }
-        h2 { font-size: 20px; }
-        h3 { font-size: 18px; }
-        p { margin: 1em 0; }
-        ul, ol { margin: 1em 0; padding-left: 2em; }
-        li { margin: 0.5em 0; }
-        a { color: #0066cc; }
-    </style>
+<title>' . esc_html($subject) . '</title>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--[if !mso]>-->
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!--<![endif]-->
+<meta name="x-apple-disable-message-reformatting" content="" />
+<meta content="target-densitydpi=device-dpi" name="viewport" />
+<meta content="true" name="HandheldFriendly" />
+<meta content="width=device-width" name="viewport" />
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no" />
+<style type="text/css">
+table {
+border-collapse: separate;
+table-layout: fixed;
+mso-table-lspace: 0pt;
+mso-table-rspace: 0pt
+}
+table td {
+border-collapse: collapse
+}
+.ExternalClass {
+width: 100%
+}
+.ExternalClass,
+.ExternalClass p,
+.ExternalClass span,
+.ExternalClass font,
+.ExternalClass td,
+.ExternalClass div {
+line-height: 100%
+}
+body, a, li, p, h1, h2, h3 {
+-ms-text-size-adjust: 100%;
+-webkit-text-size-adjust: 100%;
+}
+html {
+-webkit-text-size-adjust: none !important
+}
+body {
+min-width: 100%;
+Margin: 0px;
+padding: 0px;
+}
+body, #innerTable {
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale
+}
+#innerTable img+div {
+display: none;
+display: none !important
+}
+img {
+Margin: 0;
+padding: 0;
+-ms-interpolation-mode: bicubic
+}
+h1, h2, h3, p, a {
+overflow-wrap: normal;
+white-space: normal;
+word-break: break-word
+}
+a {
+text-decoration: none
+}
+h1, h2, h3, p {
+min-width: 100%!important;
+width: 100%!important;
+max-width: 100%!important;
+display: inline-block!important;
+border: 0;
+padding: 0;
+margin: 0
+}
+a[x-apple-data-detectors] {
+color: inherit !important;
+text-decoration: none !important;
+font-size: inherit !important;
+font-family: inherit !important;
+font-weight: inherit !important;
+line-height: inherit !important
+}
+u + #body a {
+color: inherit;
+text-decoration: none;
+font-size: inherit;
+font-family: inherit;
+font-weight: inherit;
+line-height: inherit;
+}
+a[href^="mailto"],
+a[href^="tel"],
+a[href^="sms"] {
+color: inherit;
+text-decoration: none
+}
+</style>
+<style type="text/css">
+@media (min-width: 481px) {
+.hd { display: none!important }
+}
+</style>
+<style type="text/css">
+@media (max-width: 480px) {
+.hm { display: none!important }
+}
+</style>
+<style type="text/css">
+@media (max-width: 480px) {
+.t44{text-align:left!important}.t35,.t43{vertical-align:top!important;width:600px!important}
+}
+</style>
+<!--[if !mso]>-->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;display=swap" rel="stylesheet" type="text/css" />
+<!--<![endif]-->
+<!--[if mso]>
+<xml>
+<o:OfficeDocumentSettings>
+<o:AllowPNG/>
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+<![endif]-->
 </head>
-<body>
-    ' . $message . '
-</body>
+<body id="body" class="t54" style="min-width:100%;Margin:0px;padding:0px;background-color:#F1EDE9;"><div class="t53" style="background-color:#F1EDE9;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td class="t52" style="font-size:0;line-height:0;mso-line-height-rule:exactly;background-color:#F1EDE9;" valign="top" align="center">
+<!--[if mso]>
+<v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false">
+<v:fill color="#F1EDE9"/>
+</v:background>
+<![endif]-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center" id="innerTable"><tr><td align="center">
+<table class="t8" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="600" class="t7" style="width:600px;">
+<table class="t6" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t5" style="overflow:hidden;padding:32px 32px 32px 32px;border-radius:0 0 8px 8px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100% !important;"><tr><td align="center">
+<table class="t4" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="280" class="t3" style="width:280px;">
+<table class="t2" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t1"><div style="font-size:0px;"><img class="t0" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="280" height="28.4375" alt="" src="https://deepclarity.de/wp-content/uploads/text_deep_clarity_small_brown_2500px.png"/></div></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td align="center">
+<table class="t27" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="600" class="t26" style="width:600px;">
+<table class="t25" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t24" style="overflow:hidden;border-radius:8px 8px 8px 8px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100% !important;"><tr><td align="center">
+<table class="t23" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="600" class="t22" style="width:600px;">
+<table class="t21" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t20" style="border:1px solid #E0D9D0;overflow:hidden;background-color:#FFFFFF;padding:32px 32px 32px 32px;border-radius:8px 8px 8px 8px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100% !important;"><tr><td align="center">
+<table class="t13" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="534" class="t12" style="width:600px;">
+<table class="t11" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t10"><p class="t9" style="margin:0;Margin:0;font-family:Inter,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:28px;font-weight:400;font-style:normal;font-size:14px;text-decoration:none;text-transform:none;direction:ltr;color:#494C51;text-align:left;mso-line-height-rule:exactly;mso-text-raise:4px;">' . $message . '</p></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td><div class="t15" style="mso-line-height-rule:exactly;mso-line-height-alt:32px;line-height:32px;font-size:1px;display:block;">&nbsp;&nbsp;</div></td></tr><tr><td align="left">
+<table class="t19" role="presentation" cellpadding="0" cellspacing="0" style="Margin-right:auto;"><tr><td width="160" class="t18" style="width:160px;">
+<table class="t17" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t16"><div style="font-size:0px;"><img class="t14" style="display:block;border:0;height:auto;width:100%;Margin:0;max-width:100%;" width="160" height="56" alt="" src="https://deepclarity.de/wp-content/uploads/signatur_timo.png"/></div></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table>
+</td></tr></table>
+</td></tr><tr><td align="center">
+<table class="t51" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="600" class="t50" style="width:600px;">
+<table class="t49" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t48"><div class="t47" style="width:100%;text-align:left;"><div class="t46" style="display:inline-block;"><table class="t45" role="presentation" cellpadding="0" cellspacing="0" align="left" valign="top">
+<tr class="t44"><td></td><td class="t35" width="300" valign="top">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="t34" style="width:100%;"><tr><td class="t33"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100% !important;"><tr><td align="center">
+<table class="t32" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="300" class="t31" style="width:600px;">
+<table class="t30" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t29" style="padding:32px 32px 32px 32px;"><p class="t28" style="margin:0;Margin:0;font-family:Inter,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:500;font-style:normal;font-size:11px;text-decoration:none;text-transform:none;direction:ltr;color:#7E6D54;text-align:left;mso-line-height-rule:exactly;mso-text-raise:3px;">&copy; Copyright Deep Clarity<br/>Alle Rechte vorbehalten <br/><br/>www.deepclarity.de<br/>mail@deepclarity.de&nbsp; <br/><br/>Gesch&auml;ftsf&uuml;hrer:&nbsp; Timo Wenzel Registergericht: Amtsgericht K&ouml;ln Registernummer: HRB XXX<br/>Umsatzsteuer-IdNr: DE XXX</p></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table>
+</td><td class="t43" width="300" valign="top">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="t42" style="width:100%;"><tr><td class="t41"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100% !important;"><tr><td align="center">
+<table class="t40" role="presentation" cellpadding="0" cellspacing="0" style="Margin-left:auto;Margin-right:auto;"><tr><td width="300" class="t39" style="width:600px;">
+<table class="t38" role="presentation" cellpadding="0" cellspacing="0" width="100%" style="width:100%;"><tr><td class="t37" style="padding:32px 32px 32px 32px;"><p class="t36" style="margin:0;Margin:0;font-family:Inter,BlinkMacSystemFont,Segoe UI,Helvetica Neue,Arial,sans-serif;line-height:22px;font-weight:500;font-style:normal;font-size:11px;text-decoration:none;text-transform:none;direction:ltr;color:#7E6D54;text-align:left;mso-line-height-rule:exactly;mso-text-raise:3px;">Folg mir auf:<br/><br/>Hinweis: Die Inhalte und Produkte stellen keinen medizinischen Rat dar und richten sich an k&ouml;rperlich und psychisch gesunde Menschen. <br/><br/>Impressum | Datenschutz</p></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table>
+</td>
+<td></td></tr>
+</table></div></div></td></tr></table>
+</td></tr></table>
+</td></tr></table></td></tr></table></div><div class="gmail-fix" style="display: none; white-space: nowrap; font: 15px courier; line-height: 0;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div></body>
 </html>';
 
         return $template;
