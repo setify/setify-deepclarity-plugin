@@ -167,7 +167,11 @@
       const $dropzone = $("#dc-mail-dropzone");
       const $fileInput = $("#dc-mail-files");
 
-      $dropzone.on("click", function () {
+      $dropzone.on("click", function (e) {
+        // Prevent infinite loop - don't trigger if click came from file input
+        if (e.target.id === "dc-mail-files") {
+          return;
+        }
         $fileInput.click();
       });
 
