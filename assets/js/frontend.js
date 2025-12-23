@@ -4,84 +4,84 @@
  * @package DeepClarity
  */
 
-(function($) {
-    'use strict';
+(function ($) {
+  "use strict";
+
+  /**
+   * Mail Compose Module
+   */
+  const MailCompose = {
+    attachments: [],
 
     /**
-     * Mail Compose Module
+     * Initialize mail compose triggers
      */
-    const MailCompose = {
-        attachments: [],
+    init: function () {
+      this.bindTriggers();
+    },
 
-        /**
-         * Initialize mail compose triggers
-         */
-        init: function() {
-            this.bindTriggers();
+    /**
+     * Bind click events to mail-swal elements
+     */
+    bindTriggers: function () {
+      // Direct click on .mail-swal element
+      $(document).on("click", ".mail-swal", function (e) {
+        // Skip if click was on a child anchor (handled separately)
+        if ($(e.target).closest("a").length && !$(this).is("a")) {
+          return;
+        }
+        e.preventDefault();
+        const $el = $(this);
+        MailCompose.open({
+          to: $el.data("mail-to") || "",
+          subject: $el.data("mail-subject") || "",
+          message: $el.data("mail-message") || "",
+        });
+      });
+
+      // Click on anchor inside .mail-swal container
+      $(document).on("click", ".mail-swal a", function (e) {
+        e.preventDefault();
+        const $el = $(this).closest(".mail-swal");
+        MailCompose.open({
+          to: $el.data("mail-to") || "",
+          subject: $el.data("mail-subject") || "",
+          message: $el.data("mail-message") || "",
+        });
+      });
+    },
+
+    /**
+     * Open mail compose modal
+     */
+    open: function (options) {
+      const self = this;
+      self.attachments = [];
+
+      Swal.fire({
+        title: null,
+        html: self.getTemplate(options),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "640px",
+        padding: 0,
+        customClass: {
+          popup: "dc-mail-popup",
+          htmlContainer: "dc-mail-container",
         },
-
-        /**
-         * Bind click events to mail-swal elements
-         */
-        bindTriggers: function() {
-            // Direct click on .mail-swal element
-            $(document).on('click', '.mail-swal', function(e) {
-                // Skip if click was on a child anchor (handled separately)
-                if ($(e.target).closest('a').length && !$(this).is('a')) {
-                    return;
-                }
-                e.preventDefault();
-                const $el = $(this);
-                MailCompose.open({
-                    to: $el.data('mail-to') || '',
-                    subject: $el.data('mail-subject') || '',
-                    message: $el.data('mail-message') || ''
-                });
-            });
-
-            // Click on anchor inside .mail-swal container
-            $(document).on('click', '.mail-swal a', function(e) {
-                e.preventDefault();
-                const $el = $(this).closest('.mail-swal');
-                MailCompose.open({
-                    to: $el.data('mail-to') || '',
-                    subject: $el.data('mail-subject') || '',
-                    message: $el.data('mail-message') || ''
-                });
-            });
+        didOpen: function () {
+          self.initEditor();
+          self.initDropzone();
+          self.bindModalEvents();
         },
+      });
+    },
 
-        /**
-         * Open mail compose modal
-         */
-        open: function(options) {
-            const self = this;
-            self.attachments = [];
-
-            Swal.fire({
-                title: null,
-                html: self.getTemplate(options),
-                showConfirmButton: false,
-                showCancelButton: false,
-                width: '640px',
-                padding: 0,
-                customClass: {
-                    popup: 'dc-mail-popup',
-                    htmlContainer: 'dc-mail-container'
-                },
-                didOpen: function() {
-                    self.initEditor();
-                    self.initDropzone();
-                    self.bindModalEvents();
-                }
-            });
-        },
-
-        /**
-         * Get mail compose template
-         */
-        getTemplate: function(options) {
-            return `
+    /**
+     * Get mail compose template
+     */
+    getTemplate: function (options) {
+      return `
                 <div class="dc-mail-compose">
                     <div class="dc-mail-header">
                         <span class="dc-mail-title">Neue E-Mail</span>
@@ -90,11 +90,15 @@
                     <div class="dc-mail-body">
                         <div class="dc-mail-field">
                             <label>An</label>
-                            <input type="email" id="dc-mail-to" value="${this.escapeHtml(options.to)}" placeholder="empfaenger@example.com">
+                            <input type="email" id="dc-mail-to" value="${this.escapeHtml(
+                              options.to
+                            )}" placeholder="empfaenger@example.com">
                         </div>
                         <div class="dc-mail-field">
                             <label>Betreff</label>
-                            <input type="text" id="dc-mail-subject" value="${this.escapeHtml(options.subject)}" placeholder="Betreff eingeben...">
+                            <input type="text" id="dc-mail-subject" value="${this.escapeHtml(
+                              options.subject
+                            )}" placeholder="Betreff eingeben...">
                         </div>
                         <div class="dc-mail-field dc-mail-field-editor">
                             <div class="dc-mail-toolbar">
@@ -108,7 +112,9 @@
                                 <button type="button" data-command="insertUnorderedList" title="Aufzählung">• Liste</button>
                                 <button type="button" data-command="insertOrderedList" title="Nummerierung">1. Liste</button>
                             </div>
-                            <div id="dc-mail-editor" contenteditable="true" placeholder="Ihre Nachricht...">${options.message}</div>
+                            <div id="dc-mail-editor" contenteditable="true" placeholder="Ihre Nachricht...">${
+                              options.message
+                            }</div>
                         </div>
                         <div class="dc-mail-field">
                             <div class="dc-mail-dropzone" id="dc-mail-dropzone">
@@ -122,286 +128,298 @@
                         </div>
                     </div>
                     <div class="dc-mail-footer">
-                        <button type="button" class="dc-mail-btn dc-mail-btn-cancel button-small button-secondary">Abbrechen</button>
-                        <button type="button" class="dc-mail-btn dc-mail-btn-send button-small">
+                        <button type="button" class="dc-mail-btn dc-mail-btn-cancel button-secondary">Abbrechen</button>
+                        <button type="button" class="dc-mail-btn dc-mail-btn-send">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M17.33 3H6.66c-.89-.01-1.6-.01-2.17.04 -.59.04-1.1.14-1.58.38 -.76.38-1.37.99-1.75 1.74 -.24.47-.35.98-.39 1.57C.72 7.3.72 8.01.72 8.89v2.33c0 .41.33.75.75.75 .41 0 .75-.34.75-.75l0-2.49 7.46 5.68c.58.44 1.05.8 1.57.94 .46.12.95.12 1.41 0 .52-.15.99-.5 1.57-.95l7.46-5.69v6.28c0 .92-.01 1.56-.05 2.07 -.05.49-.12.78-.24 1.01 -.24.47-.63.85-1.1 1.09 -.23.11-.52.19-1.02.23 -.51.04-1.16.04-2.08.04H4.9c-.42 0-.75.33-.75.75 0 .41.33.75.75.75h12.33c.88 0 1.59 0 2.16-.05 .58-.05 1.09-.15 1.57-.39 .75-.39 1.36-1 1.74-1.75 .24-.48.34-.99.38-1.58 .04-.58.04-1.29.04-2.17V8.82c0-.64 0-1.19-.02-1.66 0-.02-.01-.04-.01-.06 -.01-.16-.02-.31-.03-.46 -.05-.59-.15-1.1-.39-1.58 -.39-.76-1-1.37-1.75-1.75 -.48-.24-.99-.35-1.58-.39 -.58-.05-1.29-.05-2.17-.05Zm4.37 3.9l-.01-.04c-.05-.5-.12-.79-.24-1.02 -.24-.48-.63-.86-1.1-1.1 -.23-.12-.52-.2-1.02-.24 -.51-.05-1.16-.05-2.08-.05H6.65c-.93 0-1.57 0-2.08.04 -.5.04-.79.11-1.02.23 -.48.23-.86.62-1.1 1.09 -.12.22-.2.51-.24 1.01l-.01.03 8.22 6.26c.74.57.95.71 1.16.76 .21.05.43.05.64 0 .2-.06.41-.2 1.16-.77l8.22-6.27Z"></path><g><path d="M5 15H1.5c-.42 0-.75-.34-.75-.75 0-.42.33-.75.75-.75H5c.41 0 .75.33.75.75 0 .41-.34.75-.75.75Z"></path><path d="M3.5 16.5c-.42 0-.75.33-.75.75 0 .41.33.75.75.75h6c.41 0 .75-.34.75-.75 0-.42-.34-.75-.75-.75h-6Z"></path></g></svg>
                             E-Mail senden
                         </button>
                     </div>
                 </div>
             `;
-        },
+    },
 
-        /**
-         * Initialize WYSIWYG editor
-         */
-        initEditor: function() {
-            const $toolbar = $('.dc-mail-toolbar');
+    /**
+     * Initialize WYSIWYG editor
+     */
+    initEditor: function () {
+      const $toolbar = $(".dc-mail-toolbar");
 
-            $toolbar.on('click', 'button', function(e) {
-                e.preventDefault();
-                const command = $(this).data('command');
-                const value = $(this).data('value') || null;
+      $toolbar.on("click", "button", function (e) {
+        e.preventDefault();
+        const command = $(this).data("command");
+        const value = $(this).data("value") || null;
 
-                if (command === 'formatBlock' && value) {
-                    document.execCommand(command, false, '<' + value + '>');
-                } else {
-                    document.execCommand(command, false, value);
-                }
+        if (command === "formatBlock" && value) {
+          document.execCommand(command, false, "<" + value + ">");
+        } else {
+          document.execCommand(command, false, value);
+        }
 
-                $('#dc-mail-editor').focus();
-            });
-        },
+        $("#dc-mail-editor").focus();
+      });
+    },
 
-        /**
-         * Initialize dropzone
-         */
-        initDropzone: function() {
-            const self = this;
-            const $dropzone = $('#dc-mail-dropzone');
-            const $fileInput = $('#dc-mail-files');
+    /**
+     * Initialize dropzone
+     */
+    initDropzone: function () {
+      const self = this;
+      const $dropzone = $("#dc-mail-dropzone");
+      const $fileInput = $("#dc-mail-files");
 
-            $dropzone.on('click', function() {
-                $fileInput.click();
-            });
+      $dropzone.on("click", function () {
+        $fileInput.click();
+      });
 
-            $dropzone.on('dragover dragenter', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).addClass('dc-mail-dropzone-active');
-            });
+      $dropzone.on("dragover dragenter", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).addClass("dc-mail-dropzone-active");
+      });
 
-            $dropzone.on('dragleave dragend drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).removeClass('dc-mail-dropzone-active');
-            });
+      $dropzone.on("dragleave dragend drop", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass("dc-mail-dropzone-active");
+      });
 
-            $dropzone.on('drop', function(e) {
-                const files = e.originalEvent.dataTransfer.files;
-                self.addFiles(files);
-            });
+      $dropzone.on("drop", function (e) {
+        const files = e.originalEvent.dataTransfer.files;
+        self.addFiles(files);
+      });
 
-            $fileInput.on('change', function() {
-                self.addFiles(this.files);
-                $(this).val('');
-            });
-        },
+      $fileInput.on("change", function () {
+        self.addFiles(this.files);
+        $(this).val("");
+      });
+    },
 
-        /**
-         * Add files to attachments
-         */
-        addFiles: function(files) {
-            const self = this;
-            const $container = $('#dc-mail-attachments');
+    /**
+     * Add files to attachments
+     */
+    addFiles: function (files) {
+      const self = this;
+      const $container = $("#dc-mail-attachments");
 
-            Array.from(files).forEach(function(file) {
-                const id = 'attachment-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-                self.attachments.push({ id: id, file: file });
+      Array.from(files).forEach(function (file) {
+        const id =
+          "attachment-" +
+          Date.now() +
+          "-" +
+          Math.random().toString(36).substr(2, 9);
+        self.attachments.push({ id: id, file: file });
 
-                const $item = $(`
+        const $item = $(`
                     <div class="dc-mail-attachment" data-id="${id}">
-                        <span class="dc-mail-attachment-name">${self.escapeHtml(file.name)}</span>
-                        <span class="dc-mail-attachment-size">${self.formatFileSize(file.size)}</span>
+                        <span class="dc-mail-attachment-name">${self.escapeHtml(
+                          file.name
+                        )}</span>
+                        <span class="dc-mail-attachment-size">${self.formatFileSize(
+                          file.size
+                        )}</span>
                         <button type="button" class="dc-mail-attachment-remove">&times;</button>
                     </div>
                 `);
 
-                $item.find('.dc-mail-attachment-remove').on('click', function() {
-                    self.removeAttachment(id);
-                    $item.remove();
-                });
+        $item.find(".dc-mail-attachment-remove").on("click", function () {
+          self.removeAttachment(id);
+          $item.remove();
+        });
 
-                $container.append($item);
+        $container.append($item);
+      });
+    },
+
+    /**
+     * Remove attachment
+     */
+    removeAttachment: function (id) {
+      this.attachments = this.attachments.filter(function (a) {
+        return a.id !== id;
+      });
+    },
+
+    /**
+     * Bind modal events
+     */
+    bindModalEvents: function () {
+      const self = this;
+
+      $(".dc-mail-close, .dc-mail-btn-cancel").on("click", function () {
+        Swal.close();
+      });
+
+      $(".dc-mail-btn-send").on("click", function () {
+        self.send();
+      });
+    },
+
+    /**
+     * Send email
+     */
+    send: function () {
+      const self = this;
+      const to = $("#dc-mail-to").val().trim();
+      const subject = $("#dc-mail-subject").val().trim();
+      const message = $("#dc-mail-editor").html();
+
+      // Validation
+      if (!to) {
+        self.showError("Bitte geben Sie eine E-Mail-Adresse ein.");
+        return;
+      }
+
+      if (!subject) {
+        self.showError("Bitte geben Sie einen Betreff ein.");
+        return;
+      }
+
+      if (!message || message === "<br>") {
+        self.showError("Bitte geben Sie eine Nachricht ein.");
+        return;
+      }
+
+      // Build form data
+      const formData = new FormData();
+      formData.append("action", "deep_clarity_send_mail");
+      formData.append("nonce", deepClarityFrontend.nonce);
+      formData.append("to", to);
+      formData.append("subject", subject);
+      formData.append("message", message);
+
+      self.attachments.forEach(function (attachment) {
+        formData.append("attachments[]", attachment.file);
+      });
+
+      // Show loading
+      $(".dc-mail-btn-send").prop("disabled", true).html("Wird gesendet...");
+
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          if (response.success) {
+            Swal.fire({
+              icon: "success",
+              title: "Gesendet!",
+              text: response.data.message,
+              timer: 2000,
+              showConfirmButton: false,
             });
-        },
-
-        /**
-         * Remove attachment
-         */
-        removeAttachment: function(id) {
-            this.attachments = this.attachments.filter(function(a) {
-                return a.id !== id;
-            });
-        },
-
-        /**
-         * Bind modal events
-         */
-        bindModalEvents: function() {
-            const self = this;
-
-            $('.dc-mail-close, .dc-mail-btn-cancel').on('click', function() {
-                Swal.close();
-            });
-
-            $('.dc-mail-btn-send').on('click', function() {
-                self.send();
-            });
-        },
-
-        /**
-         * Send email
-         */
-        send: function() {
-            const self = this;
-            const to = $('#dc-mail-to').val().trim();
-            const subject = $('#dc-mail-subject').val().trim();
-            const message = $('#dc-mail-editor').html();
-
-            // Validation
-            if (!to) {
-                self.showError('Bitte geben Sie eine E-Mail-Adresse ein.');
-                return;
-            }
-
-            if (!subject) {
-                self.showError('Bitte geben Sie einen Betreff ein.');
-                return;
-            }
-
-            if (!message || message === '<br>') {
-                self.showError('Bitte geben Sie eine Nachricht ein.');
-                return;
-            }
-
-            // Build form data
-            const formData = new FormData();
-            formData.append('action', 'deep_clarity_send_mail');
-            formData.append('nonce', deepClarityFrontend.nonce);
-            formData.append('to', to);
-            formData.append('subject', subject);
-            formData.append('message', message);
-
-            self.attachments.forEach(function(attachment) {
-                formData.append('attachments[]', attachment.file);
-            });
-
-            // Show loading
-            $('.dc-mail-btn-send').prop('disabled', true).html('Wird gesendet...');
-
-            $.ajax({
-                url: deepClarityFrontend.ajaxUrl,
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Gesendet!',
-                            text: response.data.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    } else {
-                        self.showError(response.data.message);
-                        $('.dc-mail-btn-send').prop('disabled', false).html(`
+          } else {
+            self.showError(response.data.message);
+            $(".dc-mail-btn-send").prop("disabled", false).html(`
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M17.33 3H6.66c-.89-.01-1.6-.01-2.17.04 -.59.04-1.1.14-1.58.38 -.76.38-1.37.99-1.75 1.74 -.24.47-.35.98-.39 1.57C.72 7.3.72 8.01.72 8.89v2.33c0 .41.33.75.75.75 .41 0 .75-.34.75-.75l0-2.49 7.46 5.68c.58.44 1.05.8 1.57.94 .46.12.95.12 1.41 0 .52-.15.99-.5 1.57-.95l7.46-5.69v6.28c0 .92-.01 1.56-.05 2.07 -.05.49-.12.78-.24 1.01 -.24.47-.63.85-1.1 1.09 -.23.11-.52.19-1.02.23 -.51.04-1.16.04-2.08.04H4.9c-.42 0-.75.33-.75.75 0 .41.33.75.75.75h12.33c.88 0 1.59 0 2.16-.05 .58-.05 1.09-.15 1.57-.39 .75-.39 1.36-1 1.74-1.75 .24-.48.34-.99.38-1.58 .04-.58.04-1.29.04-2.17V8.82c0-.64 0-1.19-.02-1.66 0-.02-.01-.04-.01-.06 -.01-.16-.02-.31-.03-.46 -.05-.59-.15-1.1-.39-1.58 -.39-.76-1-1.37-1.75-1.75 -.48-.24-.99-.35-1.58-.39 -.58-.05-1.29-.05-2.17-.05Zm4.37 3.9l-.01-.04c-.05-.5-.12-.79-.24-1.02 -.24-.48-.63-.86-1.1-1.1 -.23-.12-.52-.2-1.02-.24 -.51-.05-1.16-.05-2.08-.05H6.65c-.93 0-1.57 0-2.08.04 -.5.04-.79.11-1.02.23 -.48.23-.86.62-1.1 1.09 -.12.22-.2.51-.24 1.01l-.01.03 8.22 6.26c.74.57.95.71 1.16.76 .21.05.43.05.64 0 .2-.06.41-.2 1.16-.77l8.22-6.27Z"></path><g><path d="M5 15H1.5c-.42 0-.75-.34-.75-.75 0-.42.33-.75.75-.75H5c.41 0 .75.33.75.75 0 .41-.34.75-.75.75Z"></path><path d="M3.5 16.5c-.42 0-.75.33-.75.75 0 .41.33.75.75.75h6c.41 0 .75-.34.75-.75 0-.42-.34-.75-.75-.75h-6Z"></path></g></svg>
                             E-Mail senden
                         `);
-                    }
-                },
-                error: function() {
-                    self.showError('Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
-                    $('.dc-mail-btn-send').prop('disabled', false).html(`
+          }
+        },
+        error: function () {
+          self.showError(
+            "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+          );
+          $(".dc-mail-btn-send").prop("disabled", false).html(`
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M17.33 3H6.66c-.89-.01-1.6-.01-2.17.04 -.59.04-1.1.14-1.58.38 -.76.38-1.37.99-1.75 1.74 -.24.47-.35.98-.39 1.57C.72 7.3.72 8.01.72 8.89v2.33c0 .41.33.75.75.75 .41 0 .75-.34.75-.75l0-2.49 7.46 5.68c.58.44 1.05.8 1.57.94 .46.12.95.12 1.41 0 .52-.15.99-.5 1.57-.95l7.46-5.69v6.28c0 .92-.01 1.56-.05 2.07 -.05.49-.12.78-.24 1.01 -.24.47-.63.85-1.1 1.09 -.23.11-.52.19-1.02.23 -.51.04-1.16.04-2.08.04H4.9c-.42 0-.75.33-.75.75 0 .41.33.75.75.75h12.33c.88 0 1.59 0 2.16-.05 .58-.05 1.09-.15 1.57-.39 .75-.39 1.36-1 1.74-1.75 .24-.48.34-.99.38-1.58 .04-.58.04-1.29.04-2.17V8.82c0-.64 0-1.19-.02-1.66 0-.02-.01-.04-.01-.06 -.01-.16-.02-.31-.03-.46 -.05-.59-.15-1.1-.39-1.58 -.39-.76-1-1.37-1.75-1.75 -.48-.24-.99-.35-1.58-.39 -.58-.05-1.29-.05-2.17-.05Zm4.37 3.9l-.01-.04c-.05-.5-.12-.79-.24-1.02 -.24-.48-.63-.86-1.1-1.1 -.23-.12-.52-.2-1.02-.24 -.51-.05-1.16-.05-2.08-.05H6.65c-.93 0-1.57 0-2.08.04 -.5.04-.79.11-1.02.23 -.48.23-.86.62-1.1 1.09 -.12.22-.2.51-.24 1.01l-.01.03 8.22 6.26c.74.57.95.71 1.16.76 .21.05.43.05.64 0 .2-.06.41-.2 1.16-.77l8.22-6.27Z"></path><g><path d="M5 15H1.5c-.42 0-.75-.34-.75-.75 0-.42.33-.75.75-.75H5c.41 0 .75.33.75.75 0 .41-.34.75-.75.75Z"></path><path d="M3.5 16.5c-.42 0-.75.33-.75.75 0 .41.33.75.75.75h6c.41 0 .75-.34.75-.75 0-.42-.34-.75-.75-.75h-6Z"></path></g></svg>
                         E-Mail senden
                     `);
-                }
-            });
         },
-
-        /**
-         * Show error message
-         */
-        showError: function(message) {
-            Swal.showValidationMessage(message);
-        },
-
-        /**
-         * Escape HTML
-         */
-        escapeHtml: function(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        },
-
-        /**
-         * Format file size
-         */
-        formatFileSize: function(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-    };
+      });
+    },
 
     /**
-     * Deep Clarity Frontend Module
+     * Show error message
      */
-    const DeepClarityFrontend = {
-        /**
-         * Initialize
-         */
-        init: function() {
-            this.bindEvents();
-            MailCompose.init();
-        },
+    showError: function (message) {
+      Swal.showValidationMessage(message);
+    },
 
-        /**
-         * Bind events
-         */
-        bindEvents: function() {
-            // Referal link - go back in history or use referrer
-            $('.referal-link a').on('click', function(e) {
-                e.preventDefault();
-                if (document.referrer && document.referrer !== '') {
-                    window.location.href = document.referrer;
-                } else {
-                    window.history.back();
-                }
-            });
-        },
+    /**
+     * Escape HTML
+     */
+    escapeHtml: function (text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    },
 
-        /**
-         * AJAX request helper
-         *
-         * @param {string} action - AJAX action name
-         * @param {object} data - Additional data
-         * @param {function} callback - Success callback
-         */
-        ajax: function(action, data, callback) {
-            $.ajax({
-                url: deepClarityFrontend.ajaxUrl,
-                type: 'POST',
-                data: $.extend({
-                    action: 'deep_clarity_' + action,
-                    nonce: deepClarityFrontend.nonce
-                }, data),
-                success: function(response) {
-                    if (typeof callback === 'function') {
-                        callback(response);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Deep Clarity Error:', error);
-                }
-            });
+    /**
+     * Format file size
+     */
+    formatFileSize: function (bytes) {
+      if (bytes === 0) return "0 Bytes";
+      const k = 1024;
+      const sizes = ["Bytes", "KB", "MB", "GB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    },
+  };
+
+  /**
+   * Deep Clarity Frontend Module
+   */
+  const DeepClarityFrontend = {
+    /**
+     * Initialize
+     */
+    init: function () {
+      this.bindEvents();
+      MailCompose.init();
+    },
+
+    /**
+     * Bind events
+     */
+    bindEvents: function () {
+      // Referal link - go back in history or use referrer
+      $(".referal-link a").on("click", function (e) {
+        e.preventDefault();
+        if (document.referrer && document.referrer !== "") {
+          window.location.href = document.referrer;
+        } else {
+          window.history.back();
         }
-    };
+      });
+    },
 
-    // Initialize on document ready
-    $(document).ready(function() {
-        DeepClarityFrontend.init();
-    });
+    /**
+     * AJAX request helper
+     *
+     * @param {string} action - AJAX action name
+     * @param {object} data - Additional data
+     * @param {function} callback - Success callback
+     */
+    ajax: function (action, data, callback) {
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: $.extend(
+          {
+            action: "deep_clarity_" + action,
+            nonce: deepClarityFrontend.nonce,
+          },
+          data
+        ),
+        success: function (response) {
+          if (typeof callback === "function") {
+            callback(response);
+          }
+        },
+        error: function (xhr, status, error) {
+          console.error("Deep Clarity Error:", error);
+        },
+      });
+    },
+  };
 
-    // Expose to global scope
-    window.DeepClarityFrontend = DeepClarityFrontend;
+  // Initialize on document ready
+  $(document).ready(function () {
+    DeepClarityFrontend.init();
+  });
 
+  // Expose to global scope
+  window.DeepClarityFrontend = DeepClarityFrontend;
 })(jQuery);
