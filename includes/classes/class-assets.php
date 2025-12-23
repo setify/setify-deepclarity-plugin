@@ -24,8 +24,8 @@ class Assets {
      */
     public function __construct() {
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-        // Priority 100 to load after Elementor (default 10) and Elementor Pro
-        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 100 );
+        // Priority 9999 to load after Elementor and all its dynamic styles
+        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 9999 );
     }
 
     /**
@@ -121,12 +121,23 @@ class Assets {
         // Build dependencies array - only add if styles are registered
         $style_deps = array( 'sweetalert2' );
 
-        if ( wp_style_is( 'elementor-frontend', 'registered' ) ) {
-            $style_deps[] = 'elementor-frontend';
-        }
+        // All possible Elementor style handles to ensure we load after them
+        $elementor_styles = array(
+            'elementor-frontend',
+            'elementor-pro',
+            'elementor-global',
+            'elementor-post-css',
+            'elementor-icons',
+            'elementor-animations',
+            'elementor-frontend-legacy',
+            'hello-elementor',
+            'hello-elementor-theme-style',
+        );
 
-        if ( wp_style_is( 'elementor-pro', 'registered' ) ) {
-            $style_deps[] = 'elementor-pro';
+        foreach ( $elementor_styles as $handle ) {
+            if ( wp_style_is( $handle, 'registered' ) || wp_style_is( $handle, 'enqueued' ) ) {
+                $style_deps[] = $handle;
+            }
         }
 
         // Vendor styles
