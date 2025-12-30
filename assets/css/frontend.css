@@ -126,16 +126,16 @@
 .dc-gradient-gold {
   background: linear-gradient(
     45deg,
-    #ae8625,
-    #f7ef8a,
-    #d2ac47,
-    #edc967,
-    #ae8625,
-    #f7ef8a,
-    #d2ac47,
-    #edc967,
-    #ae8625,
-    #f7ef8a
+    #8b6914,
+    #c9a227,
+    #a67c00,
+    #bf9b30,
+    #8b6914,
+    #c9a227,
+    #a67c00,
+    #bf9b30,
+    #8b6914,
+    #c9a227
   );
   background-size: 400% 100%;
   background-position: 0 0;
@@ -148,16 +148,16 @@
 .dc-text-gold {
   background: linear-gradient(
     45deg,
-    #ae8625,
-    #f7ef8a,
-    #d2ac47,
-    #edc967,
-    #ae8625,
-    #f7ef8a,
-    #d2ac47,
-    #edc967,
-    #ae8625,
-    #f7ef8a
+    #8b6914,
+    #c9a227,
+    #a67c00,
+    #bf9b30,
+    #8b6914,
+    #c9a227,
+    #a67c00,
+    #bf9b30,
+    #8b6914,
+    #c9a227
   );
   background-size: 400% 100%;
   background-clip: text;
