@@ -122,6 +122,59 @@
   }
 }
 
+/* Gold Gradient */
+.dc-gradient-gold {
+  background: linear-gradient(
+    45deg,
+    #ae8625,
+    #f7ef8a,
+    #d2ac47,
+    #edc967,
+    #ae8625,
+    #f7ef8a,
+    #d2ac47,
+    #edc967,
+    #ae8625,
+    #f7ef8a
+  );
+  background-size: 400% 100%;
+  background-position: 0 0;
+}
+
+.dc-gradient-gold.dc-animated {
+  animation: dc-gradient-shift 10s linear infinite;
+}
+
+.dc-text-gold {
+  background: linear-gradient(
+    45deg,
+    #ae8625,
+    #f7ef8a,
+    #d2ac47,
+    #edc967,
+    #ae8625,
+    #f7ef8a,
+    #d2ac47,
+    #edc967,
+    #ae8625,
+    #f7ef8a
+  );
+  background-size: 400% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: dc-gradient-shift 10s linear infinite;
+}
+
+@keyframes dc-gradient-shift {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+
 /* ==========================================================================
    3. Buttons
    ========================================================================== */
