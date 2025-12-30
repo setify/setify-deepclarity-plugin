@@ -136,6 +136,29 @@ class Claude
     }
 
     /**
+     * Get Knowledge Base File IDs from ACF repeater options
+     *
+     * @return array Array of file IDs
+     */
+    private function get_knowledge_file_ids()
+    {
+        $file_ids = array();
+
+        if (function_exists('get_field')) {
+            $files = get_field('claude_knowledge_files', 'option');
+            if (!empty($files) && is_array($files)) {
+                foreach ($files as $file) {
+                    if (!empty($file['id'])) {
+                        $file_ids[] = $file['id'];
+                    }
+                }
+            }
+        }
+
+        return $file_ids;
+    }
+
+    /**
      * Send prompt to Claude API
      *
      * @param string $prompt User prompt
@@ -153,6 +176,29 @@ class Claude
         $model = isset($options['model']) ? $options['model'] : $this->get_model();
         $max_tokens = isset($options['max_tokens']) ? $options['max_tokens'] : $this->get_max_tokens();
         $system_prompt = isset($options['system']) ? $options['system'] : $this->get_system_prompt();
+        $knowledge_file_ids = isset($options['knowledge_file_ids']) ? $options['knowledge_file_ids'] : $this->get_knowledge_file_ids();
+
+        // Build message content - include knowledge files if configured
+        $message_content = array();
+
+        if (!empty($knowledge_file_ids) && is_array($knowledge_file_ids)) {
+            foreach ($knowledge_file_ids as $file_id) {
+                if (!empty($file_id)) {
+                    $message_content[] = array(
+                        'type' => 'document',
+                        'source' => array(
+                            'type' => 'file',
+                            'file_id' => $file_id,
+                        ),
+                    );
+                }
+            }
+        }
+
+        $message_content[] = array(
+            'type' => 'text',
+            'text' => $prompt,
+        );
 
         $body = array(
             'model' => $model,
@@ -160,7 +206,7 @@ class Claude
             'messages' => array(
                 array(
                     'role' => 'user',
-                    'content' => $prompt,
+                    'content' => $message_content,
                 ),
             ),
         );
@@ -181,9 +227,16 @@ class Claude
             'anthropic-version' => $this->api_version,
         );
 
-        // Add beta header for extended features if needed
+        // Add beta header for files API
+        $beta_features = array();
+        if (!empty($knowledge_file_ids)) {
+            $beta_features[] = $this->files_beta_version;
+        }
         if (isset($options['beta'])) {
-            $headers['anthropic-beta'] = $options['beta'];
+            $beta_features[] = $options['beta'];
+        }
+        if (!empty($beta_features)) {
+            $headers['anthropic-beta'] = implode(',', $beta_features);
         }
 
         $response = wp_remote_post($this->api_endpoint, array(
