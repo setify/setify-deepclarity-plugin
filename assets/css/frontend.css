@@ -103,6 +103,25 @@
   padding: var(--dc-spacing-xsmall);
 }
 
+/* Responsive Line Breaks */
+.dc-br-desktop {
+  display: none;
+}
+
+.dc-br-mobile {
+  display: inline;
+}
+
+@media (min-width: 768px) {
+  .dc-br-desktop {
+    display: inline;
+  }
+
+  .dc-br-mobile {
+    display: none;
+  }
+}
+
 /* ==========================================================================
    3. Buttons
    ========================================================================== */
