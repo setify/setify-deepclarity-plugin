@@ -259,9 +259,10 @@ class Claude
      * Upload file to Claude Files API
      *
      * @param string $file_path Path to the file
+     * @param string $original_filename Optional original filename (useful for temp files)
      * @return array|WP_Error Response array or error
      */
-    public function upload_file($file_path)
+    public function upload_file($file_path, $original_filename = null)
     {
         $api_key = $this->get_api_key();
 
@@ -273,42 +274,41 @@ class Claude
             return new \WP_Error('file_not_found', __('Datei nicht gefunden.', 'deep-clarity'));
         }
 
-        $file_name = basename($file_path);
+        // Use original filename if provided, otherwise use basename
+        $file_name = $original_filename ? $original_filename : basename($file_path);
         $file_type = mime_content_type($file_path);
-        $file_content = file_get_contents($file_path);
 
-        // Build multipart boundary
-        $boundary = wp_generate_password(24, false);
+        // Use cURL directly for proper multipart file upload
+        $ch = curl_init();
 
-        // Build multipart body
-        $body = '';
-        $body .= '--' . $boundary . "\r\n";
-        $body .= 'Content-Disposition: form-data; name="file"; filename="' . $file_name . '"' . "\r\n";
-        $body .= 'Content-Type: ' . $file_type . "\r\n\r\n";
-        $body .= $file_content . "\r\n";
-        $body .= '--' . $boundary . '--' . "\r\n";
-
-        $response = wp_remote_post($this->files_endpoint, array(
-            'headers' => array(
-                'Content-Type' => 'multipart/form-data; boundary=' . $boundary,
-                'x-api-key' => $api_key,
-                'anthropic-version' => $this->api_version,
-                'anthropic-beta' => $this->files_beta_version,
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => $this->files_endpoint,
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 120,
+            CURLOPT_HTTPHEADER => array(
+                'x-api-key: ' . $api_key,
+                'anthropic-version: ' . $this->api_version,
+                'anthropic-beta: ' . $this->files_beta_version,
             ),
-            'body' => $body,
-            'timeout' => 120,
+            CURLOPT_POSTFIELDS => array(
+                'file' => new \CURLFile($file_path, $file_type, $file_name),
+            ),
         ));
 
-        if (is_wp_error($response)) {
-            return $response;
+        $response_body = curl_exec($ch);
+        $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
+        curl_close($ch);
+
+        if ($curl_error) {
+            return new \WP_Error('curl_error', $curl_error);
         }
 
-        $response_code = wp_remote_retrieve_response_code($response);
-        $response_body = wp_remote_retrieve_body($response);
         $data = json_decode($response_body, true);
 
         if ($response_code !== 200 && $response_code !== 201) {
-            $error_message = isset($data['error']['message']) ? $data['error']['message'] : 'Unknown API error';
+            $error_message = isset($data['error']['message']) ? $data['error']['message'] : 'Unknown API error (HTTP ' . $response_code . ')';
             return new \WP_Error('api_error', $error_message, array('status' => $response_code));
         }
 
@@ -772,7 +772,8 @@ class Claude
             wp_send_json_error(array('message' => __('Fehler beim Datei-Upload.', 'deep-clarity')));
         }
 
-        $response = $this->upload_file($file['tmp_name']);
+        // Pass original filename to preserve it in Claude
+        $response = $this->upload_file($file['tmp_name'], $file['name']);
 
         if (is_wp_error($response)) {
             wp_send_json_error(array('message' => $response->get_error_message()));
