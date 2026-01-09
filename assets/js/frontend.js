@@ -363,6 +363,150 @@
   };
 
   /**
+   * Mail Preview Module
+   */
+  const MailPreview = {
+    /**
+     * Initialize mail preview triggers
+     */
+    init: function () {
+      this.bindTriggers();
+    },
+
+    /**
+     * Bind click events to swal-email-preview elements
+     */
+    bindTriggers: function () {
+      $(document).on("click", ".swal-email-preview", function (e) {
+        e.preventDefault();
+        const mailId = $(this).data("mail-id");
+        if (mailId) {
+          MailPreview.open(mailId);
+        }
+      });
+    },
+
+    /**
+     * Open mail preview modal
+     */
+    open: function (mailId) {
+      const self = this;
+
+      // Show loading
+      Swal.fire({
+        title: null,
+        html: '<div class="dc-mail-preview-loading"><span class="spinner"></span> Laden...</div>',
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "640px",
+        padding: 0,
+        customClass: {
+          popup: "dc-mail-popup dc-mail-preview-popup",
+          htmlContainer: "dc-mail-container",
+        },
+        allowOutsideClick: false,
+      });
+
+      // Fetch mail data
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_get_mail_preview",
+          nonce: deepClarityFrontend.nonce,
+          mail_id: mailId,
+        },
+        success: function (response) {
+          if (response.success) {
+            self.render(response.data);
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Fehler",
+              text: response.data.message || "E-Mail konnte nicht geladen werden.",
+            });
+          }
+        },
+        error: function () {
+          Swal.fire({
+            icon: "error",
+            title: "Fehler",
+            text: "Ein Fehler ist aufgetreten.",
+          });
+        },
+      });
+    },
+
+    /**
+     * Render mail preview modal
+     */
+    render: function (data) {
+      Swal.fire({
+        title: null,
+        html: this.getTemplate(data),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "640px",
+        padding: 0,
+        customClass: {
+          popup: "dc-mail-popup dc-mail-preview-popup",
+          htmlContainer: "dc-mail-container",
+        },
+        didOpen: function () {
+          $(".dc-mail-close").on("click", function () {
+            Swal.close();
+          });
+        },
+      });
+    },
+
+    /**
+     * Get mail preview template
+     */
+    getTemplate: function (data) {
+      return `
+        <div class="dc-mail-compose dc-mail-preview">
+          <div class="dc-mail-header">
+            <span class="dc-mail-title">E-Mail Vorschau</span>
+            <button type="button" class="dc-mail-close">&times;</button>
+          </div>
+          <div class="dc-mail-body">
+            <div class="dc-mail-field dc-mail-field-readonly">
+              <label>An</label>
+              <div class="dc-mail-field-value">
+                <strong>${this.escapeHtml(data.client_name)}</strong>
+                ${data.client_email ? `&lt;${this.escapeHtml(data.client_email)}&gt;` : ""}
+              </div>
+            </div>
+            <div class="dc-mail-field dc-mail-field-readonly">
+              <label>Betreff</label>
+              <div class="dc-mail-field-value">${this.escapeHtml(data.subject)}</div>
+            </div>
+            <div class="dc-mail-field dc-mail-field-readonly">
+              <label>Datum</label>
+              <div class="dc-mail-field-value">${this.escapeHtml(data.date)}</div>
+            </div>
+            <div class="dc-mail-field dc-mail-field-message">
+              <label>Nachricht</label>
+              <div class="dc-mail-preview-content">${data.message}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+
+    /**
+     * Escape HTML
+     */
+    escapeHtml: function (text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    },
+  };
+
+  /**
    * Deep Clarity Frontend Module
    */
   const DeepClarityFrontend = {
@@ -372,6 +516,7 @@
     init: function () {
       this.bindEvents();
       MailCompose.init();
+      MailPreview.init();
     },
 
     /**

@@ -164,6 +164,62 @@ class Mail
     {
         add_action('wp_ajax_deep_clarity_send_mail', array($this, 'ajax_send_mail'));
         add_action('wp_ajax_nopriv_deep_clarity_send_mail', array($this, 'ajax_send_mail'));
+        add_action('wp_ajax_deep_clarity_get_mail_preview', array($this, 'ajax_get_mail_preview'));
+        add_action('wp_ajax_nopriv_deep_clarity_get_mail_preview', array($this, 'ajax_get_mail_preview'));
+    }
+
+    /**
+     * AJAX handler for getting mail preview data
+     */
+    public function ajax_get_mail_preview()
+    {
+        // Verify nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'deep_clarity_frontend')) {
+            wp_send_json_error(array(
+                'message' => __('Sicherheitsprüfung fehlgeschlagen.', 'deep-clarity'),
+            ));
+        }
+
+        $mail_id = isset($_POST['mail_id']) ? intval($_POST['mail_id']) : 0;
+
+        if (!$mail_id) {
+            wp_send_json_error(array(
+                'message' => __('Keine Mail-ID angegeben.', 'deep-clarity'),
+            ));
+        }
+
+        $post = get_post($mail_id);
+
+        if (!$post || $post->post_type !== 'mail') {
+            wp_send_json_error(array(
+                'message' => __('E-Mail nicht gefunden.', 'deep-clarity'),
+            ));
+        }
+
+        // Get client data from ACF relation field
+        $client_id = null;
+        $client_name = '';
+        $client_email = '';
+
+        if (function_exists('get_field')) {
+            $client = get_field('mail_client', $mail_id);
+            if ($client) {
+                // Handle both object and ID
+                $client_id = is_object($client) ? $client->ID : intval($client);
+                $client_firstname = get_field('client_firstname', $client_id);
+                $client_lastname = get_field('client_lastname', $client_id);
+                $client_email = get_field('client_email', $client_id);
+                $client_name = trim($client_firstname . ' ' . $client_lastname);
+            }
+        }
+
+        wp_send_json_success(array(
+            'subject' => $post->post_title,
+            'message' => apply_filters('the_content', $post->post_content),
+            'client_name' => $client_name,
+            'client_email' => $client_email,
+            'date' => get_the_date('d.m.Y H:i', $mail_id),
+        ));
     }
 
     /**
