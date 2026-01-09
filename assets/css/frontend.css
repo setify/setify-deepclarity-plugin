@@ -769,20 +769,14 @@
 }
 
 .dc-mail-preview .dc-mail-body {
-  padding: 20px;
+  padding: 16px;
 }
 
 .dc-mail-field-readonly {
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .dc-mail-field-readonly label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #888;
-  margin-bottom: 4px;
 }
 
 .dc-mail-field-value {
