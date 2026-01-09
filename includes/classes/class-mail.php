@@ -70,6 +70,60 @@ class Mail
     {
         $this->register_post_type();
         $this->register_ajax_handlers();
+        $this->register_query_filters();
+    }
+
+    /**
+     * Register custom query filters for Unlimited Elements
+     */
+    private function register_query_filters()
+    {
+        add_filter('mails_current_client', array($this, 'query_mails_current_client'), 10, 2);
+    }
+
+    /**
+     * Query mails for current client (Unlimited Elements)
+     *
+     * Returns mails where the ACF relation field contains the current post ID.
+     *
+     * @param array $args        The query arguments array.
+     * @param array $widget_data Widget settings.
+     * @return array Modified query arguments.
+     */
+    public function query_mails_current_client($args, $widget_data)
+    {
+        $current_post_id = get_the_ID();
+
+        if (!$current_post_id) {
+            return $args;
+        }
+
+        $args['post_type'] = 'mail';
+        $args['post_status'] = 'any';
+        $args['orderby'] = 'date';
+        $args['order'] = 'DESC';
+
+        $meta_query = array(
+            'relation' => 'OR',
+            array(
+                'key'     => 'mail_client',
+                'value'   => '"' . $current_post_id . '"',
+                'compare' => 'LIKE',
+            ),
+            array(
+                'key'     => 'mail_client',
+                'value'   => $current_post_id,
+                'compare' => '=',
+            ),
+        );
+
+        if (isset($args['meta_query']) && is_array($args['meta_query'])) {
+            $args['meta_query'][] = $meta_query;
+        } else {
+            $args['meta_query'] = array($meta_query);
+        }
+
+        return $args;
     }
 
     /**
@@ -643,5 +697,40 @@ text-decoration: none
         }
 
         return false;
+    }
+
+    /**
+     * Get mails for a specific client
+     *
+     * @param int   $client_id Client post ID.
+     * @param array $args      Additional query arguments.
+     * @return \WP_Query
+     */
+    public static function get_mails_for_client($client_id, $args = array())
+    {
+        $default_args = array(
+            'post_type'      => 'mail',
+            'posts_per_page' => -1,
+            'post_status'    => 'any',
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+            'meta_query'     => array(
+                'relation' => 'OR',
+                array(
+                    'key'     => 'mail_client',
+                    'value'   => '"' . $client_id . '"',
+                    'compare' => 'LIKE',
+                ),
+                array(
+                    'key'     => 'mail_client',
+                    'value'   => $client_id,
+                    'compare' => '=',
+                ),
+            ),
+        );
+
+        $query_args = wp_parse_args($args, $default_args);
+
+        return new \WP_Query($query_args);
     }
 }
