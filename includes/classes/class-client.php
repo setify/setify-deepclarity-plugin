@@ -46,6 +46,7 @@ class Client
         add_shortcode('client_firstname', array($this, 'shortcode_firstname'));
         add_shortcode('client_lastname', array($this, 'shortcode_lastname'));
         add_shortcode('client_birthday_until', array($this, 'shortcode_birthday_until'));
+        add_shortcode('client_birthday_until_raw', array($this, 'shortcode_birthday_until_raw'));
     }
 
     /**
@@ -231,5 +232,75 @@ class Client
         }
 
         return implode(' ', $parts);
+    }
+
+    /**
+     * Shortcode: Days until next birthday (raw number)
+     *
+     * Usage: [client_birthday_until_raw]
+     *        [client_birthday_until_raw post_id="123"]
+     *
+     * @param array $atts Shortcode attributes
+     * @return string Number of days
+     */
+    public function shortcode_birthday_until_raw($atts)
+    {
+        $atts = shortcode_atts(array(
+            'post_id' => null,
+        ), $atts, 'client_birthday_until_raw');
+
+        $post_id = $this->get_client_id($atts);
+
+        if (!function_exists('get_field')) {
+            return '';
+        }
+
+        $birthday = get_field('client_birthday', $post_id);
+
+        if (empty($birthday)) {
+            return '';
+        }
+
+        return $this->get_days_until_birthday($birthday);
+    }
+
+    /**
+     * Calculate total days until next birthday
+     *
+     * @param string $birthday Birthday date (Y-m-d or d/m/Y format)
+     * @return int Number of days
+     */
+    private function get_days_until_birthday($birthday)
+    {
+        // Parse birthday - try different formats
+        $birthday_date = \DateTime::createFromFormat('Y-m-d', $birthday);
+        if (!$birthday_date) {
+            $birthday_date = \DateTime::createFromFormat('d/m/Y', $birthday);
+        }
+        if (!$birthday_date) {
+            $birthday_date = \DateTime::createFromFormat('Ymd', $birthday);
+        }
+        if (!$birthday_date) {
+            return '';
+        }
+
+        $today = new \DateTime('today');
+        $current_year = (int) $today->format('Y');
+
+        // Create next birthday date in current year
+        $next_birthday = \DateTime::createFromFormat(
+            'Y-m-d',
+            $current_year . '-' . $birthday_date->format('m-d')
+        );
+
+        // If birthday already passed this year, use next year
+        if ($next_birthday < $today) {
+            $next_birthday->modify('+1 year');
+        }
+
+        // Calculate total days
+        $diff = $today->diff($next_birthday);
+
+        return $diff->days;
     }
 }
