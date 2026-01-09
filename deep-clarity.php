@@ -53,6 +53,8 @@ require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-shortcodes.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-helpers.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-mail.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-claude.php';
+require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-acf.php';
+require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-client.php';
 
 /**
  * Main plugin class
@@ -124,6 +126,20 @@ final class Deep_Clarity
     public $claude;
 
     /**
+     * ACF instance
+     *
+     * @var DeepClarity\ACF
+     */
+    public $acf;
+
+    /**
+     * Client instance
+     *
+     * @var DeepClarity\Client
+     */
+    public $client;
+
+    /**
      * Get single instance of the class
      *
      * @return Deep_Clarity
@@ -158,6 +174,8 @@ final class Deep_Clarity
         $this->helpers    = new DeepClarity\Helpers();
         $this->mail       = DeepClarity\Mail::get_instance();
         $this->claude     = DeepClarity\Claude::get_instance();
+        $this->acf        = DeepClarity\ACF::get_instance();
+        $this->client     = DeepClarity\Client::get_instance();
 
         // Load textdomain
         add_action('plugins_loaded', array($this, 'load_textdomain'));
