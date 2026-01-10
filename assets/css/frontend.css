@@ -849,3 +849,11 @@
 .swal-email-preview {
   cursor: pointer;
 }
+
+/* ==========================================
+   Elementor Styles
+   ========================================== */
+
+.elementor-text-editor p:last-child {
+  margin-bottom: 0;
+}
