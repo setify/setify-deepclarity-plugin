@@ -148,16 +148,16 @@
 .dc-text-gold {
   background: linear-gradient(
     45deg,
-    #8b6914,
-    #c9a227,
-    #a67c00,
-    #bf9b30,
-    #8b6914,
-    #c9a227,
-    #a67c00,
-    #bf9b30,
-    #8b6914,
-    #c9a227
+    #6b4f0f,
+    #9a7a1d,
+    #7d5e00,
+    #8f7424,
+    #6b4f0f,
+    #9a7a1d,
+    #7d5e00,
+    #8f7424,
+    #6b4f0f,
+    #9a7a1d
   );
   background-size: 400% 100%;
   background-clip: text;
