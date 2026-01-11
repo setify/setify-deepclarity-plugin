@@ -821,7 +821,7 @@ mark.gold {
    ========================================== */
 
 #header-visitor {
-  transition: background-color 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease, box-shadow 0.3s ease;
 }
 
 #header-visitor.header-scrolled {
@@ -829,4 +829,13 @@ mark.gold {
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
+}
+
+#header-visitor .e-con-inner {
+  transition: padding 0.3s ease;
+}
+
+#header-visitor.header-scrolled .e-con-inner {
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
 }
