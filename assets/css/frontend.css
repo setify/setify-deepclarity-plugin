@@ -148,16 +148,16 @@
 .dc-text-gold {
   background: linear-gradient(
     45deg,
-    #8b6914,
-    #c9a227,
-    #a67c00,
-    #bf9b30,
-    #8b6914,
-    #c9a227,
-    #a67c00,
-    #bf9b30,
-    #8b6914,
-    #c9a227
+    #cca681,
+    #c89f7b,
+    #dcbc9a,
+    #e5c9ab,
+    #f4e2c8,
+    #e2c5a5,
+    #caa37f,
+    #c29874,
+    #b58864,
+    #b38460
   );
   background-size: 400% 100%;
   background-clip: text;
@@ -204,7 +204,7 @@ mark.gold {
   background-image: linear-gradient(
     to right,
     rgba(197, 159, 126, 0.1),
-    rgba(228, 201, 174, 0.7) 4%,
+    rgba(244, 226, 202, 0.7) 4%,
     rgba(192, 153, 120, 0.3)
   );
   -webkit-box-decoration-break: clone;
