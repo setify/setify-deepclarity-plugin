@@ -507,6 +507,57 @@
   };
 
   /**
+   * Header Scroll Effect Module
+   */
+  const HeaderScroll = {
+    header: null,
+    scrollThreshold: 120,
+
+    /**
+     * Initialize header scroll effect
+     */
+    init: function () {
+      this.header = document.getElementById("header-visitor");
+      if (!this.header) return;
+
+      this.bindEvents();
+      // Check initial scroll position (for anchor links or page reload)
+      this.checkScroll();
+    },
+
+    /**
+     * Bind scroll events
+     */
+    bindEvents: function () {
+      const self = this;
+      let ticking = false;
+
+      window.addEventListener("scroll", function () {
+        if (!ticking) {
+          window.requestAnimationFrame(function () {
+            self.checkScroll();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+    },
+
+    /**
+     * Check scroll position and toggle class
+     */
+    checkScroll: function () {
+      const scrollY = window.scrollY || window.pageYOffset;
+
+      if (scrollY > this.scrollThreshold) {
+        this.header.classList.add("header-scrolled");
+      } else {
+        this.header.classList.remove("header-scrolled");
+      }
+    },
+  };
+
+  /**
    * Deep Clarity Frontend Module
    */
   const DeepClarityFrontend = {
@@ -517,6 +568,7 @@
       this.bindEvents();
       MailCompose.init();
       MailPreview.init();
+      HeaderScroll.init();
     },
 
     /**
