@@ -267,7 +267,7 @@ mark.gold {
 }
 
 .button-header .elementor-button:hover {
-  box-shadow: inset 0 0 10px rgba(194, 182, 169, 1) 100% !important;
+  box-shadow: inset 0 0 10px rgba(194, 182, 169, 1) !important;
 }
 
 /* ==========================================================================
