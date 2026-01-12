@@ -258,6 +258,22 @@ mark.gold {
     rgba(168, 152, 130, 1) 70%,
     rgba(194, 182, 169, 1) 100%
   ) !important;
+  -webkit-transition: all 600ms ease-in-out;
+  -moz-transition: all 600ms ease-in-out;
+  -ms-transition: all 600ms ease-in-out;
+  -o-transition: all 600ms ease-in-out;
+  transition: all 600ms ease-in-out;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+.button-header .elementor-button {
+  background: #78624e !important;
+  background: linear-gradient(
+    15deg,
+    rgba(120, 98, 78, 1) 0%,
+    rgba(168, 152, 130, 1) 30%,
+    rgba(194, 182, 169, 1) 100%
+  );
 }
 
 /* ==========================================================================
