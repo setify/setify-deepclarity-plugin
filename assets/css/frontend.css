@@ -245,20 +245,19 @@ mark.gold {
 }
 
 .button-header .elementor-button {
-  padding: 8px 16px !important;
+  padding: 10px 18px !important;
   font-size: 0.8rem !important;
   letter-spacing: 0.2em !important;
   line-height: 1.1 !important;
   text-transform: uppercase !important;
-  border-radius: var(--dc-radius-tiny) !important;
-  background: #9f8d74 !important;
+  border-radius: var(--dc-radius-xsmall) !important;
+  background: #78624e !important;
   background: linear-gradient(
     15deg,
-    rgba(159, 141, 116, 1) 0%,
+    rgba(120, 98, 78, 1) 0%,
     rgba(168, 152, 130, 1) 70%,
     rgba(194, 182, 169, 1) 100%
-  );
-  color: #fff !important;
+  ) !important;
 }
 
 /* ==========================================================================
