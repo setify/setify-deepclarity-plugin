@@ -266,7 +266,7 @@ mark.gold {
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
 }
 
-.button-header .elementor-button {
+.button-header .elementor-button:hover {
   background: #78624e !important;
   background: linear-gradient(
     15deg,
