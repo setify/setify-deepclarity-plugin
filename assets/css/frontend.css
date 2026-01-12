@@ -245,10 +245,19 @@ mark.gold {
 }
 
 .button-header .elementor-button {
-  padding: 8px 16px !important;
+  padding: 12px 24px !important;
   font-size: 0.9rem !important;
   line-height: 1.2 !important;
+  text-transform: uppercase !important;
   border-radius: var(--dc-radius-small) !important;
+  background: #c39a75 !important;
+  background: linear-gradient(
+    45deg,
+    rgba(195, 154, 117, 1) 0%,
+    rgba(223, 191, 158, 1) 19%,
+    rgba(252, 237, 214, 1) 57%,
+    rgba(209, 172, 135, 1) 93%
+  ) !important;
 }
 
 /* ==========================================================================
@@ -821,7 +830,8 @@ mark.gold {
    ========================================== */
 
 #header-visitor {
-  transition: background-color 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease,
+    -webkit-backdrop-filter 0.3s ease, box-shadow 0.3s ease;
 }
 
 #header-visitor.header-scrolled {
