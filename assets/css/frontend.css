@@ -862,52 +862,29 @@ mark.gold {
 }
 
 /* ==========================================
-   Notes List - Sticky Note Design
+   Notes List
    ========================================== */
 
 .dc-notes-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .dc-note {
   position: relative;
-  width: calc(50% - 8px);
-  min-height: 120px;
-  padding: 16px;
-  background: linear-gradient(135deg, #ffffa5 0%, #fff59d 100%);
-  border-radius: var(--dc-radius-small);
-  box-shadow:
-    2px 2px 8px rgba(0, 0, 0, 0.1),
-    inset 0 -40px 40px -40px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.dc-note::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 20px;
-  width: 30px;
-  height: 10px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 0 0 4px 4px;
-}
-
-.dc-note:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    4px 4px 12px rgba(0, 0, 0, 0.15),
-    inset 0 -40px 40px -40px rgba(0, 0, 0, 0.03);
+  padding: 14px 16px;
+  background: #fffef5;
+  border-radius: var(--dc-radius-xsmall);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .dc-note-actions {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   display: flex;
-  gap: 4px;
+  gap: 8px;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -921,28 +898,21 @@ mark.gold {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
   padding: 0;
   border: none;
-  border-radius: var(--dc-radius-xsmall);
-  background: rgba(255, 255, 255, 0.7);
+  background: none;
   cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.dc-note-edit:hover {
-  background: rgba(255, 255, 255, 0.95);
-}
-
-.dc-note-delete:hover {
-  background: #fee2e2;
 }
 
 .dc-note-edit svg,
 .dc-note-delete svg {
   width: 16px;
   height: 16px;
+  fill: #999;
+  transition: fill 0.15s ease;
+}
+
+.dc-note-edit:hover svg {
   fill: #666;
 }
 
@@ -966,9 +936,9 @@ mark.gold {
 }
 
 .dc-note-date {
-  margin-top: 12px;
+  margin-top: 8px;
   font-size: 0.75rem;
-  color: #888;
+  color: #999;
 }
 
 /* Note Edit Modal */
@@ -995,8 +965,8 @@ mark.gold {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: linear-gradient(135deg, #ffffa5 0%, #fff59d 100%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fffef5;
+  border-bottom: 1px solid #eee;
 }
 
 .dc-note-edit-title {
@@ -1085,11 +1055,4 @@ mark.gold {
 .dc-note-btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .dc-note {
-    width: 100%;
-  }
 }
