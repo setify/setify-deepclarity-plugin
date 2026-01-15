@@ -84,7 +84,7 @@ class Notes
     public function ajax_get_note()
     {
         // Verify nonce
-        if (! isset($_POST['nonce']) || ! wp_verify_nonce($_POST['nonce'], 'deep_clarity_frontend_nonce')) {
+        if (! isset($_POST['nonce']) || ! wp_verify_nonce($_POST['nonce'], 'deep_clarity_frontend')) {
             wp_send_json_error(array('message' => 'Ungültige Anfrage.'));
         }
 
@@ -115,7 +115,7 @@ class Notes
     public function ajax_update_note()
     {
         // Verify nonce
-        if (! isset($_POST['nonce']) || ! wp_verify_nonce($_POST['nonce'], 'deep_clarity_frontend_nonce')) {
+        if (! isset($_POST['nonce']) || ! wp_verify_nonce($_POST['nonce'], 'deep_clarity_frontend')) {
             wp_send_json_error(array('message' => 'Ungültige Anfrage.'));
         }
 
@@ -157,7 +157,7 @@ class Notes
     public function ajax_delete_note()
     {
         // Verify nonce
-        if (! isset($_POST['nonce']) || ! wp_verify_nonce($_POST['nonce'], 'deep_clarity_frontend_nonce')) {
+        if (! isset($_POST['nonce']) || ! wp_verify_nonce($_POST['nonce'], 'deep_clarity_frontend')) {
             wp_send_json_error(array('message' => 'Ungültige Anfrage.'));
         }
 
