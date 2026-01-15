@@ -31,7 +31,7 @@ class Notes
     /**
      * Post type name
      */
-    public const POST_TYPE = 'notes';
+    public const POST_TYPE = 'note';
 
     /**
      * ACF field name for note client relation

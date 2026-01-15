@@ -124,7 +124,7 @@ class Shortcodes
 
         // Query notes for this client
         $args = array(
-            'post_type'      => 'notes',
+            'post_type'      => 'note',
             'posts_per_page' => -1,
             'post_status'    => 'any',
             'orderby'        => 'date',
