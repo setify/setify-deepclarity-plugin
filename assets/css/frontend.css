@@ -860,3 +860,236 @@ mark.gold {
   padding-top: 16px !important;
   padding-bottom: 16px !important;
 }
+
+/* ==========================================
+   Notes List - Sticky Note Design
+   ========================================== */
+
+.dc-notes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.dc-note {
+  position: relative;
+  width: calc(50% - 8px);
+  min-height: 120px;
+  padding: 16px;
+  background: linear-gradient(135deg, #ffffa5 0%, #fff59d 100%);
+  border-radius: var(--dc-radius-small);
+  box-shadow:
+    2px 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 -40px 40px -40px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dc-note::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20px;
+  width: 30px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 4px 4px;
+}
+
+.dc-note:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    4px 4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 -40px 40px -40px rgba(0, 0, 0, 0.03);
+}
+
+.dc-note-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.dc-note:hover .dc-note-actions {
+  opacity: 1;
+}
+
+.dc-note-edit,
+.dc-note-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--dc-radius-xsmall);
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.dc-note-edit:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.dc-note-delete:hover {
+  background: #fee2e2;
+}
+
+.dc-note-edit svg,
+.dc-note-delete svg {
+  width: 16px;
+  height: 16px;
+  fill: #666;
+}
+
+.dc-note-delete:hover svg {
+  fill: #dc2626;
+}
+
+.dc-note-content {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #333;
+  word-break: break-word;
+}
+
+.dc-note-content p {
+  margin: 0 0 0.5em 0;
+}
+
+.dc-note-content p:last-child {
+  margin-bottom: 0;
+}
+
+.dc-note-date {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* Note Edit Modal */
+.dc-note-popup {
+  padding: 0 !important;
+  border-radius: var(--dc-radius-medium) !important;
+  overflow: hidden;
+}
+
+.dc-note-popup .swal2-html-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.dc-note-edit-modal {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.dc-note-edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: linear-gradient(135deg, #ffffa5 0%, #fff59d 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dc-note-edit-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.dc-note-edit-close {
+  width: 21px !important;
+  height: 21px !important;
+  border: none !important;
+  background: none !important;
+  font-size: 2rem !important;
+  padding: 0 !important;
+  font-weight: 300;
+  line-height: 1;
+  color: #888 !important;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.dc-note-edit-close:hover {
+  color: #333 !important;
+}
+
+.dc-note-edit-body {
+  padding: 16px;
+}
+
+.dc-note-edit-body textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: var(--dc-radius-small);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.dc-note-edit-body textarea:focus {
+  outline: none;
+  border-color: #bbb;
+}
+
+.dc-note-edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f9f9f9;
+  border-top: 1px solid #eee;
+}
+
+.dc-note-btn {
+  padding: 10px 16px !important;
+  font-size: 0.85rem !important;
+  line-height: 1.2 !important;
+  border: none !important;
+  border-radius: var(--dc-radius-xsmall) !important;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dc-note-btn-cancel {
+  background: #e5e5e5 !important;
+  color: #666 !important;
+}
+
+.dc-note-btn-cancel:hover {
+  background: #d5d5d5 !important;
+}
+
+.dc-note-btn-save {
+  background: var(--dc-color-primary) !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.dc-note-btn-save:hover {
+  background: var(--dc-color-primary-dark) !important;
+}
+
+.dc-note-btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dc-note {
+    width: 100%;
+  }
+}

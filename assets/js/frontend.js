@@ -507,6 +507,263 @@
   };
 
   /**
+   * Notes Module
+   */
+  const Notes = {
+    /**
+     * Initialize notes functionality
+     */
+    init: function () {
+      this.bindEvents();
+    },
+
+    /**
+     * Bind events for note actions
+     */
+    bindEvents: function () {
+      // Delete note
+      $(document).on("click", ".dc-note-delete", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const noteId = $(this).data("note-id");
+        if (noteId) {
+          Notes.confirmDelete(noteId);
+        }
+      });
+
+      // Edit note
+      $(document).on("click", ".dc-note-edit", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const noteId = $(this).data("note-id");
+        if (noteId) {
+          Notes.openEditModal(noteId);
+        }
+      });
+    },
+
+    /**
+     * Confirm and delete note
+     */
+    confirmDelete: function (noteId) {
+      Swal.fire({
+        title: "Notiz löschen?",
+        text: "Diese Aktion kann nicht rückgängig gemacht werden.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Ja, löschen",
+        cancelButtonText: "Abbrechen",
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          Notes.delete(noteId);
+        }
+      });
+    },
+
+    /**
+     * Delete note via AJAX
+     */
+    delete: function (noteId) {
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_delete_note",
+          nonce: deepClarityFrontend.nonce,
+          note_id: noteId,
+        },
+        success: function (response) {
+          if (response.success) {
+            // Remove note from DOM with animation
+            const $note = $('.dc-note[data-note-id="' + noteId + '"]');
+            $note.fadeOut(300, function () {
+              $(this).remove();
+            });
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Fehler",
+              text: response.data.message || "Notiz konnte nicht gelöscht werden.",
+            });
+          }
+        },
+        error: function () {
+          Swal.fire({
+            icon: "error",
+            title: "Fehler",
+            text: "Ein Fehler ist aufgetreten.",
+          });
+        },
+      });
+    },
+
+    /**
+     * Open edit modal
+     */
+    openEditModal: function (noteId) {
+      const self = this;
+
+      // Show loading
+      Swal.fire({
+        title: null,
+        html: '<div class="dc-mail-preview-loading"><span class="spinner"></span> Laden...</div>',
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        customClass: {
+          popup: "dc-note-popup",
+        },
+        allowOutsideClick: false,
+      });
+
+      // Fetch note content
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_get_note",
+          nonce: deepClarityFrontend.nonce,
+          note_id: noteId,
+        },
+        success: function (response) {
+          if (response.success) {
+            self.renderEditModal(noteId, response.data);
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Fehler",
+              text: response.data.message || "Notiz konnte nicht geladen werden.",
+            });
+          }
+        },
+        error: function () {
+          Swal.fire({
+            icon: "error",
+            title: "Fehler",
+            text: "Ein Fehler ist aufgetreten.",
+          });
+        },
+      });
+    },
+
+    /**
+     * Render edit modal
+     */
+    renderEditModal: function (noteId, data) {
+      const self = this;
+
+      Swal.fire({
+        title: null,
+        html: self.getEditTemplate(noteId, data),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        customClass: {
+          popup: "dc-note-popup",
+        },
+        didOpen: function () {
+          self.bindEditModalEvents(noteId);
+        },
+      });
+    },
+
+    /**
+     * Get edit modal template
+     */
+    getEditTemplate: function (noteId, data) {
+      return `
+        <div class="dc-note-edit-modal">
+          <div class="dc-note-edit-header">
+            <span class="dc-note-edit-title">Notiz bearbeiten</span>
+            <button type="button" class="dc-note-edit-close">&times;</button>
+          </div>
+          <div class="dc-note-edit-body">
+            <textarea id="dc-note-content" placeholder="Notiz eingeben...">${this.escapeHtml(data.content)}</textarea>
+          </div>
+          <div class="dc-note-edit-footer">
+            <button type="button" class="dc-note-btn dc-note-btn-cancel">Abbrechen</button>
+            <button type="button" class="dc-note-btn dc-note-btn-save">Speichern</button>
+          </div>
+        </div>
+      `;
+    },
+
+    /**
+     * Bind edit modal events
+     */
+    bindEditModalEvents: function (noteId) {
+      const self = this;
+
+      $(".dc-note-edit-close, .dc-note-btn-cancel").on("click", function () {
+        Swal.close();
+      });
+
+      $(".dc-note-btn-save").on("click", function () {
+        const content = $("#dc-note-content").val().trim();
+        if (content) {
+          self.save(noteId, content);
+        }
+      });
+    },
+
+    /**
+     * Save note via AJAX
+     */
+    save: function (noteId, content) {
+      const $btn = $(".dc-note-btn-save");
+      $btn.prop("disabled", true).text("Speichern...");
+
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_update_note",
+          nonce: deepClarityFrontend.nonce,
+          note_id: noteId,
+          content: content,
+        },
+        success: function (response) {
+          if (response.success) {
+            // Update note content in DOM
+            const $note = $('.dc-note[data-note-id="' + noteId + '"]');
+            $note.find(".dc-note-content").html(response.data.content);
+
+            Swal.fire({
+              icon: "success",
+              title: "Gespeichert!",
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          } else {
+            $btn.prop("disabled", false).text("Speichern");
+            Swal.showValidationMessage(
+              response.data.message || "Notiz konnte nicht gespeichert werden."
+            );
+          }
+        },
+        error: function () {
+          $btn.prop("disabled", false).text("Speichern");
+          Swal.showValidationMessage("Ein Fehler ist aufgetreten.");
+        },
+      });
+    },
+
+    /**
+     * Escape HTML
+     */
+    escapeHtml: function (text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    },
+  };
+
+  /**
    * Header Scroll Effect Module
    */
   const HeaderScroll = {
@@ -568,6 +825,7 @@
       this.bindEvents();
       MailCompose.init();
       MailPreview.init();
+      Notes.init();
       HeaderScroll.init();
     },
 
