@@ -222,6 +222,46 @@ mark.gold {
   box-decoration-break: clone;
 }
 
+mark.dc {
+  margin: 0 -0.4em;
+  padding: 0.1em 0.4em;
+  border-radius: 0.8em 0.3em;
+  background: transparent;
+  background-image: linear-gradient(
+    to right,
+    rgba(51, 42, 34, 0.7),
+    rgba(51, 42, 34, 0.85) 4%,
+    rgba(51, 42, 34, 0.7)
+  );
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  font-weight: bold;
+  background-clip: text, padding-box;
+  -webkit-background-clip: text, padding-box;
+  color: transparent;
+  background-image: linear-gradient(
+      45deg,
+      #b38460,
+      #c89f7b,
+      #dcbc9a,
+      #e5c9ab,
+      #f4e2c8,
+      #e2c5a5,
+      #caa37f,
+      #c29874,
+      #b58864,
+      #b38460
+    ),
+    linear-gradient(
+      to right,
+      rgba(51, 42, 34, 0.7),
+      rgba(51, 42, 34, 0.85) 4%,
+      rgba(51, 42, 34, 0.7)
+    );
+  background-size: 400% 100%, 100% 100%;
+  animation: dc-gradient-shift 10s linear infinite;
+}
+
 /* ==========================================================================
    3. Buttons
    ========================================================================== */
