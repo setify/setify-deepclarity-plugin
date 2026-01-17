@@ -820,6 +820,11 @@
       const headerThreshold = this.getThreshold("--dc-scroll-header-threshold", 120);
       const logoThreshold = this.getThreshold("--dc-scroll-logo-threshold", 68);
 
+      // Debug: Log scroll position for logged-in users
+      if (deepClarityFrontend.isLoggedIn) {
+        console.log("Scroll Y:", scrollY);
+      }
+
       // Header background effect
       if (this.header) {
         if (scrollY > headerThreshold) {

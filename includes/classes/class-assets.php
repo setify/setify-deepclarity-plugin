@@ -179,8 +179,9 @@ class Assets {
             'deep-clarity-frontend',
             'deepClarityFrontend',
             array(
-                'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-                'nonce'   => wp_create_nonce( 'deep_clarity_frontend' ),
+                'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+                'nonce'      => wp_create_nonce( 'deep_clarity_frontend' ),
+                'isLoggedIn' => is_user_logged_in(),
             )
         );
     }
