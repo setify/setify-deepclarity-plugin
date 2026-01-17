@@ -255,9 +255,9 @@ mark.dc {
     ),
     linear-gradient(
       to right,
-      rgba(51, 42, 34, 0.7),
-      rgba(51, 42, 34, 0.85) 4%,
-      rgba(51, 42, 34, 0.7)
+      rgba(51, 42, 34, 0.2),
+      rgba(51, 42, 34, 0.35) 4%,
+      rgba(51, 42, 34, 0.2)
     );
   background-size:
     400% 100%,
