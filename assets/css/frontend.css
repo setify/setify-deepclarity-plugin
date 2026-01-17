@@ -62,7 +62,7 @@
 
   /* Scroll Thresholds */
   --dc-scroll-header-threshold: 120;
-  --dc-scroll-logo-threshold: 68;
+  --dc-scroll-logo-threshold: 90;
 }
 
 @media (max-width: 768px) {
@@ -278,7 +278,8 @@ mark.gold {
 }
 
 .button-header .elementor-button:hover {
-  box-shadow: inset 0px 0px 30px rgba(194, 182, 169, 0.5),
+  box-shadow:
+    inset 0px 0px 30px rgba(194, 182, 169, 0.5),
     0 10px 10px -8px rgba(0, 0, 0, 0.25) !important;
 }
 
@@ -311,7 +312,9 @@ mark.gold {
 .panel {
   background: #ffffff;
   border-radius: var(--dc-radius-medium);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.04);
   padding: var(--dc-spacing-medium);
 }
 
@@ -852,8 +855,11 @@ mark.gold {
    ========================================== */
 
 #header-visitor {
-  transition: background-color 0.3s ease, backdrop-filter 0.3s ease,
-    -webkit-backdrop-filter 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    backdrop-filter 0.3s ease,
+    -webkit-backdrop-filter 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 #header-visitor.header-scrolled {
