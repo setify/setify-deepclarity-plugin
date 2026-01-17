@@ -62,7 +62,7 @@
 
   /* Scroll Thresholds */
   --dc-scroll-header-threshold: 120;
-  --dc-scroll-logo-threshold: 90;
+  --dc-scroll-logo-threshold: 168;
 }
 
 @media (max-width: 768px) {
