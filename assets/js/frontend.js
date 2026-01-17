@@ -768,18 +768,30 @@
    */
   const HeaderScroll = {
     header: null,
-    scrollThreshold: 120,
+    frontpageLogo: null,
+    heroLogo: null,
 
     /**
      * Initialize header scroll effect
      */
     init: function () {
       this.header = document.getElementById("header-visitor");
-      if (!this.header) return;
+      this.frontpageLogo = document.getElementById("frontpage-logo");
+      this.heroLogo = document.getElementById("hero-logo");
 
       this.bindEvents();
       // Check initial scroll position (for anchor links or page reload)
       this.checkScroll();
+    },
+
+    /**
+     * Get threshold from CSS variable
+     */
+    getThreshold: function (varName, fallback) {
+      const value = getComputedStyle(document.documentElement)
+        .getPropertyValue(varName)
+        .trim();
+      return value ? parseInt(value, 10) : fallback;
     },
 
     /**
@@ -801,15 +813,37 @@
     },
 
     /**
-     * Check scroll position and toggle class
+     * Check scroll position and toggle classes
      */
     checkScroll: function () {
       const scrollY = window.scrollY || window.pageYOffset;
+      const headerThreshold = this.getThreshold("--dc-scroll-header-threshold", 120);
+      const logoThreshold = this.getThreshold("--dc-scroll-logo-threshold", 68);
 
-      if (scrollY > this.scrollThreshold) {
-        this.header.classList.add("header-scrolled");
+      // Header background effect
+      if (this.header) {
+        if (scrollY > headerThreshold) {
+          this.header.classList.add("header-scrolled");
+        } else {
+          this.header.classList.remove("header-scrolled");
+        }
+      }
+
+      // Logo switching
+      if (scrollY > logoThreshold) {
+        if (this.frontpageLogo) {
+          this.frontpageLogo.classList.add("logo-visible");
+        }
+        if (this.heroLogo) {
+          this.heroLogo.classList.add("logo-hidden");
+        }
       } else {
-        this.header.classList.remove("header-scrolled");
+        if (this.frontpageLogo) {
+          this.frontpageLogo.classList.remove("logo-visible");
+        }
+        if (this.heroLogo) {
+          this.heroLogo.classList.remove("logo-hidden");
+        }
       }
     },
   };

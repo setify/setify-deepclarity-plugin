@@ -59,6 +59,17 @@
   --dc-spacing-medium: 32px;
   --dc-spacing-small: 16px;
   --dc-spacing-xsmall: 8px;
+
+  /* Scroll Thresholds */
+  --dc-scroll-header-threshold: 120;
+  --dc-scroll-logo-threshold: 68;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --dc-scroll-header-threshold: 80;
+    --dc-scroll-logo-threshold: 40;
+  }
 }
 
 /* ==========================================================================
@@ -859,6 +870,25 @@ mark.gold {
 #header-visitor.header-scrolled .e-con-inner {
   padding-top: 16px !important;
   padding-bottom: 16px !important;
+}
+
+/* Logo Scroll Switching */
+#frontpage-logo {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+#frontpage-logo.logo-visible {
+  opacity: 1;
+}
+
+#hero-logo {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+#hero-logo.logo-hidden {
+  opacity: 0;
 }
 
 /* ==========================================
