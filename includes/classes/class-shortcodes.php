@@ -233,8 +233,8 @@ class Shortcodes
     {
         $atts = shortcode_atts(array(
             'page_id'     => 0,
-            'field_first' => 'first_name',
-            'field_last'  => 'last_name',
+            'field_first' => 'client_firstname',
+            'field_last'  => 'client_lastname',
         ), $atts, 'form_url');
 
         $page_id = intval($atts['page_id']);
