@@ -257,15 +257,17 @@ class Shortcodes
             return '';
         }
 
-        // Get first and last name from ACF fields
+        // Get client data from ACF fields
         $first_name = get_field($atts['field_first'], $client_id);
         $last_name  = get_field($atts['field_last'], $client_id);
+        $email      = get_field('client_email', $client_id);
 
         // Build URL with parameters (rawurlencode for proper URL encoding)
         $url = add_query_arg(array(
             'client_id'        => $client_id,
             'client_firstname' => rawurlencode($first_name),
             'client_lastname'  => rawurlencode($last_name),
+            'client_email'     => rawurlencode($email),
         ), $permalink);
 
         return esc_url($url);
