@@ -41,6 +41,7 @@ class Shortcodes
     {
         add_shortcode('session_client_name', array($this, 'session_client_name'));
         add_shortcode('notes_client_list', array($this, 'notes_client_list'));
+        add_shortcode('check_url_client_id', array($this, 'check_url_client_id'));
     }
 
     /**
@@ -177,5 +178,43 @@ class Shortcodes
         $output .= '</div>';
 
         return $output;
+    }
+
+    /**
+     * Shortcode: check_url_client_id
+     *
+     * Checks if URL parameter 'client_id' exists, the client post exists,
+     * and ACF field 'client_status' equals 'Aktiv'.
+     *
+     * Usage: [check_url_client_id]
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string 'true' if all conditions met, empty string otherwise.
+     */
+    public function check_url_client_id($atts)
+    {
+        // Check if client_id URL parameter exists
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $client_id = isset($_GET['client_id']) ? intval($_GET['client_id']) : 0;
+
+        if (! $client_id) {
+            return '';
+        }
+
+        // Check if client post exists
+        $client = get_post($client_id);
+
+        if (! $client || $client->post_type !== 'client') {
+            return '';
+        }
+
+        // Check if client_status ACF field equals 'Aktiv'
+        $status = get_field('client_status', $client_id);
+
+        if ($status === 'Aktiv') {
+            return 'true';
+        }
+
+        return '';
     }
 }
