@@ -265,10 +265,10 @@ class Shortcodes
         $name_parts = array_filter(array($first_name, $last_name));
         $client_name = implode(' ', $name_parts);
 
-        // Build URL with parameters
+        // Build URL with parameters (rawurlencode for proper URL encoding)
         $url = add_query_arg(array(
             'client_id'   => $client_id,
-            'client_name' => $client_name,
+            'client_name' => rawurlencode($client_name),
         ), $permalink);
 
         return esc_url($url);
