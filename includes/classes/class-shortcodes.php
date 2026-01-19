@@ -42,6 +42,7 @@ class Shortcodes
         add_shortcode('session_client_name', array($this, 'session_client_name'));
         add_shortcode('notes_client_list', array($this, 'notes_client_list'));
         add_shortcode('check_url_client_id', array($this, 'check_url_client_id'));
+        add_shortcode('form_url', array($this, 'form_url'));
     }
 
     /**
@@ -216,5 +217,60 @@ class Shortcodes
         }
 
         return '';
+    }
+
+    /**
+     * Shortcode: form_url
+     *
+     * Outputs a permalink with client_id and client_name URL parameters.
+     *
+     * Usage: [form_url page_id="123"]
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string URL with parameters or empty string.
+     */
+    public function form_url($atts)
+    {
+        $atts = shortcode_atts(array(
+            'page_id'     => 0,
+            'field_first' => 'first_name',
+            'field_last'  => 'last_name',
+        ), $atts, 'form_url');
+
+        $page_id = intval($atts['page_id']);
+
+        if (! $page_id) {
+            return '';
+        }
+
+        // Get permalink of target page
+        $permalink = get_permalink($page_id);
+
+        if (! $permalink) {
+            return '';
+        }
+
+        // Get current post ID (client)
+        $client_id = get_the_ID();
+
+        if (! $client_id) {
+            return '';
+        }
+
+        // Get first and last name from ACF fields
+        $first_name = get_field($atts['field_first'], $client_id);
+        $last_name  = get_field($atts['field_last'], $client_id);
+
+        // Build client name
+        $name_parts = array_filter(array($first_name, $last_name));
+        $client_name = implode(' ', $name_parts);
+
+        // Build URL with parameters
+        $url = add_query_arg(array(
+            'client_id'   => $client_id,
+            'client_name' => $client_name,
+        ), $permalink);
+
+        return esc_url($url);
     }
 }
