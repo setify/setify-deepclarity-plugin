@@ -261,14 +261,11 @@ class Shortcodes
         $first_name = get_field($atts['field_first'], $client_id);
         $last_name  = get_field($atts['field_last'], $client_id);
 
-        // Build client name
-        $name_parts = array_filter(array($first_name, $last_name));
-        $client_name = implode(' ', $name_parts);
-
         // Build URL with parameters (rawurlencode for proper URL encoding)
         $url = add_query_arg(array(
-            'client_id'   => $client_id,
-            'client_name' => rawurlencode($client_name),
+            'client_id'        => $client_id,
+            'client_firstname' => rawurlencode($first_name),
+            'client_lastname'  => rawurlencode($last_name),
         ), $permalink);
 
         return esc_url($url);
