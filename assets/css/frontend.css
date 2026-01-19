@@ -223,45 +223,23 @@ mark.gold {
 }
 
 mark.dc {
-  margin: 0 -0.4em;
-  padding: 0.1em 0.4em;
-  border-radius: 0.8em 0.3em;
-  background: transparent;
-  background-image: linear-gradient(
-    to right,
-    rgba(51, 42, 34, 0.2),
-    rgba(51, 42, 34, 0.35) 4%,
-    rgba(51, 42, 34, 0.2)
+  background: linear-gradient(
+    45deg,
+    #b38460,
+    #c89f7b,
+    #dcbc9a,
+    #e5c9ab,
+    #f4e2c8,
+    #e2c5a5,
+    #caa37f,
+    #c29874,
+    #b58864,
+    #b38460
   );
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-  font-weight: bold;
-  background-clip: text, padding-box;
-  -webkit-background-clip: text, padding-box;
+  background-size: 400% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
   color: transparent;
-  background-image:
-    linear-gradient(
-      45deg,
-      #b38460,
-      #c89f7b,
-      #dcbc9a,
-      #e5c9ab,
-      #f4e2c8,
-      #e2c5a5,
-      #caa37f,
-      #c29874,
-      #b58864,
-      #b38460
-    ),
-    linear-gradient(
-      to right,
-      rgba(51, 42, 34, 0.2),
-      rgba(51, 42, 34, 0.35) 4%,
-      rgba(51, 42, 34, 0.2)
-    );
-  background-size:
-    400% 100%,
-    100% 100%;
   animation: dc-gradient-shift 10s linear infinite;
 }
 
