@@ -208,7 +208,9 @@
 }
 
 mark.gold {
-  --mark-color: rgba(244, 226, 202, 0.7);
+  --mark-color-start: rgba(197, 159, 126, 0.1);
+  --mark-color-main: rgba(244, 226, 202, 0.7);
+  --mark-color-end: rgba(192, 153, 120, 0.3);
   --mark-skew: 0.25em;
   --mark-height: 1em;
   --mark-overlap: 0.3em;
@@ -221,16 +223,18 @@ mark.gold {
     linear-gradient(
       to bottom right,
       transparent 50%,
-      var(--mark-color) 50%
+      var(--mark-color-start) 50%
     ),
     linear-gradient(
-      var(--mark-color),
-      var(--mark-color)
+      to right,
+      var(--mark-color-start),
+      var(--mark-color-main) 4%,
+      var(--mark-color-end)
     ),
     linear-gradient(
       to top left,
       transparent 50%,
-      var(--mark-color) 50%
+      var(--mark-color-end) 50%
     );
   background-size:
     var(--mark-skew) var(--mark-height),
