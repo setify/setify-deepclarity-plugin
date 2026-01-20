@@ -42,11 +42,64 @@ class Client
      */
     private function __construct()
     {
+        // Shortcodes
         add_shortcode('client_fullname', array($this, 'shortcode_fullname'));
         add_shortcode('client_firstname', array($this, 'shortcode_firstname'));
         add_shortcode('client_lastname', array($this, 'shortcode_lastname'));
         add_shortcode('client_birthday_until', array($this, 'shortcode_birthday_until'));
         add_shortcode('client_birthday_until_raw', array($this, 'shortcode_birthday_until_raw'));
+
+        // Fluent Forms integration
+        add_action('fluentform/submission_inserted', array($this, 'track_fluent_form_submission'), 10, 3);
+    }
+
+    /**
+     * Track Fluent Form submission in client's ACF repeater field
+     *
+     * @param int   $entry_id    The submission entry ID.
+     * @param array $form_data   The submitted form data.
+     * @param object $form       The form object.
+     */
+    public function track_fluent_form_submission($entry_id, $form_data, $form)
+    {
+        // Check if client_id field exists in form data
+        if (empty($form_data['client_id'])) {
+            return;
+        }
+
+        $client_id = intval($form_data['client_id']);
+
+        // Verify client post exists
+        $client = get_post($client_id);
+        if (! $client || $client->post_type !== 'client') {
+            return;
+        }
+
+        // Check if ACF is available
+        if (! function_exists('get_field') || ! function_exists('update_field')) {
+            return;
+        }
+
+        // Get form details
+        $form_id   = $form->id;
+        $form_name = $form->title;
+
+        // Get current repeater data
+        $client_forms = get_field('client_forms', $client_id);
+        if (! is_array($client_forms)) {
+            $client_forms = array();
+        }
+
+        // Add new entry
+        $client_forms[] = array(
+            'form_id'   => $form_id,
+            'form_name' => $form_name,
+            'entry_id'  => $entry_id,
+            'date'      => current_time('Y-m-d H:i:s'),
+        );
+
+        // Update the repeater field
+        update_field('client_forms', $client_forms, $client_id);
     }
 
     /**
