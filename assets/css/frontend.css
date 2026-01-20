@@ -983,6 +983,10 @@ mark.dc::after {
   border-left-color: var(--dc-color-royal-plum) !important;
 }
 
+.fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span:hover {
+  color: #fff !important;
+}
+
 /* ==========================================
    Notes List
    ========================================== */
