@@ -43,6 +43,7 @@ class Shortcodes
         add_shortcode('notes_client_list', array($this, 'notes_client_list'));
         add_shortcode('check_url_client_id', array($this, 'check_url_client_id'));
         add_shortcode('form_url', array($this, 'form_url'));
+        add_shortcode('client_forms_list', array($this, 'client_forms_list'));
     }
 
     /**
@@ -271,5 +272,78 @@ class Shortcodes
         ), $permalink);
 
         return esc_url($url);
+    }
+
+    /**
+     * Shortcode: client_forms_list
+     *
+     * Outputs a list of submitted forms for the current client.
+     *
+     * Usage: [client_forms_list]
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string Forms list HTML or empty string.
+     */
+    public function client_forms_list($atts)
+    {
+        $atts = shortcode_atts(array(
+            'empty_message' => '',
+        ), $atts, 'client_forms_list');
+
+        $client_id = get_the_ID();
+
+        if (! $client_id) {
+            return '';
+        }
+
+        // Check if ACF is available
+        if (! function_exists('get_field')) {
+            return '';
+        }
+
+        // Get client forms from ACF repeater
+        $client_forms = get_field('client_forms', $client_id);
+
+        if (empty($client_forms) || ! is_array($client_forms)) {
+            return $atts['empty_message'] ? '<p>' . esc_html($atts['empty_message']) . '</p>' : '';
+        }
+
+        // Sort by date descending (newest first)
+        usort($client_forms, function ($a, $b) {
+            return strtotime($b['date']) - strtotime($a['date']);
+        });
+
+        $output = '<div class="dc-forms-list" data-client-id="' . esc_attr($client_id) . '">';
+
+        foreach ($client_forms as $form) {
+            $form_id   = isset($form['form_id']) ? intval($form['form_id']) : 0;
+            $form_name = isset($form['form_name']) ? $form['form_name'] : '';
+            $entry_id  = isset($form['entry_id']) ? intval($form['entry_id']) : 0;
+            $date      = isset($form['date']) ? $form['date'] : '';
+
+            // Format date for display
+            $date_formatted = '';
+            if ($date) {
+                $timestamp = strtotime($date);
+                $date_formatted = date_i18n('d.m.Y H:i', $timestamp);
+            }
+
+            $output .= '<div class="dc-form-entry" data-entry-id="' . esc_attr($entry_id) . '" data-form-id="' . esc_attr($form_id) . '">';
+            $output .= '<div class="dc-form-entry-icon">';
+            $output .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
+            $output .= '</div>';
+            $output .= '<div class="dc-form-entry-content">';
+            $output .= '<div class="dc-form-entry-name">' . esc_html($form_name) . '</div>';
+            $output .= '<div class="dc-form-entry-date">' . esc_html($date_formatted) . '</div>';
+            $output .= '</div>';
+            $output .= '<div class="dc-form-entry-arrow">';
+            $output .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+            $output .= '</div>';
+            $output .= '</div>';
+        }
+
+        $output .= '</div>';
+
+        return $output;
     }
 }

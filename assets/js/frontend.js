@@ -854,6 +854,151 @@
   };
 
   /**
+   * Form Entry Viewer Module
+   */
+  const FormEntryViewer = {
+    /**
+     * Initialize form entry viewer
+     */
+    init: function () {
+      this.bindEvents();
+    },
+
+    /**
+     * Bind click events to form entry elements
+     */
+    bindEvents: function () {
+      $(document).on("click", ".dc-form-entry", function (e) {
+        e.preventDefault();
+        const entryId = $(this).data("entry-id");
+        const formId = $(this).data("form-id");
+        if (entryId && formId) {
+          FormEntryViewer.open(entryId, formId);
+        }
+      });
+    },
+
+    /**
+     * Open form entry modal
+     */
+    open: function (entryId, formId) {
+      const self = this;
+
+      // Show loading
+      Swal.fire({
+        title: null,
+        html: '<div class="dc-form-entry-loading"><span class="spinner"></span> Laden...</div>',
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "640px",
+        padding: 0,
+        customClass: {
+          popup: "dc-form-entry-popup",
+          htmlContainer: "dc-form-entry-container",
+        },
+        allowOutsideClick: false,
+      });
+
+      // Fetch entry data
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_get_form_entry",
+          nonce: deepClarityFrontend.nonce,
+          entry_id: entryId,
+          form_id: formId,
+        },
+        success: function (response) {
+          if (response.success) {
+            self.render(response.data);
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Fehler",
+              text: response.data.message || "Eintrag konnte nicht geladen werden.",
+            });
+          }
+        },
+        error: function () {
+          Swal.fire({
+            icon: "error",
+            title: "Fehler",
+            text: "Ein Fehler ist aufgetreten.",
+          });
+        },
+      });
+    },
+
+    /**
+     * Render form entry modal
+     */
+    render: function (data) {
+      Swal.fire({
+        title: null,
+        html: this.getTemplate(data),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "640px",
+        padding: 0,
+        customClass: {
+          popup: "dc-form-entry-popup",
+          htmlContainer: "dc-form-entry-container",
+        },
+        didOpen: function () {
+          $(".dc-form-entry-close").on("click", function () {
+            Swal.close();
+          });
+        },
+      });
+    },
+
+    /**
+     * Get form entry template
+     */
+    getTemplate: function (data) {
+      let qaHtml = "";
+      if (data.qa_pairs && data.qa_pairs.length > 0) {
+        data.qa_pairs.forEach(function (qa) {
+          qaHtml += `
+            <div class="dc-form-entry-qa">
+              <div class="dc-form-entry-question">${FormEntryViewer.escapeHtml(qa.question)}</div>
+              <div class="dc-form-entry-answer">${FormEntryViewer.escapeHtml(qa.answer) || '<em class="dc-form-entry-empty">Keine Antwort</em>'}</div>
+            </div>
+          `;
+        });
+      } else {
+        qaHtml = '<p class="dc-form-entry-empty">Keine Daten verfügbar.</p>';
+      }
+
+      return `
+        <div class="dc-form-entry-modal">
+          <div class="dc-form-entry-header">
+            <div class="dc-form-entry-header-info">
+              <span class="dc-form-entry-title">${this.escapeHtml(data.form_name)}</span>
+              <span class="dc-form-entry-date">${this.escapeHtml(data.created_at)}</span>
+            </div>
+            <button type="button" class="dc-form-entry-close">&times;</button>
+          </div>
+          <div class="dc-form-entry-body">
+            ${qaHtml}
+          </div>
+        </div>
+      `;
+    },
+
+    /**
+     * Escape HTML
+     */
+    escapeHtml: function (text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    },
+  };
+
+  /**
    * Deep Clarity Frontend Module
    */
   const DeepClarityFrontend = {
@@ -866,6 +1011,7 @@
       MailPreview.init();
       Notes.init();
       HeaderScroll.init();
+      FormEntryViewer.init();
     },
 
     /**

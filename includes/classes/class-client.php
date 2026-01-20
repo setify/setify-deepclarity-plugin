@@ -51,6 +51,10 @@ class Client
 
         // Fluent Forms integration
         add_action('fluentform/submission_inserted', array($this, 'track_fluent_form_submission'), 10, 3);
+
+        // AJAX handler for form entry details
+        add_action('wp_ajax_deep_clarity_get_form_entry', array($this, 'ajax_get_form_entry'));
+        add_action('wp_ajax_nopriv_deep_clarity_get_form_entry', array($this, 'ajax_get_form_entry'));
     }
 
     /**
@@ -315,6 +319,126 @@ class Client
         }
 
         return $this->get_days_until_birthday($birthday);
+    }
+
+    /**
+     * AJAX handler for getting form entry details
+     */
+    public function ajax_get_form_entry()
+    {
+        // Verify nonce
+        if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $entry_id = isset($_POST['entry_id']) ? intval($_POST['entry_id']) : 0;
+        $form_id  = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
+
+        if (! $entry_id || ! $form_id) {
+            wp_send_json_error(array('message' => 'Missing entry or form ID'));
+        }
+
+        // Get submission from Fluent Forms
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'fluentform_submissions';
+
+        $submission = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$table_name} WHERE id = %d AND form_id = %d",
+                $entry_id,
+                $form_id
+            )
+        );
+
+        if (! $submission) {
+            wp_send_json_error(array('message' => 'Entry not found'));
+        }
+
+        // Decode the response data
+        $response_data = json_decode($submission->response, true);
+
+        if (! is_array($response_data)) {
+            wp_send_json_error(array('message' => 'Invalid entry data'));
+        }
+
+        // Get form fields to map field names to labels
+        $form_table = $wpdb->prefix . 'fluentform_forms';
+        $form       = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$form_table} WHERE id = %d",
+                $form_id
+            )
+        );
+
+        $field_labels = array();
+        if ($form && ! empty($form->form_fields)) {
+            $form_fields = json_decode($form->form_fields, true);
+            if (is_array($form_fields) && isset($form_fields['fields'])) {
+                $field_labels = $this->extract_field_labels($form_fields['fields']);
+            }
+        }
+
+        // Build questions and answers array
+        $qa_pairs = array();
+        foreach ($response_data as $field_name => $value) {
+            // Skip internal fields
+            if (in_array($field_name, array('_wp_http_referer', '_fluentform_'))) {
+                continue;
+            }
+
+            // Get label or use field name
+            $label = isset($field_labels[$field_name]) ? $field_labels[$field_name] : $field_name;
+
+            // Format value
+            if (is_array($value)) {
+                $value = implode(', ', $value);
+            }
+
+            $qa_pairs[] = array(
+                'question' => $label,
+                'answer'   => $value,
+            );
+        }
+
+        wp_send_json_success(array(
+            'form_name'  => $form ? $form->title : '',
+            'entry_id'   => $entry_id,
+            'created_at' => $submission->created_at,
+            'qa_pairs'   => $qa_pairs,
+        ));
+    }
+
+    /**
+     * Extract field labels from Fluent Form fields
+     *
+     * @param array $fields Form fields array
+     * @return array Associative array of field_name => label
+     */
+    private function extract_field_labels($fields)
+    {
+        $labels = array();
+
+        foreach ($fields as $field) {
+            if (isset($field['attributes']['name']) && isset($field['settings']['label'])) {
+                $labels[$field['attributes']['name']] = $field['settings']['label'];
+            }
+
+            // Handle container fields with columns
+            if (isset($field['columns']) && is_array($field['columns'])) {
+                foreach ($field['columns'] as $column) {
+                    if (isset($column['fields']) && is_array($column['fields'])) {
+                        $labels = array_merge($labels, $this->extract_field_labels($column['fields']));
+                    }
+                }
+            }
+
+            // Handle nested fields
+            if (isset($field['fields']) && is_array($field['fields'])) {
+                $labels = array_merge($labels, $this->extract_field_labels($field['fields']));
+            }
+        }
+
+        return $labels;
     }
 
     /**
