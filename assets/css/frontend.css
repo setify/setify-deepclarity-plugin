@@ -19,8 +19,8 @@
 
 :root {
   /* Primary Colors */
-  --dc-color-royal-plum: #753054;
-  --dc-color-crimson-violet: #62203a;
+  --dc-color-royal-plum: #5c272e;
+  --dc-color-crimson-violet: #74313b;
 
   /* Grey Scale */
   --dc-color-carbon-black: #1c1d1f;
@@ -231,11 +231,7 @@ mark.gold {
       var(--mark-color-main) 4%,
       var(--mark-color-end)
     ),
-    linear-gradient(
-      to top left,
-      transparent 50%,
-      var(--mark-color-end) 50%
-    );
+    linear-gradient(to top left, transparent 50%, var(--mark-color-end) 50%);
   background-size:
     var(--mark-skew) var(--mark-height),
     calc(100% - var(--mark-skew) * 2 + 1px) var(--mark-height),
@@ -949,6 +945,42 @@ mark.dc::after {
 
 #hero-logo.logo-hidden {
   opacity: 0;
+}
+
+/* ==========================================
+   Fluent Form Styles
+   ========================================== */
+
+.fluentform
+  .ff-el-group.ff_list_buttons
+  .ff-el-form-check:first-child
+  label
+  > span {
+  border-left: 1px solid var(--dc-color-dust-grey) !important;
+}
+
+.fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span:hover {
+  color: var(--dc-color-royal-plum) !important;
+}
+
+.fluentform
+  .ff-el-group.ff_list_buttons
+  .ff-el-form-check.ff_item_selected
+  label
+  > span {
+  background-color: var(--dc-color-royal-plum) !important;
+  border-color: var(--dc-color-royal-plum) !important;
+  border-left-color: var(--dc-color-royal-plum) !important;
+  box-shadow: -1px 0 0 0 var(--dc-color-crimson-violet) !important;
+  color: #fff;
+}
+
+.fluentform
+  .ff-el-group.ff_list_buttons
+  .ff-el-form-check.ff_item_selected:first-child
+  label
+  > span {
+  border-left-color: var(--dc-color-royal-plum) !important;
 }
 
 /* ==========================================
