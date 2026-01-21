@@ -1408,6 +1408,9 @@
   const SessionAnalyzer = {
     sessionId: null,
     selectedFields: [],
+    requestId: null,
+    pollTimer: null,
+    pollInterval: 3000, // Poll every 3 seconds
 
     // Available fields for selection
     availableFields: [
@@ -1449,6 +1452,11 @@
     reset: function () {
       this.sessionId = null;
       this.selectedFields = [];
+      this.requestId = null;
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      }
     },
 
     /**
@@ -1520,6 +1528,32 @@
     },
 
     /**
+     * Get loading template
+     */
+    getLoadingTemplate: function () {
+      return `
+        <div class="dc-dossier-modal dc-analyzer-loading">
+          <div class="dc-dossier-header">
+            <span class="dc-dossier-title">Analyse läuft...</span>
+          </div>
+          <div class="dc-dossier-body dc-analyzer-loading-body">
+            <div class="dc-analyzer-spinner">
+              <span class="spinner"></span>
+            </div>
+            <p class="dc-analyzer-loading-text">Die Analyse wird durchgeführt. Bitte warten...</p>
+            <p class="dc-analyzer-loading-hint">Das Modal schließt sich automatisch, sobald die Analyse abgeschlossen ist.</p>
+          </div>
+          <div class="dc-dossier-footer">
+            <div class="dc-dossier-steps"></div>
+            <div class="dc-dossier-actions">
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-cancel-analysis">Abbrechen</button>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+
+    /**
      * Bind modal events
      */
     bindModalEvents: function () {
@@ -1577,13 +1611,10 @@
         },
         success: function (response) {
           if (response.success) {
-            Swal.fire({
-              icon: "success",
-              title: "Gestartet!",
-              text: response.data.message,
-              timer: 2000,
-              showConfirmButton: false,
-            });
+            // Store request ID and start polling
+            self.requestId = response.data.request_id;
+            self.showLoadingState();
+            self.startPolling();
           } else {
             $btn.prop("disabled", false).text("Analyse starten");
             Swal.showValidationMessage(
@@ -1596,6 +1627,128 @@
           Swal.showValidationMessage("Ein Fehler ist aufgetreten.");
         },
       });
+    },
+
+    /**
+     * Show loading state in modal
+     */
+    showLoadingState: function () {
+      const self = this;
+
+      Swal.fire({
+        title: null,
+        html: this.getLoadingTemplate(),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          $(".dc-dossier-btn-cancel-analysis").on("click", function () {
+            self.stopPolling();
+            Swal.close();
+          });
+        },
+      });
+    },
+
+    /**
+     * Start polling for status
+     */
+    startPolling: function () {
+      const self = this;
+
+      this.pollTimer = setInterval(function () {
+        self.checkStatus();
+      }, this.pollInterval);
+    },
+
+    /**
+     * Stop polling
+     */
+    stopPolling: function () {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      }
+    },
+
+    /**
+     * Check analysis status
+     */
+    checkStatus: function () {
+      const self = this;
+
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_check_analysis_status",
+          nonce: deepClarityFrontend.nonce,
+          request_id: self.requestId,
+        },
+        success: function (response) {
+          if (response.success) {
+            if (response.data.status === "complete") {
+              self.stopPolling();
+              self.showResult(response.data.result);
+            } else if (response.data.status === "error") {
+              self.stopPolling();
+              self.showError(response.data.result || "Ein Fehler ist aufgetreten.");
+            }
+            // If status is 'pending', continue polling
+          } else {
+            // Request not found or expired
+            self.stopPolling();
+            self.showError(response.data.message || "Anfrage nicht gefunden.");
+          }
+        },
+        error: function () {
+          self.stopPolling();
+          self.showError("Verbindungsfehler beim Prüfen des Status.");
+        },
+      });
+    },
+
+    /**
+     * Show result
+     */
+    showResult: function (result) {
+      Swal.fire({
+        icon: "success",
+        title: "Analyse abgeschlossen!",
+        html: result
+          ? '<div class="dc-analyzer-result">' + this.escapeHtml(result) + "</div>"
+          : "Die Analyse wurde erfolgreich abgeschlossen.",
+        confirmButtonText: "Schließen",
+      });
+    },
+
+    /**
+     * Show error
+     */
+    showError: function (message) {
+      Swal.fire({
+        icon: "error",
+        title: "Fehler",
+        text: message,
+        confirmButtonText: "Schließen",
+      });
+    },
+
+    /**
+     * Escape HTML
+     */
+    escapeHtml: function (text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
     },
   };
 

@@ -63,6 +63,10 @@ class Client
 
         // AJAX handler for session analysis
         add_action('wp_ajax_deep_clarity_analyze_session', array($this, 'ajax_analyze_session'));
+        add_action('wp_ajax_deep_clarity_check_analysis_status', array($this, 'ajax_check_analysis_status'));
+
+        // REST API endpoint for Bit Flows callback
+        add_action('rest_api_init', array($this, 'register_rest_routes'));
     }
 
     /**
@@ -616,12 +620,16 @@ class Client
             wp_send_json_error(array('message' => 'ACF not available'));
         }
 
+        // Generate unique request ID
+        $request_id = 'dc_analysis_' . $session_id . '_' . time() . '_' . wp_generate_password(8, false);
+
         // Allowed fields
         $allowed_fields = array('session_transcript', 'session_diagnosis', 'session_note');
 
         // Build data array with selected fields
         $data = array(
             'session_id' => $session_id,
+            'request_id' => $request_id,
         );
 
         foreach ($fields as $field) {
@@ -630,11 +638,104 @@ class Client
             }
         }
 
+        // Store initial status in transient (expires in 30 minutes)
+        set_transient($request_id, array(
+            'status'     => 'pending',
+            'session_id' => $session_id,
+            'created_at' => time(),
+            'result'     => null,
+        ), 30 * MINUTE_IN_SECONDS);
+
         // Trigger the do_action
         do_action('bit_pi_do_action', '2-1', $data);
 
         wp_send_json_success(array(
-            'message' => 'Analyse wurde gestartet...',
+            'message'    => 'Analyse wurde gestartet...',
+            'request_id' => $request_id,
+        ));
+    }
+
+    /**
+     * Register REST API routes
+     */
+    public function register_rest_routes()
+    {
+        register_rest_route('deep-clarity/v1', '/analysis-callback', array(
+            'methods'             => 'POST',
+            'callback'            => array($this, 'handle_analysis_callback'),
+            'permission_callback' => '__return_true',
+        ));
+    }
+
+    /**
+     * Handle analysis callback from Bit Flows
+     *
+     * @param \WP_REST_Request $request The REST request.
+     * @return \WP_REST_Response
+     */
+    public function handle_analysis_callback($request)
+    {
+        $request_id = $request->get_param('request_id');
+        $result     = $request->get_param('result');
+        $status     = $request->get_param('status') ?: 'complete';
+
+        if (empty($request_id)) {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Missing request_id',
+            ), 400);
+        }
+
+        // Get existing transient data
+        $transient_data = get_transient($request_id);
+
+        if (! $transient_data) {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Request not found or expired',
+            ), 404);
+        }
+
+        // Update status and result
+        $transient_data['status']       = $status;
+        $transient_data['result']       = $result;
+        $transient_data['completed_at'] = time();
+
+        // Store updated data (keep for 5 more minutes for polling)
+        set_transient($request_id, $transient_data, 5 * MINUTE_IN_SECONDS);
+
+        return new \WP_REST_Response(array(
+            'success' => true,
+            'message' => 'Status updated',
+        ), 200);
+    }
+
+    /**
+     * AJAX handler for checking analysis status
+     */
+    public function ajax_check_analysis_status()
+    {
+        // Verify nonce
+        if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $request_id = isset($_POST['request_id']) ? sanitize_text_field($_POST['request_id']) : '';
+
+        if (empty($request_id)) {
+            wp_send_json_error(array('message' => 'Missing request_id'));
+        }
+
+        // Get transient data
+        $transient_data = get_transient($request_id);
+
+        if (! $transient_data) {
+            wp_send_json_error(array('message' => 'Request not found or expired'));
+        }
+
+        wp_send_json_success(array(
+            'status' => $transient_data['status'],
+            'result' => $transient_data['result'],
         ));
     }
 
