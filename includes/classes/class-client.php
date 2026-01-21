@@ -58,6 +58,7 @@ class Client
 
         // AJAX handlers for dossier creation
         add_action('wp_ajax_deep_clarity_get_client_sessions', array($this, 'ajax_get_client_sessions'));
+        add_action('wp_ajax_deep_clarity_get_client_forms', array($this, 'ajax_get_client_forms'));
         add_action('wp_ajax_deep_clarity_create_dossier', array($this, 'ajax_create_dossier'));
     }
 
@@ -489,6 +490,60 @@ class Client
     }
 
     /**
+     * AJAX handler for getting client forms
+     */
+    public function ajax_get_client_forms()
+    {
+        // Verify nonce
+        if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $client_id = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;
+
+        if (! $client_id) {
+            wp_send_json_error(array('message' => 'Missing client ID'));
+        }
+
+        // Check if ACF is available
+        if (! function_exists('get_field')) {
+            wp_send_json_error(array('message' => 'ACF not available'));
+        }
+
+        // Get client forms from ACF repeater
+        $client_forms = get_field('client_forms', $client_id);
+
+        $forms = array();
+
+        if (is_array($client_forms) && ! empty($client_forms)) {
+            // Sort by date descending
+            usort($client_forms, function ($a, $b) {
+                return strtotime($b['date']) - strtotime($a['date']);
+            });
+
+            foreach ($client_forms as $form) {
+                $date = isset($form['date']) ? $form['date'] : '';
+                $date_formatted = '';
+                if ($date) {
+                    $timestamp = strtotime($date);
+                    $date_formatted = date_i18n('d.m.Y H:i', $timestamp);
+                }
+
+                $forms[] = array(
+                    'form_id'   => isset($form['form_id']) ? intval($form['form_id']) : 0,
+                    'form_name' => isset($form['form_name']) ? $form['form_name'] : '',
+                    'entry_id'  => isset($form['entry_id']) ? intval($form['entry_id']) : 0,
+                    'date'      => $date_formatted,
+                );
+            }
+        }
+
+        wp_send_json_success(array(
+            'forms' => $forms,
+        ));
+    }
+
+    /**
      * AJAX handler for creating dossier
      */
     public function ajax_create_dossier()
@@ -500,6 +555,7 @@ class Client
 
         $client_id  = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;
         $session_id = isset($_POST['session_id']) ? intval($_POST['session_id']) : 0;
+        $form_ids   = isset($_POST['form_ids']) ? array_map('intval', (array) $_POST['form_ids']) : array();
 
         if (! $client_id || ! $session_id) {
             wp_send_json_error(array('message' => 'Missing client or session ID'));
@@ -521,6 +577,7 @@ class Client
         do_action('bit_pi_do_action', '1-1', array(
             'client_id'  => $client_id,
             'session_id' => $session_id,
+            'form_ids'   => $form_ids,
         ));
 
         wp_send_json_success(array(

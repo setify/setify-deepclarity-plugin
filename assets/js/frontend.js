@@ -1002,6 +1002,11 @@
    * Dossier Creator Module
    */
   const DossierCreator = {
+    currentStep: 1,
+    clientId: null,
+    selectedSessionId: null,
+    selectedFormIds: [],
+
     /**
      * Initialize dossier creator
      */
@@ -1017,20 +1022,32 @@
         e.preventDefault();
         const clientId = $(this).data("client-id");
         if (clientId) {
-          DossierCreator.open(clientId);
+          DossierCreator.reset();
+          DossierCreator.clientId = clientId;
+          DossierCreator.openStep1();
         }
       });
     },
 
     /**
-     * Open session selection modal
+     * Reset state
      */
-    open: function (clientId) {
+    reset: function () {
+      this.currentStep = 1;
+      this.clientId = null;
+      this.selectedSessionId = null;
+      this.selectedFormIds = [];
+    },
+
+    /**
+     * Open Step 1: Session selection
+     */
+    openStep1: function () {
       const self = this;
 
       // Show loading
       Swal.fire({
-        title: "Session auswählen",
+        title: null,
         html: '<div class="dc-dossier-loading"><span class="spinner"></span> Sessions werden geladen...</div>',
         showConfirmButton: false,
         showCancelButton: false,
@@ -1050,11 +1067,11 @@
         data: {
           action: "deep_clarity_get_client_sessions",
           nonce: deepClarityFrontend.nonce,
-          client_id: clientId,
+          client_id: self.clientId,
         },
         success: function (response) {
           if (response.success) {
-            self.render(clientId, response.data.sessions);
+            self.renderStep1(response.data.sessions);
           } else {
             Swal.fire({
               icon: "error",
@@ -1074,9 +1091,9 @@
     },
 
     /**
-     * Render session selection modal
+     * Render Step 1: Session selection
      */
-    render: function (clientId, sessions) {
+    renderStep1: function (sessions) {
       const self = this;
 
       if (!sessions || sessions.length === 0) {
@@ -1090,7 +1107,7 @@
 
       Swal.fire({
         title: null,
-        html: this.getTemplate(clientId, sessions),
+        html: this.getStep1Template(sessions),
         showConfirmButton: false,
         showCancelButton: false,
         width: "500px",
@@ -1100,24 +1117,25 @@
           htmlContainer: "dc-dossier-container",
         },
         didOpen: function () {
-          self.bindModalEvents(clientId);
+          self.bindStep1Events();
         },
       });
     },
 
     /**
-     * Get session selection template
+     * Get Step 1 template
      */
-    getTemplate: function (clientId, sessions) {
+    getStep1Template: function (sessions) {
       let sessionsHtml = "";
       sessions.forEach(function (session) {
+        const isSelected = DossierCreator.selectedSessionId === session.id ? " selected" : "";
         sessionsHtml += `
-          <div class="dc-dossier-session" data-session-id="${session.id}">
-            <div class="dc-dossier-session-info">
-              <span class="dc-dossier-session-title">${DossierCreator.escapeHtml(session.title)}</span>
-              <span class="dc-dossier-session-date">${DossierCreator.escapeHtml(session.date)}</span>
+          <div class="dc-dossier-item${isSelected}" data-session-id="${session.id}">
+            <div class="dc-dossier-item-info">
+              <span class="dc-dossier-item-title">${DossierCreator.escapeHtml(session.title)}</span>
+              <span class="dc-dossier-item-meta">${DossierCreator.escapeHtml(session.date)}</span>
             </div>
-            <div class="dc-dossier-session-check">
+            <div class="dc-dossier-item-check">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </div>
           </div>
@@ -1125,57 +1143,220 @@
       });
 
       return `
-        <div class="dc-dossier-modal" data-client-id="${clientId}">
+        <div class="dc-dossier-modal" data-step="1">
           <div class="dc-dossier-header">
-            <span class="dc-dossier-title">Session auswählen</span>
+            <span class="dc-dossier-title">Schritt 1: Session auswählen</span>
             <button type="button" class="dc-dossier-close">&times;</button>
           </div>
           <div class="dc-dossier-body">
             <p class="dc-dossier-hint">Wählen Sie die Session aus, die für das Dossier verwendet werden soll:</p>
-            <div class="dc-dossier-sessions">
+            <div class="dc-dossier-items">
               ${sessionsHtml}
             </div>
           </div>
           <div class="dc-dossier-footer">
-            <button type="button" class="dc-dossier-btn dc-dossier-btn-cancel">Abbrechen</button>
-            <button type="button" class="dc-dossier-btn dc-dossier-btn-create" disabled>Dossier erstellen</button>
+            <div class="dc-dossier-steps">Schritt 1 von 2</div>
+            <div class="dc-dossier-actions">
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-cancel">Abbrechen</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-next" disabled>Weiter</button>
+            </div>
           </div>
         </div>
       `;
     },
 
     /**
-     * Bind modal events
+     * Bind Step 1 events
      */
-    bindModalEvents: function (clientId) {
+    bindStep1Events: function () {
       const self = this;
-      let selectedSessionId = null;
 
       // Close button
       $(".dc-dossier-close, .dc-dossier-btn-cancel").on("click", function () {
         Swal.close();
       });
 
-      // Session selection
-      $(document).on("click", ".dc-dossier-session", function () {
-        $(".dc-dossier-session").removeClass("selected");
+      // Session selection (single select)
+      $(".dc-dossier-item").on("click", function () {
+        $(".dc-dossier-item").removeClass("selected");
         $(this).addClass("selected");
-        selectedSessionId = $(this).data("session-id");
-        $(".dc-dossier-btn-create").prop("disabled", false);
+        self.selectedSessionId = $(this).data("session-id");
+        $(".dc-dossier-btn-next").prop("disabled", false);
+      });
+
+      // Next button
+      $(".dc-dossier-btn-next").on("click", function () {
+        if (self.selectedSessionId) {
+          self.openStep2();
+        }
+      });
+    },
+
+    /**
+     * Open Step 2: Form selection
+     */
+    openStep2: function () {
+      const self = this;
+
+      // Show loading
+      Swal.fire({
+        title: null,
+        html: '<div class="dc-dossier-loading"><span class="spinner"></span> Formulare werden geladen...</div>',
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        allowOutsideClick: false,
+      });
+
+      // Fetch forms for this client
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_get_client_forms",
+          nonce: deepClarityFrontend.nonce,
+          client_id: self.clientId,
+        },
+        success: function (response) {
+          if (response.success) {
+            self.renderStep2(response.data.forms);
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Fehler",
+              text: response.data.message || "Formulare konnten nicht geladen werden.",
+            });
+          }
+        },
+        error: function () {
+          Swal.fire({
+            icon: "error",
+            title: "Fehler",
+            text: "Ein Fehler ist aufgetreten.",
+          });
+        },
+      });
+    },
+
+    /**
+     * Render Step 2: Form selection
+     */
+    renderStep2: function (forms) {
+      const self = this;
+
+      Swal.fire({
+        title: null,
+        html: this.getStep2Template(forms),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          self.bindStep2Events();
+        },
+      });
+    },
+
+    /**
+     * Get Step 2 template
+     */
+    getStep2Template: function (forms) {
+      let formsHtml = "";
+
+      if (!forms || forms.length === 0) {
+        formsHtml = '<p class="dc-dossier-empty">Keine Formulare vorhanden.</p>';
+      } else {
+        forms.forEach(function (form) {
+          const isSelected = DossierCreator.selectedFormIds.includes(form.entry_id) ? " selected" : "";
+          formsHtml += `
+            <div class="dc-dossier-item dc-dossier-item-multi${isSelected}" data-entry-id="${form.entry_id}" data-form-id="${form.form_id}">
+              <div class="dc-dossier-item-checkbox">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="dc-dossier-item-info">
+                <span class="dc-dossier-item-title">${DossierCreator.escapeHtml(form.form_name)}</span>
+                <span class="dc-dossier-item-meta">ID: ${form.entry_id} • ${DossierCreator.escapeHtml(form.date)}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      return `
+        <div class="dc-dossier-modal" data-step="2">
+          <div class="dc-dossier-header">
+            <span class="dc-dossier-title">Schritt 2: Formulare auswählen</span>
+            <button type="button" class="dc-dossier-close">&times;</button>
+          </div>
+          <div class="dc-dossier-body">
+            <p class="dc-dossier-hint">Wählen Sie die Formulare aus, die im Dossier enthalten sein sollen (optional):</p>
+            <div class="dc-dossier-items">
+              ${formsHtml}
+            </div>
+          </div>
+          <div class="dc-dossier-footer">
+            <div class="dc-dossier-steps">Schritt 2 von 2</div>
+            <div class="dc-dossier-actions">
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-create">Dossier erstellen</button>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+
+    /**
+     * Bind Step 2 events
+     */
+    bindStep2Events: function () {
+      const self = this;
+
+      // Close button
+      $(".dc-dossier-close").on("click", function () {
+        Swal.close();
+      });
+
+      // Back button
+      $(".dc-dossier-btn-back").on("click", function () {
+        self.openStep1();
+      });
+
+      // Form selection (multi select)
+      $(".dc-dossier-item-multi").on("click", function () {
+        $(this).toggleClass("selected");
+        const entryId = $(this).data("entry-id");
+
+        if ($(this).hasClass("selected")) {
+          if (!self.selectedFormIds.includes(entryId)) {
+            self.selectedFormIds.push(entryId);
+          }
+        } else {
+          self.selectedFormIds = self.selectedFormIds.filter(function (id) {
+            return id !== entryId;
+          });
+        }
       });
 
       // Create button
       $(".dc-dossier-btn-create").on("click", function () {
-        if (selectedSessionId) {
-          self.create(clientId, selectedSessionId);
-        }
+        self.create();
       });
     },
 
     /**
      * Create dossier
      */
-    create: function (clientId, sessionId) {
+    create: function () {
+      const self = this;
       const $btn = $(".dc-dossier-btn-create");
       $btn.prop("disabled", true).text("Wird erstellt...");
 
@@ -1185,8 +1366,9 @@
         data: {
           action: "deep_clarity_create_dossier",
           nonce: deepClarityFrontend.nonce,
-          client_id: clientId,
-          session_id: sessionId,
+          client_id: self.clientId,
+          session_id: self.selectedSessionId,
+          form_ids: self.selectedFormIds,
         },
         success: function (response) {
           if (response.success) {

@@ -1473,7 +1473,7 @@ span.dc {
   color: var(--dc-color-iron-grey);
 }
 
-.dc-dossier-sessions {
+.dc-dossier-items {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1481,7 +1481,7 @@ span.dc {
   overflow-y: auto;
 }
 
-.dc-dossier-session {
+.dc-dossier-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1493,34 +1493,36 @@ span.dc {
   transition: all 0.15s ease;
 }
 
-.dc-dossier-session:hover {
+.dc-dossier-item:hover {
   border-color: var(--dc-color-pale-slate);
   background: var(--dc-color-brigth-snow);
 }
 
-.dc-dossier-session.selected {
+.dc-dossier-item.selected {
   border-color: var(--dc-color-primary);
   background: #faf7f8;
 }
 
-.dc-dossier-session-info {
+.dc-dossier-item-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
-.dc-dossier-session-title {
+.dc-dossier-item-title {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--dc-color-carbon-black);
 }
 
-.dc-dossier-session-date {
+.dc-dossier-item-meta {
   font-size: 0.8rem;
   color: var(--dc-color-cool-steel);
 }
 
-.dc-dossier-session-check {
+.dc-dossier-item-check {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1530,22 +1532,76 @@ span.dc {
   transition: color 0.15s ease;
 }
 
-.dc-dossier-session.selected .dc-dossier-session-check {
+.dc-dossier-item.selected .dc-dossier-item-check {
   color: var(--dc-color-primary);
 }
 
-.dc-dossier-session-check svg {
+.dc-dossier-item-check svg {
   width: 18px;
   height: 18px;
 }
 
+/* Multi-select checkbox style */
+.dc-dossier-item-multi {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.dc-dossier-item-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border: 2px solid var(--dc-color-pale-slate);
+  border-radius: var(--dc-radius-tiny);
+  background: #fff;
+  transition: all 0.15s ease;
+}
+
+.dc-dossier-item-checkbox svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  color: #fff;
+  transition: opacity 0.15s ease;
+}
+
+.dc-dossier-item-multi.selected .dc-dossier-item-checkbox {
+  background: var(--dc-color-primary);
+  border-color: var(--dc-color-primary);
+}
+
+.dc-dossier-item-multi.selected .dc-dossier-item-checkbox svg {
+  opacity: 1;
+}
+
+.dc-dossier-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--dc-color-cool-steel);
+  font-size: 0.9rem;
+}
+
 .dc-dossier-footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 12px 16px;
   background: var(--dc-color-brigth-snow);
   border-top: 1px solid var(--dc-color-platinum);
+}
+
+.dc-dossier-steps {
+  font-size: 0.8rem;
+  color: var(--dc-color-cool-steel);
+}
+
+.dc-dossier-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .dc-dossier-btn {
@@ -1558,25 +1614,30 @@ span.dc {
   transition: all 0.15s;
 }
 
-.dc-dossier-btn-cancel {
+.dc-dossier-btn-cancel,
+.dc-dossier-btn-back {
   background: var(--dc-color-khaki-beige) !important;
   color: #fff !important;
 }
 
-.dc-dossier-btn-cancel:hover {
+.dc-dossier-btn-cancel:hover,
+.dc-dossier-btn-back:hover {
   background: var(--dc-color-olive-wood) !important;
 }
 
+.dc-dossier-btn-next,
 .dc-dossier-btn-create {
   background: var(--dc-color-primary) !important;
   color: #fff !important;
   font-weight: bold;
 }
 
+.dc-dossier-btn-next:hover,
 .dc-dossier-btn-create:hover {
   background: var(--dc-color-primary-dark) !important;
 }
 
+.dc-dossier-btn-next:disabled,
 .dc-dossier-btn-create:disabled {
   opacity: 0.5;
   cursor: not-allowed;
