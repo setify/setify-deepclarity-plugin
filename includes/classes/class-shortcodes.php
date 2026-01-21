@@ -44,6 +44,7 @@ class Shortcodes
         add_shortcode('check_url_client_id', array($this, 'check_url_client_id'));
         add_shortcode('form_url', array($this, 'form_url'));
         add_shortcode('client_forms_list', array($this, 'client_forms_list'));
+        add_shortcode('post_id', array($this, 'post_id'));
     }
 
     /**
@@ -345,5 +346,25 @@ class Shortcodes
         $output .= '</div>';
 
         return $output;
+    }
+
+    /**
+     * Shortcode: post_id
+     *
+     * Outputs the current post ID.
+     *
+     * Usage: [post_id]
+     *
+     * @return string Post ID or empty string.
+     */
+    public function post_id()
+    {
+        $post_id = get_the_ID();
+
+        if (! $post_id) {
+            return '';
+        }
+
+        return (string) $post_id;
     }
 }
