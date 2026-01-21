@@ -964,9 +964,9 @@ span.dc {
   .ff-el-form-check.ff_item_selected
   label
   > span {
-  background-color: var(--dc-color-royal-plum) !important;
-  border-color: var(--dc-color-royal-plum) !important;
-  border-left-color: var(--dc-color-royal-plum) !important;
+  background-color: var(--dc-color-khaki-beige) !important;
+  border-color: var(--dc-color-khaki-beige) !important;
+  border-left-color: var(--dc-color-khaki-beige) !important;
   box-shadow: -1px 0 0 0 var(--dc-color-crimson-violet) !important;
   color: #fff;
 }
@@ -976,11 +976,7 @@ span.dc {
   .ff-el-form-check.ff_item_selected:first-child
   label
   > span {
-  border-left-color: var(--dc-color-royal-plum) !important;
-}
-
-.fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span:hover {
-  color: #fff !important;
+  border-left-color: var(--dc-color-khaki-beige) !important;
 }
 
 /* ==========================================

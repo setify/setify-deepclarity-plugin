@@ -45,6 +45,7 @@ class Shortcodes
         add_shortcode('form_url', array($this, 'form_url'));
         add_shortcode('client_forms_list', array($this, 'client_forms_list'));
         add_shortcode('post_id', array($this, 'post_id'));
+        add_shortcode('session_client_link', array($this, 'session_client_link'));
     }
 
     /**
@@ -366,5 +367,49 @@ class Shortcodes
         }
 
         return (string) $post_id;
+    }
+
+    /**
+     * Shortcode: session_client_link
+     *
+     * Outputs the URL to the client profile from a session.
+     *
+     * Usage: [session_client_link]
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string Client URL or empty string.
+     */
+    public function session_client_link()
+    {
+        // Get current post ID (session)
+        $post_id = get_the_ID();
+
+        if (! $post_id) {
+            return '';
+        }
+
+        // Get client from ACF relation field
+        $client = get_field(Sessions::ACF_CLIENT_FIELD, $post_id);
+
+        if (! $client) {
+            return '';
+        }
+
+        // Handle both single post object and array of posts
+        if (is_array($client)) {
+            $client = $client[0];
+        }
+
+        // Get client ID
+        $client_id = is_object($client) ? $client->ID : $client;
+
+        // Get client permalink
+        $client_url = get_permalink($client_id);
+
+        if (! $client_url) {
+            return '';
+        }
+
+        return esc_url($client_url);
     }
 }
