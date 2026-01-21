@@ -1420,6 +1420,7 @@
      * Initialize session analyzer
      */
     init: function () {
+      console.log("SessionAnalyzer: Initialized");
       this.bindEvents();
     },
 
@@ -1429,11 +1430,15 @@
     bindEvents: function () {
       $(document).on("click", "#analyze_session", function (e) {
         e.preventDefault();
+        console.log("SessionAnalyzer: Button clicked");
         const sessionId = $(this).data("session-id");
+        console.log("SessionAnalyzer: Session ID =", sessionId);
         if (sessionId) {
           SessionAnalyzer.reset();
           SessionAnalyzer.sessionId = sessionId;
           SessionAnalyzer.open();
+        } else {
+          console.log("SessionAnalyzer: No session-id found on button");
         }
       });
     },
