@@ -55,6 +55,10 @@ class Client
         // AJAX handler for form entry details
         add_action('wp_ajax_deep_clarity_get_form_entry', array($this, 'ajax_get_form_entry'));
         add_action('wp_ajax_nopriv_deep_clarity_get_form_entry', array($this, 'ajax_get_form_entry'));
+
+        // AJAX handlers for dossier creation
+        add_action('wp_ajax_deep_clarity_get_client_sessions', array($this, 'ajax_get_client_sessions'));
+        add_action('wp_ajax_deep_clarity_create_dossier', array($this, 'ajax_create_dossier'));
     }
 
     /**
@@ -439,6 +443,89 @@ class Client
         }
 
         return $labels;
+    }
+
+    /**
+     * AJAX handler for getting client sessions
+     */
+    public function ajax_get_client_sessions()
+    {
+        // Verify nonce
+        if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $client_id = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;
+
+        if (! $client_id) {
+            wp_send_json_error(array('message' => 'Missing client ID'));
+        }
+
+        // Get sessions for this client
+        $sessions_query = Sessions::get_sessions_for_client($client_id, array(
+            'orderby' => 'date',
+            'order'   => 'DESC',
+        ));
+
+        $sessions = array();
+
+        if ($sessions_query->have_posts()) {
+            while ($sessions_query->have_posts()) {
+                $sessions_query->the_post();
+                $session_id = get_the_ID();
+
+                $sessions[] = array(
+                    'id'    => $session_id,
+                    'title' => get_the_title(),
+                    'date'  => get_the_date('d.m.Y'),
+                );
+            }
+            wp_reset_postdata();
+        }
+
+        wp_send_json_success(array(
+            'sessions' => $sessions,
+        ));
+    }
+
+    /**
+     * AJAX handler for creating dossier
+     */
+    public function ajax_create_dossier()
+    {
+        // Verify nonce
+        if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $client_id  = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;
+        $session_id = isset($_POST['session_id']) ? intval($_POST['session_id']) : 0;
+
+        if (! $client_id || ! $session_id) {
+            wp_send_json_error(array('message' => 'Missing client or session ID'));
+        }
+
+        // Verify client exists
+        $client = get_post($client_id);
+        if (! $client || $client->post_type !== 'client') {
+            wp_send_json_error(array('message' => 'Invalid client'));
+        }
+
+        // Verify session exists
+        $session = get_post($session_id);
+        if (! $session || $session->post_type !== 'session') {
+            wp_send_json_error(array('message' => 'Invalid session'));
+        }
+
+        // Trigger the do_action
+        do_action('bit_pi_do_action', '1-1', array(
+            'client_id'  => $client_id,
+            'session_id' => $session_id,
+        ));
+
+        wp_send_json_success(array(
+            'message' => 'Dossier wird erstellt...',
+        ));
     }
 
     /**

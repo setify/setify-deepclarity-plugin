@@ -1389,3 +1389,195 @@ span.dc {
   color: var(--dc-color-pale-slate);
   font-style: italic;
 }
+
+/* ==========================================
+   Dossier Creator Modal
+   ========================================== */
+
+.dc-dossier-popup {
+  padding: 0 !important;
+  border-radius: var(--dc-radius-medium) !important;
+  overflow: hidden;
+}
+
+.dc-dossier-popup .swal2-html-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.dc-dossier-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px;
+  color: #666;
+}
+
+.dc-dossier-loading .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: dc-spin 0.8s linear infinite;
+}
+
+.dc-dossier-modal {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.dc-dossier-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--dc-color-brigth-snow);
+  border-bottom: 1px solid var(--dc-color-platinum);
+}
+
+.dc-dossier-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-dossier-close {
+  width: 21px !important;
+  height: 21px !important;
+  border: none !important;
+  background: none !important;
+  font-size: 2rem !important;
+  padding: 0 !important;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--dc-color-cool-steel) !important;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.dc-dossier-close:hover {
+  color: var(--dc-color-carbon-black) !important;
+}
+
+.dc-dossier-body {
+  padding: 16px;
+}
+
+.dc-dossier-hint {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  color: var(--dc-color-iron-grey);
+}
+
+.dc-dossier-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.dc-dossier-session {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fff;
+  border: 2px solid var(--dc-color-platinum);
+  border-radius: var(--dc-radius-small);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dc-dossier-session:hover {
+  border-color: var(--dc-color-pale-slate);
+  background: var(--dc-color-brigth-snow);
+}
+
+.dc-dossier-session.selected {
+  border-color: var(--dc-color-primary);
+  background: #faf7f8;
+}
+
+.dc-dossier-session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dc-dossier-session-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-dossier-session-date {
+  font-size: 0.8rem;
+  color: var(--dc-color-cool-steel);
+}
+
+.dc-dossier-session-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--dc-color-platinum);
+  transition: color 0.15s ease;
+}
+
+.dc-dossier-session.selected .dc-dossier-session-check {
+  color: var(--dc-color-primary);
+}
+
+.dc-dossier-session-check svg {
+  width: 18px;
+  height: 18px;
+}
+
+.dc-dossier-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--dc-color-brigth-snow);
+  border-top: 1px solid var(--dc-color-platinum);
+}
+
+.dc-dossier-btn {
+  padding: 10px 16px !important;
+  font-size: 0.85rem !important;
+  line-height: 1.2 !important;
+  border: none !important;
+  border-radius: var(--dc-radius-xsmall) !important;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dc-dossier-btn-cancel {
+  background: var(--dc-color-khaki-beige) !important;
+  color: #fff !important;
+}
+
+.dc-dossier-btn-cancel:hover {
+  background: var(--dc-color-olive-wood) !important;
+}
+
+.dc-dossier-btn-create {
+  background: var(--dc-color-primary) !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.dc-dossier-btn-create:hover {
+  background: var(--dc-color-primary-dark) !important;
+}
+
+.dc-dossier-btn-create:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

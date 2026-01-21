@@ -999,6 +999,228 @@
   };
 
   /**
+   * Dossier Creator Module
+   */
+  const DossierCreator = {
+    /**
+     * Initialize dossier creator
+     */
+    init: function () {
+      this.bindEvents();
+    },
+
+    /**
+     * Bind click events to create-dossier button
+     */
+    bindEvents: function () {
+      $(document).on("click", "#create-dossier", function (e) {
+        e.preventDefault();
+        const clientId = $(this).data("client-id");
+        if (clientId) {
+          DossierCreator.open(clientId);
+        }
+      });
+    },
+
+    /**
+     * Open session selection modal
+     */
+    open: function (clientId) {
+      const self = this;
+
+      // Show loading
+      Swal.fire({
+        title: "Session auswählen",
+        html: '<div class="dc-dossier-loading"><span class="spinner"></span> Sessions werden geladen...</div>',
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        allowOutsideClick: false,
+      });
+
+      // Fetch sessions for this client
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_get_client_sessions",
+          nonce: deepClarityFrontend.nonce,
+          client_id: clientId,
+        },
+        success: function (response) {
+          if (response.success) {
+            self.render(clientId, response.data.sessions);
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Fehler",
+              text: response.data.message || "Sessions konnten nicht geladen werden.",
+            });
+          }
+        },
+        error: function () {
+          Swal.fire({
+            icon: "error",
+            title: "Fehler",
+            text: "Ein Fehler ist aufgetreten.",
+          });
+        },
+      });
+    },
+
+    /**
+     * Render session selection modal
+     */
+    render: function (clientId, sessions) {
+      const self = this;
+
+      if (!sessions || sessions.length === 0) {
+        Swal.fire({
+          icon: "info",
+          title: "Keine Sessions",
+          text: "Für diesen Client sind keine Sessions vorhanden.",
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: null,
+        html: this.getTemplate(clientId, sessions),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          self.bindModalEvents(clientId);
+        },
+      });
+    },
+
+    /**
+     * Get session selection template
+     */
+    getTemplate: function (clientId, sessions) {
+      let sessionsHtml = "";
+      sessions.forEach(function (session) {
+        sessionsHtml += `
+          <div class="dc-dossier-session" data-session-id="${session.id}">
+            <div class="dc-dossier-session-info">
+              <span class="dc-dossier-session-title">${DossierCreator.escapeHtml(session.title)}</span>
+              <span class="dc-dossier-session-date">${DossierCreator.escapeHtml(session.date)}</span>
+            </div>
+            <div class="dc-dossier-session-check">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+          </div>
+        `;
+      });
+
+      return `
+        <div class="dc-dossier-modal" data-client-id="${clientId}">
+          <div class="dc-dossier-header">
+            <span class="dc-dossier-title">Session auswählen</span>
+            <button type="button" class="dc-dossier-close">&times;</button>
+          </div>
+          <div class="dc-dossier-body">
+            <p class="dc-dossier-hint">Wählen Sie die Session aus, die für das Dossier verwendet werden soll:</p>
+            <div class="dc-dossier-sessions">
+              ${sessionsHtml}
+            </div>
+          </div>
+          <div class="dc-dossier-footer">
+            <button type="button" class="dc-dossier-btn dc-dossier-btn-cancel">Abbrechen</button>
+            <button type="button" class="dc-dossier-btn dc-dossier-btn-create" disabled>Dossier erstellen</button>
+          </div>
+        </div>
+      `;
+    },
+
+    /**
+     * Bind modal events
+     */
+    bindModalEvents: function (clientId) {
+      const self = this;
+      let selectedSessionId = null;
+
+      // Close button
+      $(".dc-dossier-close, .dc-dossier-btn-cancel").on("click", function () {
+        Swal.close();
+      });
+
+      // Session selection
+      $(document).on("click", ".dc-dossier-session", function () {
+        $(".dc-dossier-session").removeClass("selected");
+        $(this).addClass("selected");
+        selectedSessionId = $(this).data("session-id");
+        $(".dc-dossier-btn-create").prop("disabled", false);
+      });
+
+      // Create button
+      $(".dc-dossier-btn-create").on("click", function () {
+        if (selectedSessionId) {
+          self.create(clientId, selectedSessionId);
+        }
+      });
+    },
+
+    /**
+     * Create dossier
+     */
+    create: function (clientId, sessionId) {
+      const $btn = $(".dc-dossier-btn-create");
+      $btn.prop("disabled", true).text("Wird erstellt...");
+
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_create_dossier",
+          nonce: deepClarityFrontend.nonce,
+          client_id: clientId,
+          session_id: sessionId,
+        },
+        success: function (response) {
+          if (response.success) {
+            Swal.fire({
+              icon: "success",
+              title: "Gestartet!",
+              text: response.data.message,
+              timer: 2000,
+              showConfirmButton: false,
+            });
+          } else {
+            $btn.prop("disabled", false).text("Dossier erstellen");
+            Swal.showValidationMessage(response.data.message || "Fehler beim Erstellen des Dossiers.");
+          }
+        },
+        error: function () {
+          $btn.prop("disabled", false).text("Dossier erstellen");
+          Swal.showValidationMessage("Ein Fehler ist aufgetreten.");
+        },
+      });
+    },
+
+    /**
+     * Escape HTML
+     */
+    escapeHtml: function (text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    },
+  };
+
+  /**
    * Deep Clarity Frontend Module
    */
   const DeepClarityFrontend = {
@@ -1012,6 +1234,7 @@
       Notes.init();
       HeaderScroll.init();
       FormEntryViewer.init();
+      DossierCreator.init();
     },
 
     /**
