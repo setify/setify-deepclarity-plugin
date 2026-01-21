@@ -247,21 +247,47 @@ mark.gold {
 }
 
 span.dc {
+  --dc-mark-color-start: rgba(51, 42, 35, 0.1);
+  --dc-mark-color-main: rgba(51, 42, 35, 0.4);
+  --dc-mark-color-end: rgba(51, 42, 35, 0.2);
+  --dc-mark-skew: 0.25em;
+  --dc-mark-height: 1em;
+  --dc-mark-overlap: 0.3em;
+
   position: relative;
+  margin-inline: calc(var(--dc-mark-overlap) * -1);
+  padding-inline: var(--dc-mark-overlap);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 span.dc::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: #332a23;
-  background: linear-gradient(
-    180deg,
-    rgba(51, 42, 35, 0) 60%,
-    rgba(51, 42, 35, 0.8) 60%,
-    rgba(51, 42, 35, 0.8) 95%,
-    rgba(51, 42, 35, 0) 95%
-  );
+  background-color: transparent;
+  background-image:
+    linear-gradient(
+      to bottom right,
+      transparent 50%,
+      var(--dc-mark-color-start) 50%
+    ),
+    linear-gradient(
+      to right,
+      var(--dc-mark-color-start),
+      var(--dc-mark-color-main) 4%,
+      var(--dc-mark-color-end)
+    ),
+    linear-gradient(to top left, transparent 50%, var(--dc-mark-color-end) 50%);
+  background-size:
+    var(--dc-mark-skew) var(--dc-mark-height),
+    calc(100% - var(--dc-mark-skew) * 2 + 1px) var(--dc-mark-height),
+    var(--dc-mark-skew) var(--dc-mark-height);
+  background-position:
+    left center,
+    center,
+    right center;
+  background-repeat: no-repeat;
   z-index: -1;
 }
 
