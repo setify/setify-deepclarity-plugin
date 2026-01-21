@@ -1403,6 +1403,198 @@
   };
 
   /**
+   * Session Analyzer Module
+   */
+  const SessionAnalyzer = {
+    sessionId: null,
+    selectedFields: [],
+
+    // Available fields for selection
+    availableFields: [
+      { key: "session_transcript", label: "Transkript" },
+      { key: "session_diagnosis", label: "Diagnose" },
+      { key: "session_note", label: "Interne Notiz" },
+    ],
+
+    /**
+     * Initialize session analyzer
+     */
+    init: function () {
+      this.bindEvents();
+    },
+
+    /**
+     * Bind click events to analyze_session button
+     */
+    bindEvents: function () {
+      $(document).on("click", "#analyze_session", function (e) {
+        e.preventDefault();
+        const sessionId = $(this).data("session-id");
+        if (sessionId) {
+          SessionAnalyzer.reset();
+          SessionAnalyzer.sessionId = sessionId;
+          SessionAnalyzer.open();
+        }
+      });
+    },
+
+    /**
+     * Reset state
+     */
+    reset: function () {
+      this.sessionId = null;
+      this.selectedFields = [];
+    },
+
+    /**
+     * Open modal
+     */
+    open: function () {
+      const self = this;
+
+      Swal.fire({
+        title: null,
+        html: this.getTemplate(),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          self.bindModalEvents();
+        },
+      });
+    },
+
+    /**
+     * Get template
+     */
+    getTemplate: function () {
+      let fieldsHtml = "";
+
+      this.availableFields.forEach(function (field) {
+        const isSelected = SessionAnalyzer.selectedFields.includes(field.key)
+          ? " selected"
+          : "";
+        fieldsHtml += `
+          <div class="dc-dossier-item dc-dossier-item-multi${isSelected}" data-field="${field.key}">
+            <div class="dc-dossier-item-checkbox">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="dc-dossier-item-info">
+              <span class="dc-dossier-item-title">${field.label}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      return `
+        <div class="dc-dossier-modal">
+          <div class="dc-dossier-header">
+            <span class="dc-dossier-title">Session analysieren</span>
+            <button type="button" class="dc-dossier-close">&times;</button>
+          </div>
+          <div class="dc-dossier-body">
+            <p class="dc-dossier-hint">Wählen Sie die Felder aus, die für die Analyse verwendet werden sollen:</p>
+            <div class="dc-dossier-items">
+              ${fieldsHtml}
+            </div>
+          </div>
+          <div class="dc-dossier-footer">
+            <div class="dc-dossier-steps"></div>
+            <div class="dc-dossier-actions">
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-cancel">Abbrechen</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-analyze" disabled>Analyse starten</button>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+
+    /**
+     * Bind modal events
+     */
+    bindModalEvents: function () {
+      const self = this;
+
+      // Close button
+      $(".dc-dossier-close, .dc-dossier-btn-cancel").on("click", function () {
+        Swal.close();
+      });
+
+      // Field selection (multi select)
+      $(".dc-dossier-item-multi").on("click", function () {
+        $(this).toggleClass("selected");
+        const fieldKey = $(this).data("field");
+
+        if ($(this).hasClass("selected")) {
+          if (!self.selectedFields.includes(fieldKey)) {
+            self.selectedFields.push(fieldKey);
+          }
+        } else {
+          self.selectedFields = self.selectedFields.filter(function (key) {
+            return key !== fieldKey;
+          });
+        }
+
+        // Enable/disable analyze button
+        $(".dc-dossier-btn-analyze").prop(
+          "disabled",
+          self.selectedFields.length === 0
+        );
+      });
+
+      // Analyze button
+      $(".dc-dossier-btn-analyze").on("click", function () {
+        self.analyze();
+      });
+    },
+
+    /**
+     * Analyze session
+     */
+    analyze: function () {
+      const self = this;
+      const $btn = $(".dc-dossier-btn-analyze");
+      $btn.prop("disabled", true).text("Wird gestartet...");
+
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_analyze_session",
+          nonce: deepClarityFrontend.nonce,
+          session_id: self.sessionId,
+          fields: self.selectedFields,
+        },
+        success: function (response) {
+          if (response.success) {
+            Swal.fire({
+              icon: "success",
+              title: "Gestartet!",
+              text: response.data.message,
+              timer: 2000,
+              showConfirmButton: false,
+            });
+          } else {
+            $btn.prop("disabled", false).text("Analyse starten");
+            Swal.showValidationMessage(
+              response.data.message || "Fehler beim Starten der Analyse."
+            );
+          }
+        },
+        error: function () {
+          $btn.prop("disabled", false).text("Analyse starten");
+          Swal.showValidationMessage("Ein Fehler ist aufgetreten.");
+        },
+      });
+    },
+  };
+
+  /**
    * Deep Clarity Frontend Module
    */
   const DeepClarityFrontend = {
@@ -1417,6 +1609,7 @@
       HeaderScroll.init();
       FormEntryViewer.init();
       DossierCreator.init();
+      SessionAnalyzer.init();
     },
 
     /**

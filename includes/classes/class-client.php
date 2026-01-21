@@ -60,6 +60,9 @@ class Client
         add_action('wp_ajax_deep_clarity_get_client_sessions', array($this, 'ajax_get_client_sessions'));
         add_action('wp_ajax_deep_clarity_get_client_forms', array($this, 'ajax_get_client_forms'));
         add_action('wp_ajax_deep_clarity_create_dossier', array($this, 'ajax_create_dossier'));
+
+        // AJAX handler for session analysis
+        add_action('wp_ajax_deep_clarity_analyze_session', array($this, 'ajax_analyze_session'));
     }
 
     /**
@@ -582,6 +585,56 @@ class Client
 
         wp_send_json_success(array(
             'message' => 'Dossier wird erstellt...',
+        ));
+    }
+
+    /**
+     * AJAX handler for analyzing session
+     */
+    public function ajax_analyze_session()
+    {
+        // Verify nonce
+        if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $session_id = isset($_POST['session_id']) ? intval($_POST['session_id']) : 0;
+        $fields     = isset($_POST['fields']) ? array_map('sanitize_text_field', (array) $_POST['fields']) : array();
+
+        if (! $session_id) {
+            wp_send_json_error(array('message' => 'Missing session ID'));
+        }
+
+        // Verify session exists
+        $session = get_post($session_id);
+        if (! $session || $session->post_type !== 'session') {
+            wp_send_json_error(array('message' => 'Invalid session'));
+        }
+
+        // Check if ACF is available
+        if (! function_exists('get_field')) {
+            wp_send_json_error(array('message' => 'ACF not available'));
+        }
+
+        // Allowed fields
+        $allowed_fields = array('session_transcript', 'session_diagnosis', 'session_note');
+
+        // Build data array with selected fields
+        $data = array(
+            'session_id' => $session_id,
+        );
+
+        foreach ($fields as $field) {
+            if (in_array($field, $allowed_fields, true)) {
+                $data[$field] = get_field($field, $session_id);
+            }
+        }
+
+        // Trigger the do_action
+        do_action('bit_pi_do_action', '2-1', $data);
+
+        wp_send_json_success(array(
+            'message' => 'Analyse wurde gestartet...',
         ));
     }
 

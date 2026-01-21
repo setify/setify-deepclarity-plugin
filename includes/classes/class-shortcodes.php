@@ -46,6 +46,7 @@ class Shortcodes
         add_shortcode('client_forms_list', array($this, 'client_forms_list'));
         add_shortcode('post_id', array($this, 'post_id'));
         add_shortcode('session_client_link', array($this, 'session_client_link'));
+        add_shortcode('session_client_id', array($this, 'session_client_id'));
     }
 
     /**
@@ -411,5 +412,37 @@ class Shortcodes
         }
 
         return esc_url($client_url);
+    }
+
+    /**
+     * Shortcode: session_client_id
+     *
+     * Outputs the client post ID from the current session.
+     *
+     * Usage: [session_client_id]
+     *
+     * @return string Client post ID or empty string.
+     */
+    public function session_client_id()
+    {
+        $post_id = get_the_ID();
+
+        if (! $post_id) {
+            return '';
+        }
+
+        $client = get_field(Sessions::ACF_CLIENT_FIELD, $post_id);
+
+        if (! $client) {
+            return '';
+        }
+
+        if (is_array($client)) {
+            $client = $client[0];
+        }
+
+        $client_id = is_object($client) ? $client->ID : $client;
+
+        return (string) $client_id;
     }
 }
