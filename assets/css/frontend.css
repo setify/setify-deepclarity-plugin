@@ -956,7 +956,8 @@ span.dc {
 }
 
 .fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span:hover {
-  color: var(--dc-color-royal-plum) !important;
+  color: var(--dc-color-dark-coffee) !important;
+  background-color: var(--dc-color-dust-grey) !important;
 }
 
 .fluentform
@@ -967,8 +968,8 @@ span.dc {
   background-color: var(--dc-color-khaki-beige) !important;
   border-color: var(--dc-color-khaki-beige) !important;
   border-left-color: var(--dc-color-khaki-beige) !important;
-  box-shadow: -1px 0 0 0 var(--dc-color-crimson-violet) !important;
-  color: #fff;
+  box-shadow: -1px 0 0 0 var(--dc-color-parchment) !important;
+  color: var(--dc-color-dark-coffee) !important;
 }
 
 .fluentform
