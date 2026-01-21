@@ -1725,12 +1725,11 @@
         html: result
           ? '<div class="dc-analyzer-result">' + this.escapeHtml(result) + "</div>"
           : "Die Analyse wurde erfolgreich abgeschlossen.",
-        timer: 5000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-        willClose: function () {
-          window.location.reload();
-        },
+        confirmButtonText: "Schließen",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      }).then(function () {
+        window.location.reload();
       });
     },
 
