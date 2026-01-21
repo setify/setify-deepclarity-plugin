@@ -246,30 +246,44 @@ mark.gold {
   box-decoration-break: clone;
 }
 
-mark.dc {
+span.dc {
+  position: relative;
+}
+
+span.dc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #332a23;
+  background: linear-gradient(
+    180deg,
+    rgba(51, 42, 35, 0) 60%,
+    rgba(51, 42, 35, 0.8) 60%,
+    rgba(51, 42, 35, 0.8) 95%,
+    rgba(51, 42, 35, 0) 95%
+  );
+  z-index: -1;
+}
+
+span.dc {
   background: linear-gradient(
     45deg,
-    #b38460,
-    #c89f7b,
-    #dcbc9a,
-    #e5c9ab,
-    #f4e2c8,
-    #e2c5a5,
-    #caa37f,
-    #c29874,
-    #b58864,
-    #b38460
+    #6b4f0f,
+    #9a7a1d,
+    #7d5e00,
+    #8f7424,
+    #6b4f0f,
+    #9a7a1d,
+    #7d5e00,
+    #8f7424,
+    #6b4f0f,
+    #9a7a1d
   );
   background-size: 400% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   animation: dc-gradient-shift 10s linear infinite;
-}
-
-mark.dc::after {
-  content: "";
-  display: block;
 }
 
 /* ==========================================================================
