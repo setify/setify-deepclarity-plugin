@@ -85,7 +85,7 @@
                 <div class="dc-mail-compose">
                     <div class="dc-mail-header">
                         <span class="dc-mail-title">Neue E-Mail</span>
-                        <button type="button" class="dc-mail-close">&times;</button>
+                        <button type="button" class="dc-mail-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
                     </div>
                     <div class="dc-mail-body">
                         <div class="dc-mail-field">
@@ -221,7 +221,7 @@
                         <span class="dc-mail-attachment-size">${self.formatFileSize(
                           file.size
                         )}</span>
-                        <button type="button" class="dc-mail-attachment-remove">&times;</button>
+                        <button type="button" class="dc-mail-attachment-remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
                     </div>
                 `);
 
@@ -468,7 +468,7 @@
         <div class="dc-mail-compose dc-mail-preview">
           <div class="dc-mail-header">
             <span class="dc-mail-title">E-Mail Vorschau</span>
-            <button type="button" class="dc-mail-close">&times;</button>
+            <button type="button" class="dc-mail-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-mail-body">
             <div class="dc-mail-field dc-mail-field-readonly">
@@ -679,7 +679,7 @@
         <div class="dc-note-edit-modal">
           <div class="dc-note-edit-header">
             <span class="dc-note-edit-title">Notiz bearbeiten</span>
-            <button type="button" class="dc-note-edit-close">&times;</button>
+            <button type="button" class="dc-note-edit-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-note-edit-body">
             <textarea id="dc-note-content" placeholder="Notiz eingeben...">${this.escapeHtml(data.content)}</textarea>
@@ -978,7 +978,7 @@
               <span class="dc-form-entry-title">${this.escapeHtml(data.form_name)}</span>
               <span class="dc-form-entry-date">${this.escapeHtml(data.created_at)}</span>
             </div>
-            <button type="button" class="dc-form-entry-close">&times;</button>
+            <button type="button" class="dc-form-entry-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-form-entry-body">
             ${qaHtml}
@@ -1146,7 +1146,7 @@
         <div class="dc-dossier-modal" data-step="1">
           <div class="dc-dossier-header">
             <span class="dc-dossier-title">Schritt 1: Session auswählen</span>
-            <button type="button" class="dc-dossier-close">&times;</button>
+            <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-dossier-body">
             <p class="dc-dossier-hint">Wählen Sie die Session aus, die für das Dossier verwendet werden soll:</p>
@@ -1295,7 +1295,7 @@
         <div class="dc-dossier-modal" data-step="2">
           <div class="dc-dossier-header">
             <span class="dc-dossier-title">Schritt 2: Formulare auswählen</span>
-            <button type="button" class="dc-dossier-close">&times;</button>
+            <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-dossier-body">
             <p class="dc-dossier-hint">Wählen Sie die Formulare aus, die im Dossier enthalten sein sollen (optional):</p>
@@ -1508,7 +1508,7 @@
         <div class="dc-dossier-modal">
           <div class="dc-dossier-header">
             <span class="dc-dossier-title">Session analysieren</span>
-            <button type="button" class="dc-dossier-close">&times;</button>
+            <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-dossier-body">
             <p class="dc-dossier-hint">Wählen Sie die Felder aus, die für die Analyse verwendet werden sollen:</p>
@@ -1814,7 +1814,7 @@
         <div class="dc-note-edit-modal">
           <div class="dc-note-edit-header">
             <span class="dc-note-edit-title">Neue Notiz erstellen</span>
-            <button type="button" class="dc-note-edit-close">&times;</button>
+            <button type="button" class="dc-note-edit-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-note-edit-body">
             <textarea id="dc-note-content" placeholder="Notiz eingeben..."></textarea>

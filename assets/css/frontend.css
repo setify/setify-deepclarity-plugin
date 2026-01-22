@@ -493,20 +493,25 @@ span.dc {
 }
 
 .dc-mail-close {
-  width: 21px !important;
-  height: 21px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px !important;
+  height: 24px !important;
   border: none !important;
   background: none !important;
-  font-size: 2rem !important;
-  padding: 0px !important;
-  font-weight: 300;
-  line-height: 1;
+  padding: 0 !important;
   color: var(--dc-color-cool-steel) !important;
   cursor: pointer;
   transition: color 0.15s;
   -webkit-appearance: none;
   appearance: none;
-  line-height: 1em !important;
+}
+
+.dc-mail-close svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .dc-mail-close:hover {
@@ -722,11 +727,15 @@ span.dc {
   border: none;
   border-radius: 50%;
   background: var(--dc-color-pale-slate);
-  font-size: 14px;
-  line-height: 1;
   color: var(--dc-color-iron-grey);
   cursor: pointer;
   transition: all 0.15s;
+}
+
+.dc-mail-attachment-remove svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
 }
 
 .dc-mail-attachment-remove:hover {
@@ -1104,17 +1113,23 @@ span.dc {
 }
 
 .dc-note-edit-close {
-  width: 21px !important;
-  height: 21px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px !important;
+  height: 24px !important;
   border: none !important;
   background: none !important;
-  font-size: 2rem !important;
   padding: 0 !important;
-  font-weight: 300;
-  line-height: 1;
   color: #888 !important;
   cursor: pointer;
   transition: color 0.15s;
+}
+
+.dc-note-edit-close svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .dc-note-edit-close:hover {
@@ -1338,17 +1353,23 @@ span.dc {
 }
 
 .dc-form-entry-close {
-  width: 21px !important;
-  height: 21px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px !important;
+  height: 24px !important;
   border: none !important;
   background: none !important;
-  font-size: 2rem !important;
   padding: 0 !important;
-  font-weight: 300;
-  line-height: 1;
   color: var(--dc-color-cool-steel) !important;
   cursor: pointer;
   transition: color 0.15s;
+}
+
+.dc-form-entry-close svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .dc-form-entry-close:hover {
@@ -1452,17 +1473,23 @@ span.dc {
 }
 
 .dc-dossier-close {
-  width: 21px !important;
-  height: 21px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px !important;
+  height: 24px !important;
   border: none !important;
   background: none !important;
-  font-size: 2rem !important;
   padding: 0 !important;
-  font-weight: 300;
-  line-height: 1;
   color: var(--dc-color-cool-steel) !important;
   cursor: pointer;
   transition: color 0.15s;
+}
+
+.dc-dossier-close svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .dc-dossier-close:hover {
