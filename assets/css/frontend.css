@@ -965,14 +965,6 @@ span.dc {
    Fluent Form Styles
    ========================================== */
 
-.fluentform
-  .ff-el-group.ff_list_buttons
-  .ff-el-form-check:first-child
-  label
-  > span {
-  border-left: 1px solid var(--dc-color-dust-grey) !important;
-}
-
 .fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span:hover {
   color: var(--dc-color-dark-coffee) !important;
   background-color: var(--dc-color-dust-grey) !important;
@@ -990,14 +982,6 @@ span.dc {
   color: var(--dc-color-dark-coffee) !important;
 }
 
-.fluentform
-  .ff-el-group.ff_list_buttons
-  .ff-el-form-check.ff_item_selected:first-child
-  label
-  > span {
-  border-left-color: var(--dc-color-khaki-beige) !important;
-}
-
 .ff-el-input--content {
   display: flex;
   flex-direction: column;
@@ -1008,6 +992,17 @@ span.dc {
   display: block;
   width: 100%;
   margin: 0;
+}
+
+.fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span {
+  text-transform: none;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span {
+  border: 1px solid var(--dc-color-dust-grey) !important;
+  border-radius: var(--dc-radius-small) !important;
+  width: 100% !important;
 }
 
 /* ==========================================
