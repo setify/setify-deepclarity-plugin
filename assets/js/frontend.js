@@ -1538,7 +1538,7 @@
           </div>
           <div class="dc-dossier-body dc-analyzer-loading-body">
             <div class="dc-analyzer-spinner">
-              <span class="spinner"></span>
+              <span class="dc-analyzer-loader"></span>
             </div>
             <p class="dc-analyzer-loading-text">Die Analyse wird durchgeführt. Bitte warten...</p>
             <p class="dc-analyzer-loading-hint">Das Modal schließt sich automatisch, sobald die Analyse abgeschlossen ist.</p>

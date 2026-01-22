@@ -246,6 +246,15 @@ mark.gold {
   box-decoration-break: clone;
 }
 
+.elementor-widget-text-editor mark {
+  margin-inline: -0.1em;
+  padding-inline: 0.1em;
+  background-color: #fff9c4;
+  color: inherit;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 span.dc {
   background: linear-gradient(
     45deg,
@@ -1638,4 +1647,70 @@ span.dc {
 .dc-dossier-btn-create:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ==========================================
+   Session Analyzer Loading
+   ========================================== */
+
+.dc-analyzer-loading-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  text-align: center;
+}
+
+.dc-analyzer-spinner {
+  margin-bottom: 20px;
+}
+
+.dc-analyzer-loader {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--dc-color-parchment);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: dc-analyzer-rotation 1s linear infinite;
+}
+
+.dc-analyzer-loader::after {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-bottom-color: var(--dc-color-khaki-beige);
+}
+
+@keyframes dc-analyzer-rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.dc-analyzer-loading-text {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dc-color-carbon-black);
+  text-align: center;
+}
+
+.dc-analyzer-loading-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--dc-color-cool-steel);
+  text-align: center;
 }
