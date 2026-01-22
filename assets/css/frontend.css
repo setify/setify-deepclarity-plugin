@@ -998,6 +998,18 @@ span.dc {
   border-left-color: var(--dc-color-khaki-beige) !important;
 }
 
+.ff-el-input--content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fluentform .ff-el-group.ff_list_buttons .ff-el-form-check {
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
 /* ==========================================
    Notes List
    ========================================== */
