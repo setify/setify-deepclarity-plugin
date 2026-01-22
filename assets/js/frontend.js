@@ -1890,6 +1890,105 @@
   };
 
   /**
+   * Copy Clipboard Module
+   */
+  const CopyClipboard = {
+    /**
+     * Initialize copy clipboard functionality
+     */
+    init: function () {
+      this.bindEvents();
+    },
+
+    /**
+     * Bind click events to copy-clipboard elements
+     */
+    bindEvents: function () {
+      // Handle click on the wrapper element or any child (including the anchor)
+      $(document).on("click", ".copy-clipboard, .copy-clipboard a", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Get the wrapper element
+        const $wrapper = $(this).hasClass("copy-clipboard")
+          ? $(this)
+          : $(this).closest(".copy-clipboard");
+
+        // Find the anchor inside and get href
+        const $anchor = $wrapper.find("a").first();
+        const url = $anchor.length ? $anchor.attr("href") : $(this).attr("href");
+
+        if (url) {
+          CopyClipboard.copyToClipboard(url);
+        }
+      });
+    },
+
+    /**
+     * Copy text to clipboard and show toast
+     */
+    copyToClipboard: function (text) {
+      // Use modern clipboard API if available
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard
+          .writeText(text)
+          .then(function () {
+            CopyClipboard.showToast();
+          })
+          .catch(function () {
+            CopyClipboard.fallbackCopy(text);
+          });
+      } else {
+        CopyClipboard.fallbackCopy(text);
+      }
+    },
+
+    /**
+     * Fallback copy method for older browsers
+     */
+    fallbackCopy: function (text) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        document.execCommand("copy");
+        CopyClipboard.showToast();
+      } catch (err) {
+        console.error("Copy failed:", err);
+      }
+
+      document.body.removeChild(textarea);
+    },
+
+    /**
+     * Show toast notification
+     */
+    showToast: function () {
+      if (typeof Toastify === "function") {
+        Toastify({
+          text: "Link wurde in die Zwischenablage kopiert",
+          duration: 5000,
+          gravity: "top",
+          position: "center",
+          stopOnFocus: true,
+          className: "dc-toast",
+          style: {
+            background: "linear-gradient(to right, #b9ae9b, #e0d9d0)",
+            color: "#333",
+            fontWeight: "500",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+          },
+        }).showToast();
+      }
+    },
+  };
+
+  /**
    * Deep Clarity Frontend Module
    */
   const DeepClarityFrontend = {
@@ -1906,6 +2005,7 @@
       DossierCreator.init();
       SessionAnalyzer.init();
       NoteCreator.init();
+      CopyClipboard.init();
     },
 
     /**

@@ -1741,3 +1741,17 @@ span.dc {
   color: var(--dc-color-cool-steel);
   text-align: center;
 }
+
+/* ==========================================
+   Toast Notifications
+   ========================================== */
+
+.dc-toast {
+  padding: 12px 24px !important;
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+}
+
+.toastify.on.dc-toast {
+  opacity: 1 !important;
+}

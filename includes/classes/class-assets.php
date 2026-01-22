@@ -119,7 +119,7 @@ class Assets {
      */
     public function enqueue_frontend_assets() {
         // Build dependencies array - only add if styles are registered
-        $style_deps = array( 'sweetalert2' );
+        $style_deps = array( 'sweetalert2', 'toastify' );
 
         // All possible Elementor style handles to ensure we load after them
         $elementor_styles = array(
@@ -148,6 +148,13 @@ class Assets {
             DEEP_CLARITY_VERSION
         );
 
+        wp_enqueue_style(
+            'toastify',
+            'https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css',
+            array(),
+            '1.12.0'
+        );
+
         // Frontend styles - loads after Elementor
         wp_enqueue_style(
             'deep-clarity-frontend',
@@ -165,11 +172,19 @@ class Assets {
             true
         );
 
+        wp_enqueue_script(
+            'toastify',
+            'https://cdn.jsdelivr.net/npm/toastify-js',
+            array(),
+            '1.12.0',
+            true
+        );
+
         // Frontend scripts
         wp_enqueue_script(
             'deep-clarity-frontend',
             DEEP_CLARITY_PLUGIN_URL . 'assets/js/frontend.js',
-            array( 'jquery', 'sweetalert2' ),
+            array( 'jquery', 'sweetalert2', 'toastify' ),
             DEEP_CLARITY_VERSION,
             true
         );
