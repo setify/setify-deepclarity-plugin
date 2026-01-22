@@ -1020,6 +1020,10 @@ span.dc {
   font-size: 1rem !important;
   line-height: 1.2 !important;
 }
+
+.fluentform .ff_left {
+  text-align: left !important;
+}
 /* ==========================================
    Notes List
    ========================================== */
