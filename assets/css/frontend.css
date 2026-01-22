@@ -985,7 +985,7 @@ span.dc {
 .ff-el-input--content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .fluentform .ff-el-group.ff_list_buttons .ff-el-form-check {
@@ -997,18 +997,29 @@ span.dc {
 .fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label {
   display: block;
   width: 100%;
+  text-align: left;
 }
 
 .fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span {
   border: 1px solid var(--dc-color-dust-grey) !important;
-  border-radius: var(--dc-radius-small) !important;
+  border-radius: var(--dc-radius-xsmall) !important;
   width: 100% !important;
   text-transform: none;
   font-size: 1rem;
   font-weight: 600;
-  text-align: left;
+  text-align: left !important;
 }
 
+.fluentform-widget-wrapper .ff-el-section-break .ff-el-section-title {
+  font-size: 1.3rem !important;
+  line-height: 1.2 !important;
+  font-weight: 600;
+}
+
+.ff-section_break_desk {
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+}
 /* ==========================================
    Notes List
    ========================================== */
