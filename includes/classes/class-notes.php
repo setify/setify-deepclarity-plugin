@@ -74,6 +74,9 @@ class Notes
         add_action('wp_ajax_deep_clarity_delete_note', array($this, 'ajax_delete_note'));
         add_action('wp_ajax_nopriv_deep_clarity_delete_note', array($this, 'ajax_delete_note'));
 
+        add_action('wp_ajax_deep_clarity_create_note', array($this, 'ajax_create_note'));
+        add_action('wp_ajax_nopriv_deep_clarity_create_note', array($this, 'ajax_create_note'));
+
         // Auto-set post title to post ID on save
         add_action('save_post_' . self::POST_TYPE, array($this, 'set_post_title_to_id'), 10, 3);
     }
@@ -184,6 +187,75 @@ class Notes
 
         wp_send_json_success(array(
             'message' => 'Notiz wurde gelöscht.',
+        ));
+    }
+
+    /**
+     * AJAX handler: Create new note
+     */
+    public function ajax_create_note()
+    {
+        // Verify nonce
+        if (! isset($_POST['nonce']) || ! wp_verify_nonce($_POST['nonce'], 'deep_clarity_frontend')) {
+            wp_send_json_error(array('message' => 'Ungültige Anfrage.'));
+        }
+
+        // Get client ID and content
+        $client_id = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;
+        $content   = isset($_POST['content']) ? wp_kses_post($_POST['content']) : '';
+
+        if (! $client_id) {
+            wp_send_json_error(array('message' => 'Keine Client-ID angegeben.'));
+        }
+
+        if (empty($content)) {
+            wp_send_json_error(array('message' => 'Bitte geben Sie einen Inhalt ein.'));
+        }
+
+        // Get client post to verify it exists and get the name
+        $client = get_post($client_id);
+
+        if (! $client || $client->post_type !== 'client') {
+            wp_send_json_error(array('message' => 'Client nicht gefunden.'));
+        }
+
+        // Get client name from ACF fields
+        $first_name  = get_field('client_first_name', $client_id);
+        $last_name   = get_field('client_last_name', $client_id);
+        $client_name = trim($first_name . ' ' . $last_name);
+
+        if (empty($client_name)) {
+            $client_name = $client->post_title;
+        }
+
+        // Build title: [Client ID] Client Name - Notiz vom Date
+        $date_formatted = date_i18n('d.m.Y');
+        $post_title     = sprintf('[%d] %s - Notiz vom %s', $client_id, $client_name, $date_formatted);
+
+        // Create the note post
+        $note_id = wp_insert_post(array(
+            'post_type'    => self::POST_TYPE,
+            'post_title'   => $post_title,
+            'post_content' => $content,
+            'post_status'  => 'publish',
+        ), true);
+
+        if (is_wp_error($note_id)) {
+            wp_send_json_error(array('message' => 'Fehler beim Erstellen: ' . $note_id->get_error_message()));
+        }
+
+        // Set the client relation via ACF
+        if (function_exists('update_field')) {
+            update_field(self::ACF_CLIENT_FIELD, $client_id, $note_id);
+        }
+
+        // Return success with note data
+        wp_send_json_success(array(
+            'message'  => 'Notiz wurde erstellt.',
+            'note_id'  => $note_id,
+            'title'    => $post_title,
+            'content'  => wpautop($content),
+            'date'     => $date_formatted,
         ));
     }
 

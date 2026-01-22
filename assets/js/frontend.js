@@ -1757,6 +1757,139 @@
   };
 
   /**
+   * Note Creator Module
+   */
+  const NoteCreator = {
+    clientId: null,
+
+    /**
+     * Initialize note creator
+     */
+    init: function () {
+      this.bindEvents();
+    },
+
+    /**
+     * Bind click events to add-client-note button
+     */
+    bindEvents: function () {
+      $(document).on("click", "#add-client-note", function (e) {
+        e.preventDefault();
+        const clientId = $(this).data("client-id");
+        if (clientId) {
+          NoteCreator.clientId = clientId;
+          NoteCreator.open();
+        }
+      });
+    },
+
+    /**
+     * Open modal
+     */
+    open: function () {
+      const self = this;
+
+      Swal.fire({
+        title: null,
+        html: this.getTemplate(),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "500px",
+        padding: 0,
+        customClass: {
+          popup: "dc-note-popup",
+        },
+        didOpen: function () {
+          self.bindModalEvents();
+          $("#dc-note-content").focus();
+        },
+      });
+    },
+
+    /**
+     * Get template
+     */
+    getTemplate: function () {
+      return `
+        <div class="dc-note-edit-modal">
+          <div class="dc-note-edit-header">
+            <span class="dc-note-edit-title">Neue Notiz erstellen</span>
+            <button type="button" class="dc-note-edit-close">&times;</button>
+          </div>
+          <div class="dc-note-edit-body">
+            <textarea id="dc-note-content" placeholder="Notiz eingeben..."></textarea>
+          </div>
+          <div class="dc-note-edit-footer">
+            <button type="button" class="dc-note-btn dc-note-btn-cancel">Abbrechen</button>
+            <button type="button" class="dc-note-btn dc-note-btn-save">Speichern</button>
+          </div>
+        </div>
+      `;
+    },
+
+    /**
+     * Bind modal events
+     */
+    bindModalEvents: function () {
+      const self = this;
+
+      $(".dc-note-edit-close, .dc-note-btn-cancel").on("click", function () {
+        Swal.close();
+      });
+
+      $(".dc-note-btn-save").on("click", function () {
+        const content = $("#dc-note-content").val().trim();
+        if (content) {
+          self.save(content);
+        } else {
+          Swal.showValidationMessage("Bitte geben Sie einen Inhalt ein.");
+        }
+      });
+    },
+
+    /**
+     * Save note via AJAX
+     */
+    save: function (content) {
+      const self = this;
+      const $btn = $(".dc-note-btn-save");
+      $btn.prop("disabled", true).text("Speichern...");
+
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_create_note",
+          nonce: deepClarityFrontend.nonce,
+          client_id: self.clientId,
+          content: content,
+        },
+        success: function (response) {
+          if (response.success) {
+            Swal.fire({
+              icon: "success",
+              title: "Gespeichert!",
+              text: response.data.message,
+              confirmButtonText: "Schließen",
+            }).then(function () {
+              window.location.reload();
+            });
+          } else {
+            $btn.prop("disabled", false).text("Speichern");
+            Swal.showValidationMessage(
+              response.data.message || "Notiz konnte nicht erstellt werden."
+            );
+          }
+        },
+        error: function () {
+          $btn.prop("disabled", false).text("Speichern");
+          Swal.showValidationMessage("Ein Fehler ist aufgetreten.");
+        },
+      });
+    },
+  };
+
+  /**
    * Deep Clarity Frontend Module
    */
   const DeepClarityFrontend = {
@@ -1772,6 +1905,7 @@
       FormEntryViewer.init();
       DossierCreator.init();
       SessionAnalyzer.init();
+      NoteCreator.init();
     },
 
     /**
