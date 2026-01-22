@@ -994,15 +994,18 @@ span.dc {
   margin: 0;
 }
 
-.fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span {
-  text-transform: none;
-  font-size: 1rem;
-  font-weight: 600;
+.fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label {
+  display: block;
+  width: 100%;
 }
+
 .fluentform .ff-el-group.ff_list_buttons .ff-el-form-check label > span {
   border: 1px solid var(--dc-color-dust-grey) !important;
   border-radius: var(--dc-radius-small) !important;
   width: 100% !important;
+  text-transform: none;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 /* ==========================================
