@@ -97,6 +97,11 @@
   border-radius: var(--dc-radius-tiny);
 }
 
+/* Visibility */
+.hidden {
+  display: none !important;
+}
+
 /* Padding */
 .padding-large {
   padding: var(--dc-spacing-large);
