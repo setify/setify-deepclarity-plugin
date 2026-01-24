@@ -51,6 +51,7 @@ class Client
 
         // Fluent Forms integration
         add_action('fluentform/submission_inserted', array($this, 'track_fluent_form_submission'), 10, 3);
+        add_action('fluentform/submission_inserted', array($this, 'track_dcpi_form_submission'), 10, 3);
 
         // AJAX handler for form entry details
         add_action('wp_ajax_deep_clarity_get_form_entry', array($this, 'ajax_get_form_entry'));
@@ -214,6 +215,64 @@ class Client
 
         // Update the repeater field
         update_field('client_forms', $client_forms, $client_id);
+    }
+
+    /**
+     * Track DCPI Form (ID 23) submission in client's ACF repeater field
+     *
+     * Saves dimension scores and deep clarity index to client_dcpi repeater.
+     *
+     * @param int    $entry_id  The submission entry ID.
+     * @param array  $form_data The submitted form data.
+     * @param object $form      The form object.
+     */
+    public function track_dcpi_form_submission($entry_id, $form_data, $form)
+    {
+        // Only process Form ID 23
+        if ($form->id != 23) {
+            return;
+        }
+
+        // Check if client_id field exists in form data
+        if (empty($form_data['client_id'])) {
+            return;
+        }
+
+        $client_id = intval($form_data['client_id']);
+
+        // Verify client post exists
+        $client = get_post($client_id);
+        if (! $client || $client->post_type !== 'client') {
+            return;
+        }
+
+        // Check if ACF is available
+        if (! function_exists('get_field') || ! function_exists('update_field')) {
+            return;
+        }
+
+        // Get current repeater data
+        $client_dcpi = get_field('client_dcpi', $client_id);
+        if (! is_array($client_dcpi)) {
+            $client_dcpi = array();
+        }
+
+        // Build new DCPI entry with mapped fields
+        $new_entry = array(
+            'date'               => current_time('Y-m-d H:i:s'),
+            'dimension_1_score'  => isset($form_data['dimension_1_score']) ? floatval($form_data['dimension_1_score']) : 0,
+            'dimension_2_score'  => isset($form_data['dimension_2_score']) ? floatval($form_data['dimension_2_score']) : 0,
+            'dimension_3_score'  => isset($form_data['dimension_3_score']) ? floatval($form_data['dimension_3_score']) : 0,
+            'dimension_4_score'  => isset($form_data['dimension_4_score']) ? floatval($form_data['dimension_4_score']) : 0,
+            'dimension_5_score'  => isset($form_data['dimension_5_score']) ? floatval($form_data['dimension_5_score']) : 0,
+            'deep_clarity_index' => isset($form_data['deep_clarity_index']) ? floatval($form_data['deep_clarity_index']) : 0,
+        );
+
+        // Add new entry to repeater
+        $client_dcpi[] = $new_entry;
+
+        // Update the repeater field
+        update_field('client_dcpi', $client_dcpi, $client_id);
     }
 
     /**
