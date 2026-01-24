@@ -69,8 +69,10 @@ class Client
         add_action('rest_api_init', array($this, 'register_rest_routes'));
 
         // Auto-update post title on save
+        // Priority 10 for standard save, priority 50 for ACF to ensure fields are saved first
+        // Works with both backend and Frontend Admin plugin (which uses acf_form)
         add_action('save_post_client', array($this, 'auto_update_client_title'), 10, 3);
-        add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 20);
+        add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 50);
     }
 
     /**
@@ -152,7 +154,7 @@ class Client
 
             // Avoid infinite loop by removing the action temporarily
             remove_action('save_post_client', array($this, 'auto_update_client_title'), 10);
-            remove_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 20);
+            remove_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 50);
 
             wp_update_post(array(
                 'ID'         => $post_id,
@@ -161,7 +163,7 @@ class Client
 
             // Re-add the actions
             add_action('save_post_client', array($this, 'auto_update_client_title'), 10, 3);
-            add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 20);
+            add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 50);
         }
     }
 
