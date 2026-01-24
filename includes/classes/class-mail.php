@@ -81,6 +81,71 @@ class Mail
     {
         // Filter email body to use Deep Clarity template
         add_filter('fluentform/email_body', array($this, 'wrap_fluentform_email'), 10, 4);
+
+        // Override Fluent Forms email styles to remove default styling
+        add_filter('fluentform_email_styles', array($this, 'reset_fluentform_email_styles'), 10, 2);
+    }
+
+    /**
+     * Reset Fluent Forms email styles to remove default styling
+     *
+     * @param string $css   The default CSS styles.
+     * @param object $form  The form object.
+     * @return string Modified CSS styles.
+     */
+    public function reset_fluentform_email_styles($css, $form)
+    {
+        // Return clean styles that work with our template
+        return '
+            /* Reset Fluent Forms default styles */
+            .ff_email_body {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .ff_email_container,
+            .ff_email_wrapper {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-shadow: none !important;
+            }
+            table.ff_email_table {
+                background: transparent !important;
+                border: none !important;
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            table.ff_email_table td {
+                background: transparent !important;
+                border: none !important;
+                padding: 4px 0 !important;
+            }
+            .ff_email_header,
+            .ff_email_footer {
+                display: none !important;
+            }
+            p, td, th, li {
+                font-family: Inter, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+                color: #494C51;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                font-family: Inter, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial, sans-serif;
+                color: #1c1d1f;
+                margin: 0 0 10px 0;
+            }
+            a {
+                color: #5c272e;
+            }
+        ';
     }
 
     /**
