@@ -67,6 +67,102 @@ class Client
 
         // REST API endpoint for Bit Flows callback
         add_action('rest_api_init', array($this, 'register_rest_routes'));
+
+        // Auto-update post title on save
+        add_action('save_post_client', array($this, 'auto_update_client_title'), 10, 3);
+        add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 20);
+    }
+
+    /**
+     * Auto-update client post title on save
+     *
+     * Format: {First Name} {Last Name} - {Email}
+     *
+     * @param int      $post_id Post ID.
+     * @param \WP_Post $post    Post object.
+     * @param bool     $update  Whether this is an existing post being updated.
+     */
+    public function auto_update_client_title($post_id, $post, $update)
+    {
+        // Bail if autosave, revision, or not a client post
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        if (wp_is_post_revision($post_id)) {
+            return;
+        }
+
+        if ($post->post_type !== 'client') {
+            return;
+        }
+
+        $this->update_client_title($post_id);
+    }
+
+    /**
+     * Auto-update client post title after ACF save
+     *
+     * This ensures ACF fields are available when updating title.
+     *
+     * @param int $post_id Post ID.
+     */
+    public function auto_update_client_title_acf($post_id)
+    {
+        // Bail if not a client post
+        if (get_post_type($post_id) !== 'client') {
+            return;
+        }
+
+        $this->update_client_title($post_id);
+    }
+
+    /**
+     * Update client post title based on ACF fields
+     *
+     * @param int $post_id Post ID.
+     */
+    private function update_client_title($post_id)
+    {
+        // Check if ACF is available
+        if (! function_exists('get_field')) {
+            return;
+        }
+
+        // Get ACF field values
+        $firstname = get_field('client_firstname', $post_id);
+        $lastname  = get_field('client_lastname', $post_id);
+        $email     = get_field('client_email', $post_id);
+
+        // Build title: First Name Last Name - Email
+        $title_parts = array();
+
+        $name = trim($firstname . ' ' . $lastname);
+        if (! empty($name)) {
+            $title_parts[] = $name;
+        }
+
+        if (! empty($email)) {
+            $title_parts[] = $email;
+        }
+
+        // If we have data, update the title
+        if (! empty($title_parts)) {
+            $new_title = implode(' - ', $title_parts);
+
+            // Avoid infinite loop by removing the action temporarily
+            remove_action('save_post_client', array($this, 'auto_update_client_title'), 10);
+            remove_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 20);
+
+            wp_update_post(array(
+                'ID'         => $post_id,
+                'post_title' => $new_title,
+            ));
+
+            // Re-add the actions
+            add_action('save_post_client', array($this, 'auto_update_client_title'), 10, 3);
+            add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 20);
+        }
     }
 
     /**
