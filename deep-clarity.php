@@ -56,6 +56,7 @@ require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-claude.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-acf.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-client.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-notes.php';
+require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-api.php';
 
 /**
  * Main plugin class
@@ -148,6 +149,13 @@ final class Deep_Clarity
     public $notes;
 
     /**
+     * API instance
+     *
+     * @var DeepClarity\API
+     */
+    public $api;
+
+    /**
      * Get single instance of the class
      *
      * @return Deep_Clarity
@@ -185,6 +193,7 @@ final class Deep_Clarity
         $this->acf        = DeepClarity\ACF::get_instance();
         $this->client     = DeepClarity\Client::get_instance();
         $this->notes      = DeepClarity\Notes::get_instance();
+        $this->api        = DeepClarity\API::get_instance();
 
         // Load textdomain
         add_action('plugins_loaded', array($this, 'load_textdomain'));

@@ -2,6 +2,8 @@
 
 WordPress Plugin für Deep Clarity.
 
+**Website:** https://deepclarity.de/
+
 ## Buttons
 
 ### HTML Struktur
