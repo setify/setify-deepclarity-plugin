@@ -1456,12 +1456,46 @@ span.dc {
   padding: 0 !important;
   border-radius: var(--dc-radius-medium) !important;
   overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }
 
 .dc-dossier-popup .swal2-html-container {
   margin: 0 !important;
   padding: 0 !important;
   overflow: visible !important;
+}
+
+/* Success modal styling */
+.dc-dossier-popup.swal2-icon-success {
+  padding: 24px !important;
+}
+
+.dc-dossier-popup .swal2-title {
+  font-family: inherit !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: var(--dc-color-carbon-black) !important;
+  margin-bottom: 12px !important;
+}
+
+.dc-dossier-popup.swal2-icon-success .swal2-html-container {
+  padding: 0 16px !important;
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  color: var(--dc-color-text) !important;
+}
+
+.dc-dossier-popup .swal2-confirm {
+  font-family: inherit !important;
+  background: var(--dc-color-royal-plum) !important;
+  border-radius: var(--dc-radius-small) !important;
+  font-weight: 500 !important;
+  padding: 10px 24px !important;
+}
+
+.dc-dossier-popup .swal2-confirm:hover {
+  background: var(--dc-color-crimson-violet) !important;
 }
 
 .dc-dossier-loading {
