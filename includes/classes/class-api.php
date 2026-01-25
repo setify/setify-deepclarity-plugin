@@ -42,6 +42,13 @@ class API
     private $api_key = 'dc_api_k7Qm9xR4vN2pL8wY3jF6hT1cB5sA0eD';
 
     /**
+     * Flag to skip webhook when update comes from REST API
+     *
+     * @var bool
+     */
+    private static $skip_webhook = false;
+
+    /**
      * Get instance
      *
      * @return API
@@ -92,6 +99,11 @@ class API
 
         // Prevent infinite loops
         if (did_action('save_post_client') > 1) {
+            return;
+        }
+
+        // Skip webhook if update comes from REST API
+        if (self::$skip_webhook) {
             return;
         }
 
@@ -244,11 +256,17 @@ class API
             ), 400);
         }
 
+        // Set flag to prevent webhook from being triggered
+        self::$skip_webhook = true;
+
         // Update the post title
         $result = wp_update_post(array(
             'ID'         => $post_id,
             'post_title' => $title,
         ), true);
+
+        // Reset the flag
+        self::$skip_webhook = false;
 
         if (is_wp_error($result)) {
             return new \WP_REST_Response(array(
