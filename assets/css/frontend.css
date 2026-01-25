@@ -251,7 +251,7 @@ mark.gold {
   box-decoration-break: clone;
 }
 
-.elementor-widget-text-editor mark {
+.elementor-widget-text-editor mark:not(.gold) {
   margin-inline: -0.1em;
   padding-inline: 0.1em;
   background-color: #fff9c4;
@@ -1456,7 +1456,15 @@ span.dc {
   padding: 0 !important;
   border-radius: var(--dc-radius-medium) !important;
   overflow: hidden;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif !important;
 }
 
 .dc-dossier-popup .swal2-html-container {
