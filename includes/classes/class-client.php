@@ -124,22 +124,35 @@ class Client
     /**
      * Update client post title based on ACF fields
      *
+     * Format: [post_id] First Name Last Name - Email
+     *
      * @param int $post_id Post ID.
      */
     private function update_client_title($post_id)
     {
+        // Prevent infinite loop with static flag
+        static $updating = array();
+        if (isset($updating[$post_id])) {
+            return;
+        }
+        $updating[$post_id] = true;
+
         // Check if ACF is available
         if (! function_exists('get_field')) {
+            unset($updating[$post_id]);
             return;
         }
 
-        // Get ACF field values
-        $firstname = get_field('client_firstname', $post_id);
-        $lastname  = get_field('client_lastname', $post_id);
+        // Get ACF field values (correct field names with underscores)
+        $firstname = get_field('client_first_name', $post_id);
+        $lastname  = get_field('client_last_name', $post_id);
         $email     = get_field('client_email', $post_id);
 
-        // Build title: First Name Last Name - Email
+        // Build title: [post_id] First Name Last Name - Email
         $title_parts = array();
+
+        // Add post_id prefix
+        $title_parts[] = '[' . $post_id . ']';
 
         $name = trim($firstname . ' ' . $lastname);
         if (! empty($name)) {
@@ -147,26 +160,19 @@ class Client
         }
 
         if (! empty($email)) {
-            $title_parts[] = $email;
+            $title_parts[] = '- ' . $email;
         }
 
-        // If we have data, update the title
-        if (! empty($title_parts)) {
-            $new_title = implode(' - ', $title_parts);
+        // Build final title
+        $new_title = implode(' ', $title_parts);
 
-            // Avoid infinite loop by removing the action temporarily
-            remove_action('save_post_client', array($this, 'auto_update_client_title'), 10);
-            remove_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 50);
+        // Update the post title
+        wp_update_post(array(
+            'ID'         => $post_id,
+            'post_title' => $new_title,
+        ));
 
-            wp_update_post(array(
-                'ID'         => $post_id,
-                'post_title' => $new_title,
-            ));
-
-            // Re-add the actions
-            add_action('save_post_client', array($this, 'auto_update_client_title'), 10, 3);
-            add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 50);
-        }
+        unset($updating[$post_id]);
     }
 
     /**
