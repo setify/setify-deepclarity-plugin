@@ -137,8 +137,15 @@ class Client
         }
         $updating[$post_id] = true;
 
+        // Also remove hooks temporarily as additional safety
+        remove_action('save_post_client', array($this, 'auto_update_client_title'), 10);
+        remove_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 50);
+
         // Check if ACF is available
         if (! function_exists('get_field')) {
+            // Re-add hooks before returning
+            add_action('save_post_client', array($this, 'auto_update_client_title'), 10, 3);
+            add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 50);
             unset($updating[$post_id]);
             return;
         }
@@ -166,11 +173,25 @@ class Client
         // Build final title
         $new_title = implode(' ', $title_parts);
 
-        // Update the post title
-        wp_update_post(array(
-            'ID'         => $post_id,
-            'post_title' => $new_title,
-        ));
+        // Get current title to check if update is needed
+        $current_post = get_post($post_id);
+        if ($current_post && $current_post->post_title !== $new_title) {
+            // Update the post title using wpdb directly to avoid triggering save_post hooks
+            global $wpdb;
+            $wpdb->update(
+                $wpdb->posts,
+                array('post_title' => $new_title),
+                array('ID' => $post_id),
+                array('%s'),
+                array('%d')
+            );
+            // Clear post cache
+            clean_post_cache($post_id);
+        }
+
+        // Re-add hooks
+        add_action('save_post_client', array($this, 'auto_update_client_title'), 10, 3);
+        add_action('acf/save_post', array($this, 'auto_update_client_title_acf'), 50);
 
         unset($updating[$post_id]);
     }
