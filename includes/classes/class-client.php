@@ -258,13 +258,14 @@ class Client
         }
 
         // Build new DCPI entry with mapped fields
+        // Dimension scores are rounded to whole numbers, deep_clarity_index keeps decimals
         $new_entry = array(
             'date'               => current_time('Y-m-d H:i:s'),
-            'dimension_1_score'  => isset($form_data['dimension_1_score']) ? floatval($form_data['dimension_1_score']) : 0,
-            'dimension_2_score'  => isset($form_data['dimension_2_score']) ? floatval($form_data['dimension_2_score']) : 0,
-            'dimension_3_score'  => isset($form_data['dimension_3_score']) ? floatval($form_data['dimension_3_score']) : 0,
-            'dimension_4_score'  => isset($form_data['dimension_4_score']) ? floatval($form_data['dimension_4_score']) : 0,
-            'dimension_5_score'  => isset($form_data['dimension_5_score']) ? floatval($form_data['dimension_5_score']) : 0,
+            'dimension_1_score'  => isset($form_data['dimension_1_score']) ? round(floatval($form_data['dimension_1_score'])) : 0,
+            'dimension_2_score'  => isset($form_data['dimension_2_score']) ? round(floatval($form_data['dimension_2_score'])) : 0,
+            'dimension_3_score'  => isset($form_data['dimension_3_score']) ? round(floatval($form_data['dimension_3_score'])) : 0,
+            'dimension_4_score'  => isset($form_data['dimension_4_score']) ? round(floatval($form_data['dimension_4_score'])) : 0,
+            'dimension_5_score'  => isset($form_data['dimension_5_score']) ? round(floatval($form_data['dimension_5_score'])) : 0,
             'deep_clarity_index' => isset($form_data['deep_clarity_index']) ? floatval($form_data['deep_clarity_index']) : 0,
         );
 
