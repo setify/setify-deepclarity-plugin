@@ -742,8 +742,22 @@ class Client
             wp_send_json_error(array('message' => 'ACF not available'));
         }
 
-        // Get dossier count from post meta
-        $dossier_count = (int) get_post_meta($client_id, '_dossier_count', true);
+        // Get dossier count by querying actual dossier posts (post_type: dosi)
+        // with ACF field 'dossier_client' matching this client
+        $dossier_query = new \WP_Query(array(
+            'post_type'      => 'dosi',
+            'post_status'    => 'any',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_query'     => array(
+                array(
+                    'key'     => 'dossier_client',
+                    'value'   => $client_id,
+                    'compare' => '=',
+                ),
+            ),
+        ));
+        $dossier_count = $dossier_query->found_posts;
 
         // Get client forms from ACF repeater
         $client_forms = get_field('client_forms', $client_id);
@@ -864,10 +878,6 @@ class Client
 
         // Trigger the do_action
         do_action('bit_pi_do_action', '1-1', $dossier_data);
-
-        // Increment dossier count
-        $current_count = (int) get_post_meta($client_id, '_dossier_count', true);
-        update_post_meta($client_id, '_dossier_count', $current_count + 1);
 
         wp_send_json_success(array(
             'message' => 'Dossier-Generierung wurde gestartet.',
