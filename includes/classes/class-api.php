@@ -25,11 +25,14 @@ class API
     private static $instance = null;
 
     /**
-     * Webhook URL for client updates
+     * Webhook URLs for client updates (production and test)
      *
-     * @var string
+     * @var array
      */
-    private $webhook_client_update = 'https://n8n.setify.de/webhook/dc_update_client';
+    private $webhook_client_update_urls = array(
+        'https://n8n.setify.de/webhook/dc_update_client',
+        'https://n8n.setify.de/webhook-test/dc_update_client',
+    );
 
     /**
      * API Key for authentication
@@ -112,8 +115,10 @@ class API
             'is_update'        => $update,
         );
 
-        // Send webhook
-        $this->send_webhook($this->webhook_client_update, $data);
+        // Send webhook to all configured URLs (production + test)
+        foreach ($this->webhook_client_update_urls as $url) {
+            $this->send_webhook($url, $data);
+        }
     }
 
     /**
