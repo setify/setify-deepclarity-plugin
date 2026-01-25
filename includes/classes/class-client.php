@@ -644,10 +644,10 @@ class Client
             wp_send_json_error(array('message' => 'ACF not available'));
         }
 
-        // Get dossier count by querying actual dossier posts (post_type: dosi)
+        // Get dossier count by querying actual dossier posts
         // with ACF field 'dossier_client' matching this client
         $dossier_query = new \WP_Query(array(
-            'post_type'      => 'dosi',
+            'post_type'      => 'dossier',
             'post_status'    => 'any',
             'posts_per_page' => -1,
             'fields'         => 'ids',
@@ -765,7 +765,7 @@ class Client
 
         // Get dossier count to determine if this is first or subsequent dossier
         $dossier_query = new \WP_Query(array(
-            'post_type'      => 'dosi',
+            'post_type'      => 'dossier',
             'post_status'    => 'any',
             'posts_per_page' => -1,
             'fields'         => 'ids',
