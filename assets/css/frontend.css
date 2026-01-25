@@ -1707,6 +1707,94 @@ span.dc {
   cursor: not-allowed;
 }
 
+/* Smaller items list */
+.dc-dossier-items-small {
+  max-height: 150px;
+}
+
+.dc-dossier-items-small .dc-dossier-item {
+  padding: 10px 14px;
+}
+
+.dc-dossier-items-small .dc-dossier-item-title {
+  font-size: 0.9rem;
+}
+
+.dc-dossier-items-small .dc-dossier-item-meta {
+  font-size: 0.75rem;
+}
+
+/* Hint with margin-top */
+.dc-dossier-hint-mt {
+  margin-top: 16px !important;
+}
+
+/* Empty small text */
+.dc-dossier-empty-small {
+  padding: 12px;
+  text-align: center;
+  color: var(--dc-color-cool-steel);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Info box for comparison step */
+.dc-dossier-info-box {
+  background: var(--dc-color-parchment);
+  border: 1px solid var(--dc-color-khaki-beige);
+  border-radius: var(--dc-radius-small);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.dc-dossier-info-box p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--dc-color-dark-coffee);
+}
+
+/* Summary styles */
+.dc-dossier-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dc-dossier-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--dc-color-platinum);
+  border-radius: var(--dc-radius-small);
+}
+
+.dc-dossier-summary-item.dc-dossier-summary-comparison {
+  background: var(--dc-color-brigth-snow);
+  border-style: dashed;
+}
+
+.dc-dossier-summary-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--dc-color-cool-steel);
+}
+
+.dc-dossier-summary-value {
+  font-size: 0.9rem;
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-dossier-summary-value small {
+  color: var(--dc-color-cool-steel);
+  font-weight: normal;
+}
+
 /* ==========================================
    Session Analyzer Loading
    ========================================== */

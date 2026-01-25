@@ -1000,12 +1000,23 @@
 
   /**
    * Dossier Creator Module
+   *
+   * New flow:
+   * Step 1: Select Anamnesebogen (Form ID 3) - required
+   * Step 2: Select Session + optional DCPI (Form ID 23)
+   * Step 3: Comparison values (only for 2nd+ dossier) - previous session + DCPI
+   * Step 4: Summary and confirmation
    */
   const DossierCreator = {
-    currentStep: 1,
     clientId: null,
+    data: null, // Holds all fetched data
+
+    // Selected values
+    selectedAnamneseEntryId: null,
     selectedSessionId: null,
-    selectedFormIds: [],
+    selectedDcpiEntryId: null,
+    selectedComparisonSessionId: null,
+    selectedComparisonDcpiEntryId: null,
 
     /**
      * Initialize dossier creator
@@ -1024,7 +1035,7 @@
         if (clientId) {
           DossierCreator.reset();
           DossierCreator.clientId = clientId;
-          DossierCreator.openStep1();
+          DossierCreator.loadData();
         }
       });
     },
@@ -1033,25 +1044,27 @@
      * Reset state
      */
     reset: function () {
-      this.currentStep = 1;
       this.clientId = null;
+      this.data = null;
+      this.selectedAnamneseEntryId = null;
       this.selectedSessionId = null;
-      this.selectedFormIds = [];
+      this.selectedDcpiEntryId = null;
+      this.selectedComparisonSessionId = null;
+      this.selectedComparisonDcpiEntryId = null;
     },
 
     /**
-     * Open Step 1: Session selection
+     * Load all data needed for dossier creation
      */
-    openStep1: function () {
+    loadData: function () {
       const self = this;
 
-      // Show loading
       Swal.fire({
         title: null,
-        html: '<div class="dc-dossier-loading"><span class="spinner"></span> Sessions werden geladen...</div>',
+        html: '<div class="dc-dossier-loading"><span class="spinner"></span> Daten werden geladen...</div>',
         showConfirmButton: false,
         showCancelButton: false,
-        width: "500px",
+        width: "550px",
         padding: 0,
         customClass: {
           popup: "dc-dossier-popup",
@@ -1060,23 +1073,23 @@
         allowOutsideClick: false,
       });
 
-      // Fetch sessions for this client
       $.ajax({
         url: deepClarityFrontend.ajaxUrl,
         type: "POST",
         data: {
-          action: "deep_clarity_get_client_sessions",
+          action: "deep_clarity_init_dossier",
           nonce: deepClarityFrontend.nonce,
           client_id: self.clientId,
         },
         success: function (response) {
           if (response.success) {
-            self.renderStep1(response.data.sessions);
+            self.data = response.data;
+            self.processData();
           } else {
             Swal.fire({
               icon: "error",
               title: "Fehler",
-              text: response.data.message || "Sessions konnten nicht geladen werden.",
+              text: response.data.message || "Daten konnten nicht geladen werden.",
             });
           }
         },
@@ -1091,26 +1104,72 @@
     },
 
     /**
-     * Render Step 1: Session selection
+     * Process loaded data and determine flow
      */
-    renderStep1: function (sessions) {
-      const self = this;
+    processData: function () {
+      // Check if Anamnesebogen exists
+      if (!this.data.anamnese_forms || this.data.anamnese_forms.length === 0) {
+        this.showNoAnamneseError();
+        return;
+      }
 
-      if (!sessions || sessions.length === 0) {
+      // Check if sessions exist
+      if (!this.data.sessions || this.data.sessions.length === 0) {
         Swal.fire({
           icon: "info",
           title: "Keine Sessions",
-          text: "Für diesen Client sind keine Sessions vorhanden.",
+          text: "Es sind noch keine Sessions für diesen Klienten vorhanden. Bitte erstellen Sie zuerst eine Session.",
         });
         return;
       }
 
+      // Start with Step 1
+      this.renderStep1();
+    },
+
+    /**
+     * Show error when no Anamnesebogen exists
+     */
+    showNoAnamneseError: function () {
+      Swal.fire({
+        icon: "warning",
+        title: "Anamnesebogen fehlt",
+        html: '<p style="text-align: left; margin: 0;">Ein Dossier kann erst erstellt werden, wenn das <strong>Anamneseformular</strong> ausgefüllt wurde.</p><p style="text-align: left; margin: 16px 0 0 0;">Bitte bitten Sie den Klienten, zuerst das Anamneseformular auszufüllen.</p>',
+        confirmButtonText: "Verstanden",
+        customClass: {
+          popup: "dc-dossier-popup",
+        },
+      });
+    },
+
+    /**
+     * Get total steps based on dossier count
+     */
+    getTotalSteps: function () {
+      return this.data.dossier_count > 0 ? 4 : 3;
+    },
+
+    /**
+     * Check if comparison step is needed
+     */
+    needsComparisonStep: function () {
+      return this.data.dossier_count > 0;
+    },
+
+    // =====================================================
+    // STEP 1: Anamnesebogen Selection
+    // =====================================================
+
+    renderStep1: function () {
+      const self = this;
+      const totalSteps = this.getTotalSteps();
+
       Swal.fire({
         title: null,
-        html: this.getStep1Template(sessions),
+        html: this.getStep1Template(),
         showConfirmButton: false,
         showCancelButton: false,
-        width: "500px",
+        width: "550px",
         padding: 0,
         customClass: {
           popup: "dc-dossier-popup",
@@ -1122,18 +1181,18 @@
       });
     },
 
-    /**
-     * Get Step 1 template
-     */
-    getStep1Template: function (sessions) {
-      let sessionsHtml = "";
-      sessions.forEach(function (session) {
-        const isSelected = DossierCreator.selectedSessionId === session.id ? " selected" : "";
-        sessionsHtml += `
-          <div class="dc-dossier-item${isSelected}" data-session-id="${session.id}">
+    getStep1Template: function () {
+      const forms = this.data.anamnese_forms;
+      const totalSteps = this.getTotalSteps();
+      let formsHtml = "";
+
+      forms.forEach((form) => {
+        const isSelected = this.selectedAnamneseEntryId === form.entry_id ? " selected" : "";
+        formsHtml += `
+          <div class="dc-dossier-item${isSelected}" data-entry-id="${form.entry_id}">
             <div class="dc-dossier-item-info">
-              <span class="dc-dossier-item-title">${DossierCreator.escapeHtml(session.title)}</span>
-              <span class="dc-dossier-item-meta">${DossierCreator.escapeHtml(session.date)}</span>
+              <span class="dc-dossier-item-title">${this.escapeHtml(form.form_name)}</span>
+              <span class="dc-dossier-item-meta">${this.escapeHtml(form.date)}</span>
             </div>
             <div class="dc-dossier-item-check">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -1142,119 +1201,69 @@
         `;
       });
 
+      // If only one form, pre-select it
+      if (forms.length === 1) {
+        this.selectedAnamneseEntryId = forms[0].entry_id;
+        formsHtml = formsHtml.replace('class="dc-dossier-item"', 'class="dc-dossier-item selected"');
+      }
+
       return `
         <div class="dc-dossier-modal" data-step="1">
           <div class="dc-dossier-header">
-            <span class="dc-dossier-title">Schritt 1: Session auswählen</span>
+            <span class="dc-dossier-title">Schritt 1: Anamnesebogen</span>
             <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-dossier-body">
-            <p class="dc-dossier-hint">Wählen Sie die Session aus, die für das Dossier verwendet werden soll:</p>
+            <p class="dc-dossier-hint">Wählen Sie den Anamnesebogen, der für das Dossier verwendet werden soll:</p>
             <div class="dc-dossier-items">
-              ${sessionsHtml}
+              ${formsHtml}
             </div>
           </div>
           <div class="dc-dossier-footer">
-            <div class="dc-dossier-steps">Schritt 1 von 2</div>
+            <div class="dc-dossier-steps">Schritt 1 von ${totalSteps}</div>
             <div class="dc-dossier-actions">
               <button type="button" class="dc-dossier-btn dc-dossier-btn-cancel">Abbrechen</button>
-              <button type="button" class="dc-dossier-btn dc-dossier-btn-next" disabled>Weiter</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-next" ${this.selectedAnamneseEntryId ? "" : "disabled"}>Weiter</button>
             </div>
           </div>
         </div>
       `;
     },
 
-    /**
-     * Bind Step 1 events
-     */
     bindStep1Events: function () {
       const self = this;
 
-      // Close button
       $(".dc-dossier-close, .dc-dossier-btn-cancel").on("click", function () {
         Swal.close();
       });
 
-      // Session selection (single select)
       $(".dc-dossier-item").on("click", function () {
         $(".dc-dossier-item").removeClass("selected");
         $(this).addClass("selected");
-        self.selectedSessionId = $(this).data("session-id");
+        self.selectedAnamneseEntryId = $(this).data("entry-id");
         $(".dc-dossier-btn-next").prop("disabled", false);
       });
 
-      // Next button
       $(".dc-dossier-btn-next").on("click", function () {
-        if (self.selectedSessionId) {
-          self.openStep2();
+        if (self.selectedAnamneseEntryId) {
+          self.renderStep2();
         }
       });
     },
 
-    /**
-     * Open Step 2: Form selection
-     */
-    openStep2: function () {
-      const self = this;
+    // =====================================================
+    // STEP 2: Session + DCPI Selection
+    // =====================================================
 
-      // Show loading
-      Swal.fire({
-        title: null,
-        html: '<div class="dc-dossier-loading"><span class="spinner"></span> Formulare werden geladen...</div>',
-        showConfirmButton: false,
-        showCancelButton: false,
-        width: "500px",
-        padding: 0,
-        customClass: {
-          popup: "dc-dossier-popup",
-          htmlContainer: "dc-dossier-container",
-        },
-        allowOutsideClick: false,
-      });
-
-      // Fetch forms for this client
-      $.ajax({
-        url: deepClarityFrontend.ajaxUrl,
-        type: "POST",
-        data: {
-          action: "deep_clarity_get_client_forms",
-          nonce: deepClarityFrontend.nonce,
-          client_id: self.clientId,
-        },
-        success: function (response) {
-          if (response.success) {
-            self.renderStep2(response.data.forms);
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Fehler",
-              text: response.data.message || "Formulare konnten nicht geladen werden.",
-            });
-          }
-        },
-        error: function () {
-          Swal.fire({
-            icon: "error",
-            title: "Fehler",
-            text: "Ein Fehler ist aufgetreten.",
-          });
-        },
-      });
-    },
-
-    /**
-     * Render Step 2: Form selection
-     */
-    renderStep2: function (forms) {
+    renderStep2: function () {
       const self = this;
 
       Swal.fire({
         title: null,
-        html: this.getStep2Template(forms),
+        html: this.getStep2Template(),
         showConfirmButton: false,
         showCancelButton: false,
-        width: "500px",
+        width: "550px",
         padding: 0,
         customClass: {
           popup: "dc-dossier-popup",
@@ -1266,99 +1275,383 @@
       });
     },
 
-    /**
-     * Get Step 2 template
-     */
-    getStep2Template: function (forms) {
-      let formsHtml = "";
+    getStep2Template: function () {
+      const sessions = this.data.sessions;
+      const dcpiForms = this.data.dcpi_forms;
+      const totalSteps = this.getTotalSteps();
 
-      if (!forms || forms.length === 0) {
-        formsHtml = '<p class="dc-dossier-empty">Keine Formulare vorhanden.</p>';
-      } else {
-        forms.forEach(function (form) {
-          const isSelected = DossierCreator.selectedFormIds.includes(form.entry_id) ? " selected" : "";
-          formsHtml += `
-            <div class="dc-dossier-item dc-dossier-item-multi${isSelected}" data-entry-id="${form.entry_id}" data-form-id="${form.form_id}">
-              <div class="dc-dossier-item-checkbox">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
+      let sessionsHtml = "";
+      sessions.forEach((session) => {
+        const isSelected = this.selectedSessionId === session.id ? " selected" : "";
+        sessionsHtml += `
+          <div class="dc-dossier-item dc-dossier-session${isSelected}" data-session-id="${session.id}">
+            <div class="dc-dossier-item-info">
+              <span class="dc-dossier-item-title">${this.escapeHtml(session.title)}</span>
+              <span class="dc-dossier-item-meta">${this.escapeHtml(session.date)}</span>
+            </div>
+            <div class="dc-dossier-item-check">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+          </div>
+        `;
+      });
+
+      let dcpiHtml = "";
+      if (dcpiForms && dcpiForms.length > 0) {
+        dcpiForms.forEach((form) => {
+          const isSelected = this.selectedDcpiEntryId === form.entry_id ? " selected" : "";
+          dcpiHtml += `
+            <div class="dc-dossier-item dc-dossier-dcpi${isSelected}" data-entry-id="${form.entry_id}">
               <div class="dc-dossier-item-info">
-                <span class="dc-dossier-item-title">${DossierCreator.escapeHtml(form.form_name)}</span>
-                <span class="dc-dossier-item-meta">ID: ${form.entry_id} • ${DossierCreator.escapeHtml(form.date)}</span>
+                <span class="dc-dossier-item-title">${this.escapeHtml(form.form_name)}</span>
+                <span class="dc-dossier-item-meta">${this.escapeHtml(form.date)}</span>
+              </div>
+              <div class="dc-dossier-item-check">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
               </div>
             </div>
           `;
         });
+      } else {
+        dcpiHtml = '<p class="dc-dossier-empty-small">Kein DCPI-Formular vorhanden.</p>';
       }
 
       return `
         <div class="dc-dossier-modal" data-step="2">
           <div class="dc-dossier-header">
-            <span class="dc-dossier-title">Schritt 2: Formulare auswählen</span>
+            <span class="dc-dossier-title">Schritt 2: Session & DCPI</span>
             <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-dossier-body">
-            <p class="dc-dossier-hint">Wählen Sie die Formulare aus, die im Dossier enthalten sein sollen (optional):</p>
-            <div class="dc-dossier-items">
-              ${formsHtml}
+            <p class="dc-dossier-hint"><strong>Session auswählen</strong> (erforderlich):</p>
+            <div class="dc-dossier-items dc-dossier-items-small">
+              ${sessionsHtml}
+            </div>
+            <p class="dc-dossier-hint dc-dossier-hint-mt"><strong>DCPI-Formular auswählen</strong> (optional):</p>
+            <div class="dc-dossier-items dc-dossier-items-small">
+              ${dcpiHtml}
             </div>
           </div>
           <div class="dc-dossier-footer">
-            <div class="dc-dossier-steps">Schritt 2 von 2</div>
+            <div class="dc-dossier-steps">Schritt 2 von ${totalSteps}</div>
             <div class="dc-dossier-actions">
               <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück</button>
-              <button type="button" class="dc-dossier-btn dc-dossier-btn-create">Dossier erstellen</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-next" ${this.selectedSessionId ? "" : "disabled"}>Weiter</button>
             </div>
           </div>
         </div>
       `;
     },
 
-    /**
-     * Bind Step 2 events
-     */
     bindStep2Events: function () {
       const self = this;
 
-      // Close button
       $(".dc-dossier-close").on("click", function () {
         Swal.close();
       });
 
-      // Back button
       $(".dc-dossier-btn-back").on("click", function () {
-        self.openStep1();
+        self.renderStep1();
       });
 
-      // Form selection (multi select)
-      $(".dc-dossier-item-multi").on("click", function () {
-        $(this).toggleClass("selected");
-        const entryId = $(this).data("entry-id");
+      // Session selection (single select)
+      $(".dc-dossier-session").on("click", function () {
+        $(".dc-dossier-session").removeClass("selected");
+        $(this).addClass("selected");
+        self.selectedSessionId = $(this).data("session-id");
+        $(".dc-dossier-btn-next").prop("disabled", false);
+      });
 
+      // DCPI selection (single select, optional - can deselect)
+      $(".dc-dossier-dcpi").on("click", function () {
         if ($(this).hasClass("selected")) {
-          if (!self.selectedFormIds.includes(entryId)) {
-            self.selectedFormIds.push(entryId);
-          }
+          $(this).removeClass("selected");
+          self.selectedDcpiEntryId = null;
         } else {
-          self.selectedFormIds = self.selectedFormIds.filter(function (id) {
-            return id !== entryId;
-          });
+          $(".dc-dossier-dcpi").removeClass("selected");
+          $(this).addClass("selected");
+          self.selectedDcpiEntryId = $(this).data("entry-id");
         }
       });
 
-      // Create button
+      $(".dc-dossier-btn-next").on("click", function () {
+        if (self.selectedSessionId) {
+          if (self.needsComparisonStep()) {
+            self.renderStep3();
+          } else {
+            self.renderSummary();
+          }
+        }
+      });
+    },
+
+    // =====================================================
+    // STEP 3: Comparison Values (only for 2nd+ dossier)
+    // =====================================================
+
+    renderStep3: function () {
+      const self = this;
+
+      Swal.fire({
+        title: null,
+        html: this.getStep3Template(),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "550px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          self.bindStep3Events();
+        },
+      });
+    },
+
+    getStep3Template: function () {
+      const sessions = this.data.sessions;
+      const dcpiForms = this.data.dcpi_forms;
+      const totalSteps = this.getTotalSteps();
+
+      // Filter out already selected session and DCPI
+      const availableSessions = sessions.filter((s) => s.id !== this.selectedSessionId);
+      const availableDcpi = dcpiForms ? dcpiForms.filter((f) => f.entry_id !== this.selectedDcpiEntryId) : [];
+
+      let sessionsHtml = "";
+      if (availableSessions.length > 0) {
+        availableSessions.forEach((session) => {
+          const isSelected = this.selectedComparisonSessionId === session.id ? " selected" : "";
+          sessionsHtml += `
+            <div class="dc-dossier-item dc-dossier-comp-session${isSelected}" data-session-id="${session.id}">
+              <div class="dc-dossier-item-info">
+                <span class="dc-dossier-item-title">${this.escapeHtml(session.title)}</span>
+                <span class="dc-dossier-item-meta">${this.escapeHtml(session.date)}</span>
+              </div>
+              <div class="dc-dossier-item-check">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        sessionsHtml = '<p class="dc-dossier-empty-small">Keine weitere Session zum Vergleich vorhanden.</p>';
+      }
+
+      let dcpiHtml = "";
+      if (availableDcpi.length > 0) {
+        availableDcpi.forEach((form) => {
+          const isSelected = this.selectedComparisonDcpiEntryId === form.entry_id ? " selected" : "";
+          dcpiHtml += `
+            <div class="dc-dossier-item dc-dossier-comp-dcpi${isSelected}" data-entry-id="${form.entry_id}">
+              <div class="dc-dossier-item-info">
+                <span class="dc-dossier-item-title">${this.escapeHtml(form.form_name)}</span>
+                <span class="dc-dossier-item-meta">${this.escapeHtml(form.date)}</span>
+              </div>
+              <div class="dc-dossier-item-check">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        dcpiHtml = '<p class="dc-dossier-empty-small">Kein weiteres DCPI-Formular zum Vergleich vorhanden.</p>';
+      }
+
+      return `
+        <div class="dc-dossier-modal" data-step="3">
+          <div class="dc-dossier-header">
+            <span class="dc-dossier-title">Schritt 3: Vergleichswerte</span>
+            <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
+          </div>
+          <div class="dc-dossier-body">
+            <div class="dc-dossier-info-box">
+              <p>Da bereits ein Dossier für diesen Klienten erstellt wurde, können Sie hier <strong>Vergleichswerte</strong> auswählen. Diese ermöglichen es, die Entwicklung des Klienten im neuen Dossier darzustellen.</p>
+            </div>
+            <p class="dc-dossier-hint"><strong>Vergleichs-Session</strong> (optional):</p>
+            <div class="dc-dossier-items dc-dossier-items-small">
+              ${sessionsHtml}
+            </div>
+            <p class="dc-dossier-hint dc-dossier-hint-mt"><strong>Vergleichs-DCPI</strong> (optional):</p>
+            <div class="dc-dossier-items dc-dossier-items-small">
+              ${dcpiHtml}
+            </div>
+          </div>
+          <div class="dc-dossier-footer">
+            <div class="dc-dossier-steps">Schritt 3 von ${totalSteps}</div>
+            <div class="dc-dossier-actions">
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-next">Weiter</button>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+
+    bindStep3Events: function () {
+      const self = this;
+
+      $(".dc-dossier-close").on("click", function () {
+        Swal.close();
+      });
+
+      $(".dc-dossier-btn-back").on("click", function () {
+        self.renderStep2();
+      });
+
+      // Comparison session selection (single select, optional - can deselect)
+      $(".dc-dossier-comp-session").on("click", function () {
+        if ($(this).hasClass("selected")) {
+          $(this).removeClass("selected");
+          self.selectedComparisonSessionId = null;
+        } else {
+          $(".dc-dossier-comp-session").removeClass("selected");
+          $(this).addClass("selected");
+          self.selectedComparisonSessionId = $(this).data("session-id");
+        }
+      });
+
+      // Comparison DCPI selection (single select, optional - can deselect)
+      $(".dc-dossier-comp-dcpi").on("click", function () {
+        if ($(this).hasClass("selected")) {
+          $(this).removeClass("selected");
+          self.selectedComparisonDcpiEntryId = null;
+        } else {
+          $(".dc-dossier-comp-dcpi").removeClass("selected");
+          $(this).addClass("selected");
+          self.selectedComparisonDcpiEntryId = $(this).data("entry-id");
+        }
+      });
+
+      $(".dc-dossier-btn-next").on("click", function () {
+        self.renderSummary();
+      });
+    },
+
+    // =====================================================
+    // SUMMARY STEP
+    // =====================================================
+
+    renderSummary: function () {
+      const self = this;
+
+      Swal.fire({
+        title: null,
+        html: this.getSummaryTemplate(),
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "550px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          self.bindSummaryEvents();
+        },
+      });
+    },
+
+    getSummaryTemplate: function () {
+      const totalSteps = this.getTotalSteps();
+      const currentStep = totalSteps;
+
+      // Find selected items for display
+      const anamnese = this.data.anamnese_forms.find((f) => f.entry_id === this.selectedAnamneseEntryId);
+      const session = this.data.sessions.find((s) => s.id === this.selectedSessionId);
+      const dcpi = this.selectedDcpiEntryId ? this.data.dcpi_forms.find((f) => f.entry_id === this.selectedDcpiEntryId) : null;
+      const compSession = this.selectedComparisonSessionId ? this.data.sessions.find((s) => s.id === this.selectedComparisonSessionId) : null;
+      const compDcpi = this.selectedComparisonDcpiEntryId ? this.data.dcpi_forms.find((f) => f.entry_id === this.selectedComparisonDcpiEntryId) : null;
+
+      let summaryHtml = `
+        <div class="dc-dossier-summary-item">
+          <span class="dc-dossier-summary-label">Anamnesebogen</span>
+          <span class="dc-dossier-summary-value">${this.escapeHtml(anamnese.form_name)} <small>(${this.escapeHtml(anamnese.date)})</small></span>
+        </div>
+        <div class="dc-dossier-summary-item">
+          <span class="dc-dossier-summary-label">Session</span>
+          <span class="dc-dossier-summary-value">${this.escapeHtml(session.title)} <small>(${this.escapeHtml(session.date)})</small></span>
+        </div>
+      `;
+
+      if (dcpi) {
+        summaryHtml += `
+          <div class="dc-dossier-summary-item">
+            <span class="dc-dossier-summary-label">DCPI-Formular</span>
+            <span class="dc-dossier-summary-value">${this.escapeHtml(dcpi.form_name)} <small>(${this.escapeHtml(dcpi.date)})</small></span>
+          </div>
+        `;
+      }
+
+      if (compSession) {
+        summaryHtml += `
+          <div class="dc-dossier-summary-item dc-dossier-summary-comparison">
+            <span class="dc-dossier-summary-label">Vergleichs-Session</span>
+            <span class="dc-dossier-summary-value">${this.escapeHtml(compSession.title)} <small>(${this.escapeHtml(compSession.date)})</small></span>
+          </div>
+        `;
+      }
+
+      if (compDcpi) {
+        summaryHtml += `
+          <div class="dc-dossier-summary-item dc-dossier-summary-comparison">
+            <span class="dc-dossier-summary-label">Vergleichs-DCPI</span>
+            <span class="dc-dossier-summary-value">${this.escapeHtml(compDcpi.form_name)} <small>(${this.escapeHtml(compDcpi.date)})</small></span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="dc-dossier-modal" data-step="summary">
+          <div class="dc-dossier-header">
+            <span class="dc-dossier-title">Zusammenfassung</span>
+            <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
+          </div>
+          <div class="dc-dossier-body">
+            <p class="dc-dossier-hint">Folgende Daten werden für die Dossier-Generierung verwendet:</p>
+            <div class="dc-dossier-summary">
+              ${summaryHtml}
+            </div>
+          </div>
+          <div class="dc-dossier-footer">
+            <div class="dc-dossier-steps">Schritt ${currentStep} von ${totalSteps}</div>
+            <div class="dc-dossier-actions">
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-create">Dossier-Generierung starten</button>
+            </div>
+          </div>
+        </div>
+      `;
+    },
+
+    bindSummaryEvents: function () {
+      const self = this;
+
+      $(".dc-dossier-close").on("click", function () {
+        Swal.close();
+      });
+
+      $(".dc-dossier-btn-back").on("click", function () {
+        if (self.needsComparisonStep()) {
+          self.renderStep3();
+        } else {
+          self.renderStep2();
+        }
+      });
+
       $(".dc-dossier-btn-create").on("click", function () {
         self.create();
       });
     },
 
-    /**
-     * Create dossier
-     */
+    // =====================================================
+    // CREATE DOSSIER
+    // =====================================================
+
     create: function () {
       const self = this;
       const $btn = $(".dc-dossier-btn-create");
-      $btn.prop("disabled", true).text("Wird erstellt...");
+      $btn.prop("disabled", true).text("Wird gestartet...");
 
       $.ajax({
         url: deepClarityFrontend.ajaxUrl,
@@ -1367,25 +1660,30 @@
           action: "deep_clarity_create_dossier",
           nonce: deepClarityFrontend.nonce,
           client_id: self.clientId,
+          anamnese_entry_id: self.selectedAnamneseEntryId,
           session_id: self.selectedSessionId,
-          form_ids: self.selectedFormIds,
+          dcpi_entry_id: self.selectedDcpiEntryId || 0,
+          comparison_session_id: self.selectedComparisonSessionId || 0,
+          comparison_dcpi_entry_id: self.selectedComparisonDcpiEntryId || 0,
         },
         success: function (response) {
           if (response.success) {
             Swal.fire({
               icon: "success",
-              title: "Gestartet!",
-              text: response.data.message,
-              timer: 2000,
-              showConfirmButton: false,
+              title: "Dossier-Generierung gestartet",
+              html: '<p style="text-align: left;">Die Erstellung des Dossiers wurde gestartet. Dieser Vorgang kann <strong>ca. 5 Minuten</strong> dauern.</p><p style="text-align: left; margin-top: 12px;">Sie werden per <strong>E-Mail benachrichtigt</strong>, sobald das Dossier fertig ist.</p>',
+              confirmButtonText: "Verstanden",
+              customClass: {
+                popup: "dc-dossier-popup",
+              },
             });
           } else {
-            $btn.prop("disabled", false).text("Dossier erstellen");
-            Swal.showValidationMessage(response.data.message || "Fehler beim Erstellen des Dossiers.");
+            $btn.prop("disabled", false).text("Dossier-Generierung starten");
+            Swal.showValidationMessage(response.data.message || "Fehler beim Starten der Generierung.");
           }
         },
         error: function () {
-          $btn.prop("disabled", false).text("Dossier erstellen");
+          $btn.prop("disabled", false).text("Dossier-Generierung starten");
           Swal.showValidationMessage("Ein Fehler ist aufgetreten.");
         },
       });

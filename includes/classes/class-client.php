@@ -61,6 +61,7 @@ class Client
         add_action('wp_ajax_deep_clarity_get_client_sessions', array($this, 'ajax_get_client_sessions'));
         add_action('wp_ajax_deep_clarity_get_client_forms', array($this, 'ajax_get_client_forms'));
         add_action('wp_ajax_deep_clarity_create_dossier', array($this, 'ajax_create_dossier'));
+        add_action('wp_ajax_deep_clarity_init_dossier', array($this, 'ajax_init_dossier'));
 
         // AJAX handler for session analysis
         add_action('wp_ajax_deep_clarity_analyze_session', array($this, 'ajax_analyze_session'));
@@ -709,21 +710,25 @@ class Client
     }
 
     /**
-     * AJAX handler for creating dossier
+     * AJAX handler for initializing dossier creation modal
+     *
+     * Returns all data needed for the dossier creation flow:
+     * - Dossier count (to determine if first or subsequent)
+     * - Anamnesebogen forms (ID 3)
+     * - DCPI forms (ID 23)
+     * - All sessions
      */
-    public function ajax_create_dossier()
+    public function ajax_init_dossier()
     {
         // Verify nonce
         if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
             wp_send_json_error(array('message' => 'Invalid nonce'));
         }
 
-        $client_id  = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;
-        $session_id = isset($_POST['session_id']) ? intval($_POST['session_id']) : 0;
-        $form_ids   = isset($_POST['form_ids']) ? array_map('intval', (array) $_POST['form_ids']) : array();
+        $client_id = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;
 
-        if (! $client_id || ! $session_id) {
-            wp_send_json_error(array('message' => 'Missing client or session ID'));
+        if (! $client_id) {
+            wp_send_json_error(array('message' => 'Missing client ID'));
         }
 
         // Verify client exists
@@ -732,21 +737,140 @@ class Client
             wp_send_json_error(array('message' => 'Invalid client'));
         }
 
+        // Check if ACF is available
+        if (! function_exists('get_field')) {
+            wp_send_json_error(array('message' => 'ACF not available'));
+        }
+
+        // Get dossier count from post meta
+        $dossier_count = (int) get_post_meta($client_id, '_dossier_count', true);
+
+        // Get client forms from ACF repeater
+        $client_forms = get_field('client_forms', $client_id);
+
+        $anamnese_forms = array(); // Form ID 3
+        $dcpi_forms = array();     // Form ID 23
+
+        if (is_array($client_forms) && ! empty($client_forms)) {
+            // Sort by date descending
+            usort($client_forms, function ($a, $b) {
+                return strtotime($b['date']) - strtotime($a['date']);
+            });
+
+            foreach ($client_forms as $form) {
+                $form_id = isset($form['form_id']) ? intval($form['form_id']) : 0;
+                $date = isset($form['date']) ? $form['date'] : '';
+                $date_formatted = '';
+                if ($date) {
+                    $timestamp = strtotime($date);
+                    $date_formatted = date_i18n('d.m.Y H:i', $timestamp);
+                }
+
+                $form_data = array(
+                    'form_id'   => $form_id,
+                    'form_name' => isset($form['form_name']) ? $form['form_name'] : '',
+                    'entry_id'  => isset($form['entry_id']) ? intval($form['entry_id']) : 0,
+                    'date'      => $date_formatted,
+                );
+
+                if ($form_id === 3) {
+                    $anamnese_forms[] = $form_data;
+                } elseif ($form_id === 23) {
+                    $dcpi_forms[] = $form_data;
+                }
+            }
+        }
+
+        // Get sessions for this client
+        $sessions_query = Sessions::get_sessions_for_client($client_id, array(
+            'orderby' => 'date',
+            'order'   => 'DESC',
+        ));
+
+        $sessions = array();
+
+        if ($sessions_query->have_posts()) {
+            while ($sessions_query->have_posts()) {
+                $sessions_query->the_post();
+                $session_id = get_the_ID();
+
+                $sessions[] = array(
+                    'id'    => $session_id,
+                    'title' => get_the_title(),
+                    'date'  => get_the_date('d.m.Y'),
+                );
+            }
+            wp_reset_postdata();
+        }
+
+        wp_send_json_success(array(
+            'dossier_count'  => $dossier_count,
+            'anamnese_forms' => $anamnese_forms,
+            'dcpi_forms'     => $dcpi_forms,
+            'sessions'       => $sessions,
+        ));
+    }
+
+    /**
+     * AJAX handler for creating dossier
+     *
+     * Expected POST data:
+     * - client_id: Client post ID
+     * - anamnese_entry_id: Entry ID of selected Anamnesebogen (Form ID 3)
+     * - session_id: Selected session ID
+     * - dcpi_entry_id: Entry ID of selected DCPI form (Form ID 23, optional)
+     * - comparison_session_id: Session ID for comparison (optional, for 2nd+ dossier)
+     * - comparison_dcpi_entry_id: Entry ID of comparison DCPI form (optional, for 2nd+ dossier)
+     */
+    public function ajax_create_dossier()
+    {
+        // Verify nonce
+        if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $client_id               = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;
+        $anamnese_entry_id       = isset($_POST['anamnese_entry_id']) ? intval($_POST['anamnese_entry_id']) : 0;
+        $session_id              = isset($_POST['session_id']) ? intval($_POST['session_id']) : 0;
+        $dcpi_entry_id           = isset($_POST['dcpi_entry_id']) ? intval($_POST['dcpi_entry_id']) : 0;
+        $comparison_session_id   = isset($_POST['comparison_session_id']) ? intval($_POST['comparison_session_id']) : 0;
+        $comparison_dcpi_entry_id = isset($_POST['comparison_dcpi_entry_id']) ? intval($_POST['comparison_dcpi_entry_id']) : 0;
+
+        if (! $client_id || ! $anamnese_entry_id || ! $session_id) {
+            wp_send_json_error(array('message' => 'Fehlende Pflichtfelder (Client, Anamnesebogen oder Session)'));
+        }
+
+        // Verify client exists
+        $client = get_post($client_id);
+        if (! $client || $client->post_type !== 'client') {
+            wp_send_json_error(array('message' => 'Ungültiger Client'));
+        }
+
         // Verify session exists
         $session = get_post($session_id);
         if (! $session || $session->post_type !== 'session') {
-            wp_send_json_error(array('message' => 'Invalid session'));
+            wp_send_json_error(array('message' => 'Ungültige Session'));
         }
 
+        // Build data for do_action with clear keys
+        $dossier_data = array(
+            'client_id'               => $client_id,
+            'anamnese_entry_id'       => $anamnese_entry_id,
+            'session_id'              => $session_id,
+            'dcpi_entry_id'           => $dcpi_entry_id,
+            'comparison_session_id'   => $comparison_session_id,
+            'comparison_dcpi_entry_id' => $comparison_dcpi_entry_id,
+        );
+
         // Trigger the do_action
-        do_action('bit_pi_do_action', '1-1', array(
-            'client_id'  => $client_id,
-            'session_id' => $session_id,
-            'form_ids'   => $form_ids,
-        ));
+        do_action('bit_pi_do_action', '1-1', $dossier_data);
+
+        // Increment dossier count
+        $current_count = (int) get_post_meta($client_id, '_dossier_count', true);
+        update_post_meta($client_id, '_dossier_count', $current_count + 1);
 
         wp_send_json_success(array(
-            'message' => 'Dossier wird erstellt...',
+            'message' => 'Dossier-Generierung wurde gestartet.',
         ));
     }
 
