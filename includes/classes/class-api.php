@@ -98,12 +98,12 @@ class API
         // Get ACF fields
         $client_firstname = '';
         $client_lastname = '';
-        $client_birthday = '';
+        $client_email = '';
 
         if (function_exists('get_field')) {
             $client_firstname = get_field('client_firstname', $post_id) ?: '';
             $client_lastname = get_field('client_lastname', $post_id) ?: '';
-            $client_birthday = get_field('client_birthday', $post_id) ?: '';
+            $client_email = get_field('client_email', $post_id) ?: '';
         }
 
         // Prepare webhook data
@@ -111,7 +111,7 @@ class API
             'post_id'          => $post_id,
             'client_firstname' => $client_firstname,
             'client_lastname'  => $client_lastname,
-            'client_birthday'  => $client_birthday,
+            'client_email'     => $client_email,
             'is_update'        => $update,
         );
 
