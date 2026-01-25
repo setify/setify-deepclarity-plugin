@@ -850,34 +850,48 @@ class Client
             wp_send_json_error(array('message' => 'ACF not available'));
         }
 
+        // Get client ID from session
+        $client = get_field('session_client', $session_id);
+        $client_id = 0;
+
+        if ($client) {
+            // ACF relation field can return post object or ID
+            $client_id = is_object($client) ? $client->ID : intval($client);
+        }
+
+        if (! $client_id) {
+            wp_send_json_error(array('message' => 'Session has no linked client'));
+        }
+
         // Generate unique request ID
         $request_id = 'dc_analysis_' . $session_id . '_' . time() . '_' . wp_generate_password(8, false);
 
         // Allowed fields
         $allowed_fields = array('session_transcript', 'session_diagnosis', 'session_note');
 
-        // Build data array with selected fields
-        $data = array(
-            'session_id' => $session_id,
-            'request_id' => $request_id,
-        );
-
-        foreach ($fields as $field) {
-            if (in_array($field, $allowed_fields, true)) {
-                $data[$field] = get_field($field, $session_id);
-            }
-        }
+        // Filter selected fields to only allowed ones
+        $selected_fields = array_filter($fields, function ($field) use ($allowed_fields) {
+            return in_array($field, $allowed_fields, true);
+        });
 
         // Store initial status in transient (expires in 30 minutes)
         set_transient($request_id, array(
             'status'     => 'pending',
             'session_id' => $session_id,
+            'client_id'  => $client_id,
             'created_at' => time(),
             'result'     => null,
         ), 30 * MINUTE_IN_SECONDS);
 
-        // Trigger the do_action
-        do_action('bit_pi_do_action', '2-1', $data);
+        // Send webhook to n8n via API class
+        $api = API::get_instance();
+        $result = $api->send_session_analysis_webhook($session_id, $client_id, $request_id, $selected_fields);
+
+        if (is_wp_error($result)) {
+            // Delete transient on error
+            delete_transient($request_id);
+            wp_send_json_error(array('message' => 'Webhook error: ' . $result->get_error_message()));
+        }
 
         wp_send_json_success(array(
             'message'    => 'Analyse wurde gestartet...',

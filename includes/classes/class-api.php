@@ -35,6 +35,13 @@ class API
     );
 
     /**
+     * Webhook URL for session analysis
+     *
+     * @var string
+     */
+    private $webhook_session_analysis_url = 'https://n8n.setify.de/webhook-test/dc_session_analysis';
+
+    /**
      * API Key for authentication
      *
      * @var string
@@ -180,6 +187,59 @@ class API
     }
 
     /**
+     * Send session analysis request to n8n webhook
+     *
+     * @param int    $session_id Session post ID.
+     * @param int    $client_id  Client post ID.
+     * @param string $request_id Unique request ID for tracking.
+     * @param array  $fields     Selected fields to analyze.
+     * @return bool|\WP_Error True on success, WP_Error on failure.
+     */
+    public function send_session_analysis_webhook($session_id, $client_id, $request_id, $fields = array())
+    {
+        if (! function_exists('get_field')) {
+            return new \WP_Error('acf_missing', 'ACF not available');
+        }
+
+        // Get session ACF fields
+        $session_transcript = '';
+        $session_diagnosis  = '';
+        $session_note       = '';
+
+        if (in_array('session_transcript', $fields, true)) {
+            $session_transcript = get_field('session_transcript', $session_id) ?: '';
+        }
+        if (in_array('session_diagnosis', $fields, true)) {
+            $session_diagnosis = get_field('session_diagnosis', $session_id) ?: '';
+        }
+        if (in_array('session_note', $fields, true)) {
+            $session_note = get_field('session_note', $session_id) ?: '';
+        }
+
+        // Get ACF option fields for settings/prompts
+        $setting_kb_copywriting_skills = get_field('setting_kb_copywriting_skills', 'option') ?: '';
+        $setting_kb_structure_skills   = get_field('setting_kb_structure_skills', 'option') ?: '';
+        $setting_prompt_system         = get_field('setting_prompt_system', 'option') ?: '';
+        $setting_prompt_analysis       = get_field('setting_prompt_analysis', 'option') ?: '';
+
+        // Prepare webhook data
+        $data = array(
+            'request_id'                    => $request_id,
+            'client_id'                     => $client_id,
+            'session_id'                    => $session_id,
+            'session_transcript'            => $session_transcript,
+            'session_diagnosis'             => $session_diagnosis,
+            'session_note'                  => $session_note,
+            'setting_kb_copywriting_skills' => $setting_kb_copywriting_skills,
+            'setting_kb_structure_skills'   => $setting_kb_structure_skills,
+            'setting_prompt_system'         => $setting_prompt_system,
+            'setting_prompt_analysis'       => $setting_prompt_analysis,
+        );
+
+        return $this->send_webhook($this->webhook_session_analysis_url, $data);
+    }
+
+    /**
      * Register REST API routes
      */
     public function register_rest_routes()
@@ -201,6 +261,38 @@ class API
                     'type'              => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
                     'description'       => 'The new post title',
+                ),
+            ),
+        ));
+
+        // Endpoint: Receive session analysis result from n8n
+        register_rest_route('deep-clarity/v1', '/session/analysis-result', array(
+            'methods'             => 'POST',
+            'callback'            => array($this, 'handle_session_analysis_result'),
+            'permission_callback' => array($this, 'verify_api_request'),
+            'args'                => array(
+                'request_id' => array(
+                    'required'          => true,
+                    'type'              => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'description'       => 'The unique request ID',
+                ),
+                'client_id' => array(
+                    'required'          => true,
+                    'type'              => 'integer',
+                    'sanitize_callback' => 'absint',
+                    'description'       => 'The client post ID',
+                ),
+                'session_id' => array(
+                    'required'          => true,
+                    'type'              => 'integer',
+                    'sanitize_callback' => 'absint',
+                    'description'       => 'The session post ID',
+                ),
+                'analysis' => array(
+                    'required'          => true,
+                    'type'              => 'string',
+                    'description'       => 'The analysis result text',
                 ),
             ),
         ));
@@ -280,6 +372,66 @@ class API
             'message' => 'Client title updated successfully',
             'post_id' => $post_id,
             'title'   => $title,
+        ), 200);
+    }
+
+    /**
+     * Handle session analysis result from n8n
+     *
+     * @param \WP_REST_Request $request The REST request.
+     * @return \WP_REST_Response
+     */
+    public function handle_session_analysis_result($request)
+    {
+        $request_id = $request->get_param('request_id');
+        $client_id  = $request->get_param('client_id');
+        $session_id = $request->get_param('session_id');
+        $analysis   = $request->get_param('analysis');
+
+        // Verify session exists
+        $session = get_post($session_id);
+
+        if (! $session) {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Session not found',
+            ), 404);
+        }
+
+        if ($session->post_type !== 'session') {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Post is not a session',
+            ), 400);
+        }
+
+        // Save analysis to ACF field
+        if (function_exists('update_field')) {
+            update_field('session_analysis', $analysis, $session_id);
+        } else {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'ACF not available',
+            ), 500);
+        }
+
+        // Update transient status for polling
+        $transient_data = get_transient($request_id);
+
+        if ($transient_data) {
+            $transient_data['status']       = 'complete';
+            $transient_data['result']       = $analysis;
+            $transient_data['completed_at'] = time();
+
+            // Keep for 5 more minutes for polling
+            set_transient($request_id, $transient_data, 5 * MINUTE_IN_SECONDS);
+        }
+
+        return new \WP_REST_Response(array(
+            'success'    => true,
+            'message'    => 'Analysis saved successfully',
+            'session_id' => $session_id,
+            'client_id'  => $client_id,
         ), 200);
     }
 }
