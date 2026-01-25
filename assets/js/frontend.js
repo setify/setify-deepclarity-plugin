@@ -1107,10 +1107,14 @@
      * Process loaded data and determine flow
      */
     processData: function () {
-      // Check if Anamnesebogen exists
-      if (!this.data.anamnese_forms || this.data.anamnese_forms.length === 0) {
-        this.showNoAnamneseError();
-        return;
+      const isFirstDossier = this.data.dossier_count === 0;
+
+      // Only check for Anamnesebogen if this is the FIRST dossier
+      if (isFirstDossier) {
+        if (!this.data.anamnese_forms || this.data.anamnese_forms.length === 0) {
+          this.showNoAnamneseError();
+          return;
+        }
       }
 
       // Check if sessions exist
@@ -1123,8 +1127,13 @@
         return;
       }
 
-      // Start with Step 1
-      this.renderStep1();
+      // First dossier: Start with Anamnesebogen selection (Step 1)
+      // 2nd+ dossier: Skip Anamnesebogen, start directly with Session + DCPI
+      if (isFirstDossier) {
+        this.renderStep1();
+      } else {
+        this.renderStep2();
+      }
     },
 
     /**
@@ -1144,9 +1153,18 @@
 
     /**
      * Get total steps based on dossier count
+     * First dossier: Anamnese → Session+DCPI → Summary = 3 steps
+     * 2nd+ dossier: Session+DCPI → Comparison → Summary = 3 steps
      */
     getTotalSteps: function () {
-      return this.data.dossier_count > 0 ? 4 : 3;
+      return 3;
+    },
+
+    /**
+     * Check if this is the first dossier (Anamnesebogen required)
+     */
+    isFirstDossier: function () {
+      return this.data.dossier_count === 0;
     },
 
     /**
@@ -1279,6 +1297,13 @@
       const sessions = this.data.sessions;
       const dcpiForms = this.data.dcpi_forms;
       const totalSteps = this.getTotalSteps();
+      const isFirst = this.isFirstDossier();
+      // For first dossier: Step 2 of 3, for 2nd+: Step 1 of 3
+      const currentStep = isFirst ? 2 : 1;
+      const stepTitle = isFirst ? "Schritt 2: Session & DCPI" : "Schritt 1: Session & DCPI";
+      // For first dossier: show "Zurück", for 2nd+: show "Abbrechen"
+      const backButtonText = isFirst ? "Zurück" : "Abbrechen";
+      const backButtonClass = isFirst ? "dc-dossier-btn-back" : "dc-dossier-btn-cancel";
 
       let sessionsHtml = "";
       sessions.forEach((session) => {
@@ -1319,7 +1344,7 @@
       return `
         <div class="dc-dossier-modal" data-step="2">
           <div class="dc-dossier-header">
-            <span class="dc-dossier-title">Schritt 2: Session & DCPI</span>
+            <span class="dc-dossier-title">${stepTitle}</span>
             <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-dossier-body">
@@ -1333,9 +1358,9 @@
             </div>
           </div>
           <div class="dc-dossier-footer">
-            <div class="dc-dossier-steps">Schritt 2 von ${totalSteps}</div>
+            <div class="dc-dossier-steps">Schritt ${currentStep} von ${totalSteps}</div>
             <div class="dc-dossier-actions">
-              <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück</button>
+              <button type="button" class="dc-dossier-btn ${backButtonClass}">${backButtonText}</button>
               <button type="button" class="dc-dossier-btn dc-dossier-btn-next" ${this.selectedSessionId && this.selectedDcpiEntryId ? "" : "disabled"}>Weiter</button>
             </div>
           </div>
@@ -1350,8 +1375,14 @@
         Swal.close();
       });
 
+      // For first dossier: "Zurück" goes to Step 1
       $(".dc-dossier-btn-back").on("click", function () {
         self.renderStep1();
+      });
+
+      // For 2nd+ dossier: "Abbrechen" closes the modal
+      $(".dc-dossier-btn-cancel").on("click", function () {
+        Swal.close();
       });
 
       // Helper to update next button state
@@ -1415,6 +1446,8 @@
       const sessions = this.data.sessions;
       const dcpiForms = this.data.dcpi_forms;
       const totalSteps = this.getTotalSteps();
+      // Step 3 only runs for 2nd+ dossiers, so this is always Step 2 of 3
+      const currentStep = 2;
 
       // Filter out already selected session and DCPI
       const availableSessions = sessions.filter((s) => s.id !== this.selectedSessionId);
@@ -1463,7 +1496,7 @@
       return `
         <div class="dc-dossier-modal" data-step="3">
           <div class="dc-dossier-header">
-            <span class="dc-dossier-title">Schritt 3: Vergleichswerte</span>
+            <span class="dc-dossier-title">Schritt 2: Vergleichswerte</span>
             <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-dossier-body">
@@ -1480,7 +1513,7 @@
             </div>
           </div>
           <div class="dc-dossier-footer">
-            <div class="dc-dossier-steps">Schritt 3 von ${totalSteps}</div>
+            <div class="dc-dossier-steps">Schritt ${currentStep} von ${totalSteps}</div>
             <div class="dc-dossier-actions">
               <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück</button>
               <button type="button" class="dc-dossier-btn dc-dossier-btn-next" ${this.selectedComparisonSessionId && this.selectedComparisonDcpiEntryId ? "" : "disabled"}>Weiter</button>
@@ -1557,19 +1590,30 @@
     getSummaryTemplate: function () {
       const totalSteps = this.getTotalSteps();
       const currentStep = totalSteps;
+      const isFirst = this.isFirstDossier();
 
       // Find selected items for display
-      const anamnese = this.data.anamnese_forms.find((f) => f.entry_id === this.selectedAnamneseEntryId);
+      const anamnese = this.selectedAnamneseEntryId && this.data.anamnese_forms
+        ? this.data.anamnese_forms.find((f) => f.entry_id === this.selectedAnamneseEntryId)
+        : null;
       const session = this.data.sessions.find((s) => s.id === this.selectedSessionId);
       const dcpi = this.selectedDcpiEntryId ? this.data.dcpi_forms.find((f) => f.entry_id === this.selectedDcpiEntryId) : null;
       const compSession = this.selectedComparisonSessionId ? this.data.sessions.find((s) => s.id === this.selectedComparisonSessionId) : null;
       const compDcpi = this.selectedComparisonDcpiEntryId ? this.data.dcpi_forms.find((f) => f.entry_id === this.selectedComparisonDcpiEntryId) : null;
 
-      let summaryHtml = `
-        <div class="dc-dossier-summary-item">
-          <span class="dc-dossier-summary-label">Anamnesebogen</span>
-          <span class="dc-dossier-summary-value">${this.escapeHtml(anamnese.form_name)} <small>(${this.escapeHtml(anamnese.date)})</small></span>
-        </div>
+      let summaryHtml = "";
+
+      // Only show Anamnesebogen for first dossier
+      if (isFirst && anamnese) {
+        summaryHtml += `
+          <div class="dc-dossier-summary-item">
+            <span class="dc-dossier-summary-label">Anamnesebogen</span>
+            <span class="dc-dossier-summary-value">${this.escapeHtml(anamnese.form_name)} <small>(${this.escapeHtml(anamnese.date)})</small></span>
+          </div>
+        `;
+      }
+
+      summaryHtml += `
         <div class="dc-dossier-summary-item">
           <span class="dc-dossier-summary-label">Session</span>
           <span class="dc-dossier-summary-value">${this.escapeHtml(session.title)} <small>(${this.escapeHtml(session.date)})</small></span>

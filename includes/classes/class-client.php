@@ -857,11 +857,11 @@ class Client
      *
      * Expected POST data:
      * - client_id: Client post ID
-     * - anamnese_entry_id: Entry ID of selected Anamnesebogen (Form ID 3)
+     * - anamnese_entry_id: Entry ID of selected Anamnesebogen (Form ID 3) - only required for first dossier
      * - session_id: Selected session ID
-     * - dcpi_entry_id: Entry ID of selected DCPI form (Form ID 23, optional)
-     * - comparison_session_id: Session ID for comparison (optional, for 2nd+ dossier)
-     * - comparison_dcpi_entry_id: Entry ID of comparison DCPI form (optional, for 2nd+ dossier)
+     * - dcpi_entry_id: Entry ID of selected DCPI form (Form ID 23, required)
+     * - comparison_session_id: Session ID for comparison (required for 2nd+ dossier)
+     * - comparison_dcpi_entry_id: Entry ID of comparison DCPI form (required for 2nd+ dossier)
      */
     public function ajax_create_dossier()
     {
@@ -877,14 +877,50 @@ class Client
         $comparison_session_id   = isset($_POST['comparison_session_id']) ? intval($_POST['comparison_session_id']) : 0;
         $comparison_dcpi_entry_id = isset($_POST['comparison_dcpi_entry_id']) ? intval($_POST['comparison_dcpi_entry_id']) : 0;
 
-        if (! $client_id || ! $anamnese_entry_id || ! $session_id) {
-            wp_send_json_error(array('message' => 'Fehlende Pflichtfelder (Client, Anamnesebogen oder Session)'));
+        // Basic validation: client_id and session_id always required
+        if (! $client_id || ! $session_id) {
+            wp_send_json_error(array('message' => 'Fehlende Pflichtfelder (Client oder Session)'));
         }
 
         // Verify client exists
         $client = get_post($client_id);
         if (! $client || $client->post_type !== 'client') {
             wp_send_json_error(array('message' => 'Ungültiger Client'));
+        }
+
+        // Get dossier count to determine if this is first or subsequent dossier
+        $dossier_query = new \WP_Query(array(
+            'post_type'      => 'dosi',
+            'post_status'    => 'any',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_query'     => array(
+                array(
+                    'key'     => 'dossier_client',
+                    'value'   => $client_id,
+                    'compare' => '=',
+                ),
+            ),
+        ));
+        $dossier_count = $dossier_query->found_posts;
+        $is_first_dossier = $dossier_count === 0;
+
+        // Validation based on dossier type
+        if ($is_first_dossier) {
+            // First dossier: anamnese_entry_id required
+            if (! $anamnese_entry_id) {
+                wp_send_json_error(array('message' => 'Anamnesebogen ist für das erste Dossier erforderlich'));
+            }
+        } else {
+            // 2nd+ dossier: comparison values required
+            if (! $comparison_session_id || ! $comparison_dcpi_entry_id) {
+                wp_send_json_error(array('message' => 'Vergleichswerte sind für weitere Dossiers erforderlich'));
+            }
+        }
+
+        // DCPI is always required
+        if (! $dcpi_entry_id) {
+            wp_send_json_error(array('message' => 'DCPI-Formular ist erforderlich'));
         }
 
         // Verify session exists
