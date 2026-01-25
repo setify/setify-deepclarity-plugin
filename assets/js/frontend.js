@@ -1327,7 +1327,7 @@
             <div class="dc-dossier-items dc-dossier-items-small">
               ${sessionsHtml}
             </div>
-            <p class="dc-dossier-hint dc-dossier-hint-mt"><strong>DCPI-Formular auswählen</strong> (optional):</p>
+            <p class="dc-dossier-hint dc-dossier-hint-mt"><strong>DCPI-Formular auswählen</strong> (erforderlich):</p>
             <div class="dc-dossier-items dc-dossier-items-small">
               ${dcpiHtml}
             </div>
@@ -1336,7 +1336,7 @@
             <div class="dc-dossier-steps">Schritt 2 von ${totalSteps}</div>
             <div class="dc-dossier-actions">
               <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück</button>
-              <button type="button" class="dc-dossier-btn dc-dossier-btn-next" ${this.selectedSessionId ? "" : "disabled"}>Weiter</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-next" ${this.selectedSessionId && this.selectedDcpiEntryId ? "" : "disabled"}>Weiter</button>
             </div>
           </div>
         </div>
@@ -1354,28 +1354,30 @@
         self.renderStep1();
       });
 
-      // Session selection (single select)
+      // Helper to update next button state
+      function updateNextButton() {
+        const canProceed = self.selectedSessionId && self.selectedDcpiEntryId;
+        $(".dc-dossier-btn-next").prop("disabled", !canProceed);
+      }
+
+      // Session selection (single select, required)
       $(".dc-dossier-session").on("click", function () {
         $(".dc-dossier-session").removeClass("selected");
         $(this).addClass("selected");
         self.selectedSessionId = $(this).data("session-id");
-        $(".dc-dossier-btn-next").prop("disabled", false);
+        updateNextButton();
       });
 
-      // DCPI selection (single select, optional - can deselect)
+      // DCPI selection (single select, required)
       $(".dc-dossier-dcpi").on("click", function () {
-        if ($(this).hasClass("selected")) {
-          $(this).removeClass("selected");
-          self.selectedDcpiEntryId = null;
-        } else {
-          $(".dc-dossier-dcpi").removeClass("selected");
-          $(this).addClass("selected");
-          self.selectedDcpiEntryId = $(this).data("entry-id");
-        }
+        $(".dc-dossier-dcpi").removeClass("selected");
+        $(this).addClass("selected");
+        self.selectedDcpiEntryId = $(this).data("entry-id");
+        updateNextButton();
       });
 
       $(".dc-dossier-btn-next").on("click", function () {
-        if (self.selectedSessionId) {
+        if (self.selectedSessionId && self.selectedDcpiEntryId) {
           if (self.needsComparisonStep()) {
             self.renderStep3();
           } else {
@@ -1466,13 +1468,13 @@
           </div>
           <div class="dc-dossier-body">
             <div class="dc-dossier-info-box">
-              <p>Da bereits ein Dossier für diesen Klienten erstellt wurde, können Sie hier <strong>Vergleichswerte</strong> auswählen. Diese ermöglichen es, die Entwicklung des Klienten im neuen Dossier darzustellen.</p>
+              <p>Da bereits ein Dossier für diesen Klienten erstellt wurde, müssen Sie <strong>Vergleichswerte</strong> auswählen. Diese ermöglichen es, die Entwicklung des Klienten im neuen Dossier darzustellen.</p>
             </div>
-            <p class="dc-dossier-hint"><strong>Vergleichs-Session</strong> (optional):</p>
+            <p class="dc-dossier-hint"><strong>Vergleichs-Session</strong> (erforderlich):</p>
             <div class="dc-dossier-items dc-dossier-items-small">
               ${sessionsHtml}
             </div>
-            <p class="dc-dossier-hint dc-dossier-hint-mt"><strong>Vergleichs-DCPI</strong> (optional):</p>
+            <p class="dc-dossier-hint dc-dossier-hint-mt"><strong>Vergleichs-DCPI</strong> (erforderlich):</p>
             <div class="dc-dossier-items dc-dossier-items-small">
               ${dcpiHtml}
             </div>
@@ -1481,7 +1483,7 @@
             <div class="dc-dossier-steps">Schritt 3 von ${totalSteps}</div>
             <div class="dc-dossier-actions">
               <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück</button>
-              <button type="button" class="dc-dossier-btn dc-dossier-btn-next">Weiter</button>
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-next" ${this.selectedComparisonSessionId && this.selectedComparisonDcpiEntryId ? "" : "disabled"}>Weiter</button>
             </div>
           </div>
         </div>
@@ -1499,32 +1501,32 @@
         self.renderStep2();
       });
 
-      // Comparison session selection (single select, optional - can deselect)
+      // Helper to update next button state
+      function updateNextButton() {
+        const canProceed = self.selectedComparisonSessionId && self.selectedComparisonDcpiEntryId;
+        $(".dc-dossier-btn-next").prop("disabled", !canProceed);
+      }
+
+      // Comparison session selection (single select, required)
       $(".dc-dossier-comp-session").on("click", function () {
-        if ($(this).hasClass("selected")) {
-          $(this).removeClass("selected");
-          self.selectedComparisonSessionId = null;
-        } else {
-          $(".dc-dossier-comp-session").removeClass("selected");
-          $(this).addClass("selected");
-          self.selectedComparisonSessionId = $(this).data("session-id");
-        }
+        $(".dc-dossier-comp-session").removeClass("selected");
+        $(this).addClass("selected");
+        self.selectedComparisonSessionId = $(this).data("session-id");
+        updateNextButton();
       });
 
-      // Comparison DCPI selection (single select, optional - can deselect)
+      // Comparison DCPI selection (single select, required)
       $(".dc-dossier-comp-dcpi").on("click", function () {
-        if ($(this).hasClass("selected")) {
-          $(this).removeClass("selected");
-          self.selectedComparisonDcpiEntryId = null;
-        } else {
-          $(".dc-dossier-comp-dcpi").removeClass("selected");
-          $(this).addClass("selected");
-          self.selectedComparisonDcpiEntryId = $(this).data("entry-id");
-        }
+        $(".dc-dossier-comp-dcpi").removeClass("selected");
+        $(this).addClass("selected");
+        self.selectedComparisonDcpiEntryId = $(this).data("entry-id");
+        updateNextButton();
       });
 
       $(".dc-dossier-btn-next").on("click", function () {
-        self.renderSummary();
+        if (self.selectedComparisonSessionId && self.selectedComparisonDcpiEntryId) {
+          self.renderSummary();
+        }
       });
     },
 
