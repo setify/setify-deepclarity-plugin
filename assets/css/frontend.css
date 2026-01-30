@@ -364,6 +364,44 @@ span.dc {
   line-height: 24px !important;
 }
 
+/* ACF Tabs - Frontend Only (excludes wp-admin) */
+body:not(.wp-admin) .acf-fields > .acf-tab-wrap {
+  background: var(--dc-color-parchment);
+  border-radius: var(--dc-radius-small);
+  border: none;
+}
+
+body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group {
+  border: none;
+  padding: 4px;
+}
+
+body:not(.wp-admin) .acf-tab-group li {
+  margin: 0 4px 0 0;
+}
+
+body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li a,
+body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li a:hover {
+  border-radius: var(--dc-radius-xsmall);
+  border: none;
+  background: var(--dc-color-parchment);
+  padding: 6px 24px !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: var(--dc-color-shadow-grey) !important;
+}
+
+body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li a:hover {
+  background: var(--dc-color-dust-grey);
+  color: var(--dc-color-shadow-grey) !important;
+}
+
+body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a,
+body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover {
+  background: var(--dc-color-khaki-beige) !important;
+  color: #fff !important;
+}
+
 /* ==========================================================================
    5. Components
    ========================================================================== */
