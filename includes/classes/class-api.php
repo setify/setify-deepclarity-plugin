@@ -153,11 +153,12 @@ class API
     /**
      * Send webhook request via POST with API key authentication
      *
-     * @param string $url  Webhook URL.
-     * @param array  $data Data to send.
-     * @return bool|\WP_Error True on success, WP_Error on failure.
+     * @param string $url         Webhook URL.
+     * @param array  $data        Data to send.
+     * @param bool   $return_body Whether to return the response body (for synchronous n8n responses).
+     * @return bool|array|\WP_Error True on success (or response array if $return_body), WP_Error on failure.
      */
-    private function send_webhook($url, $data)
+    private function send_webhook($url, $data, $return_body = false)
     {
         // Use hardcoded API key
         $api_key = $this->api_key;
@@ -174,7 +175,7 @@ class API
         $response = wp_remote_post(
             $url,
             array(
-                'timeout'   => 15,
+                'timeout'   => 60, // Increased timeout for synchronous n8n workflows
                 'sslverify' => true,
                 'headers'   => $headers,
                 'body'      => wp_json_encode($data),
@@ -187,10 +188,23 @@ class API
         }
 
         $response_code = wp_remote_retrieve_response_code($response);
+        $response_body = wp_remote_retrieve_body($response);
+
+        // Parse JSON response body
+        $parsed_body = json_decode($response_body, true);
 
         if ($response_code < 200 || $response_code >= 300) {
             error_log('DeepClarity API Webhook Error: HTTP ' . $response_code);
+            // If n8n returns validation errors, pass them through
+            if ($parsed_body && isset($parsed_body['success']) && $parsed_body['success'] === false) {
+                return $parsed_body;
+            }
             return new \WP_Error('webhook_failed', 'Webhook returned HTTP ' . $response_code);
+        }
+
+        // Return full response body if requested
+        if ($return_body && $parsed_body) {
+            return $parsed_body;
         }
 
         return true;
@@ -427,7 +441,7 @@ class API
      *
      * @param array  $dossier_data Dossier data from ajax_create_dossier.
      * @param string $request_id   Unique request ID for tracking.
-     * @return bool|\WP_Error True on success, WP_Error on failure.
+     * @return array|\WP_Error Response array from n8n (with success, error, errors, etc.), or WP_Error on failure.
      */
     public function send_dossier_webhook($dossier_data, $request_id)
     {
@@ -614,16 +628,16 @@ class API
             'previous_dcpi'    => $previous_dcpi,
         );
 
-        // Send to all webhook URLs
-        $last_result = true;
-        foreach ($this->webhook_dossier_urls as $url) {
-            $result = $this->send_webhook($url, $webhook_data);
-            if (is_wp_error($result)) {
-                $last_result = $result;
-            }
+        // Send to production webhook and wait for response
+        // Note: Only send to first (production) URL for synchronous response
+        $result = $this->send_webhook($this->webhook_dossier_urls[0], $webhook_data, true);
+
+        // Also send to test webhook (fire and forget)
+        if (isset($this->webhook_dossier_urls[1])) {
+            $this->send_webhook($this->webhook_dossier_urls[1], $webhook_data, false);
         }
 
-        return $last_result;
+        return $result;
     }
 
     /**

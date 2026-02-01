@@ -1875,6 +1875,136 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   font-weight: normal;
 }
 
+/* Dossier Processing State */
+.dc-dossier-body-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.dc-dossier-processing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.dc-dossier-processing .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--dc-color-parchment);
+  border-radius: 50%;
+  border-top-color: var(--dc-color-primary);
+  animation: dc-spin 1s linear infinite;
+}
+
+.dc-dossier-processing p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-dossier-processing-hint {
+  font-size: 0.85rem !important;
+  color: var(--dc-color-cool-steel) !important;
+}
+
+/* Dossier Success State */
+.dc-dossier-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.dc-dossier-success-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--dc-color-success, #16a34a);
+}
+
+.dc-dossier-success p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-dossier-footer-centered {
+  justify-content: center !important;
+}
+
+.dc-dossier-btn-success-close {
+  background: var(--dc-color-primary) !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.dc-dossier-btn-success-close:hover {
+  background: var(--dc-color-primary-dark) !important;
+}
+
+/* Dossier Error State */
+.dc-dossier-error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--dc-radius-small);
+  margin-bottom: 16px;
+}
+
+.dc-dossier-error-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: #dc2626;
+}
+
+.dc-dossier-error-message p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #991b1b;
+  line-height: 1.5;
+}
+
+.dc-dossier-errors-section,
+.dc-dossier-warnings-section {
+  margin-bottom: 12px;
+}
+
+.dc-dossier-errors-section strong,
+.dc-dossier-warnings-section strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--dc-color-carbon-black);
+  margin-bottom: 6px;
+}
+
+.dc-dossier-errors-list,
+.dc-dossier-warnings-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.dc-dossier-errors-list li {
+  font-size: 0.85rem;
+  color: #991b1b;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.dc-dossier-warnings-list li {
+  font-size: 0.85rem;
+  color: #92400e;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
 /* ==========================================
    Session Analyzer Loading
    ========================================== */

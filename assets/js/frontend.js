@@ -1109,12 +1109,10 @@
     processData: function () {
       const isFirstDossier = this.data.dossier_count === 0;
 
-      // Only check for Anamnesebogen if this is the FIRST dossier
-      if (isFirstDossier) {
-        if (!this.data.anamnese_forms || this.data.anamnese_forms.length === 0) {
-          this.showNoAnamneseError();
-          return;
-        }
+      // Anamnese is always required (for all dossiers)
+      if (!this.data.anamnese_forms || this.data.anamnese_forms.length === 0) {
+        this.showNoAnamneseError();
+        return;
       }
 
       // Check if sessions exist
@@ -1128,10 +1126,12 @@
       }
 
       // First dossier: Start with Anamnesebogen selection (Step 1)
-      // 2nd+ dossier: Skip Anamnesebogen, start directly with Session + DCPI
+      // 2nd+ dossier: Auto-select first anamnese, start directly with Session + DCPI
       if (isFirstDossier) {
         this.renderStep1();
       } else {
+        // For follow-up dossiers: auto-select the first (most recent) anamnese
+        this.selectedAnamneseEntryId = this.data.anamnese_forms[0].entry_id;
         this.renderStep2();
       }
     },
@@ -1696,8 +1696,9 @@
 
     create: function () {
       const self = this;
-      const $btn = $(".dc-dossier-btn-create");
-      $btn.prop("disabled", true).text("Wird gestartet...");
+
+      // Show loading state in modal
+      self.renderProcessing();
 
       $.ajax({
         url: deepClarityFrontend.ajaxUrl,
@@ -1714,23 +1715,163 @@
         },
         success: function (response) {
           if (response.success) {
-            Swal.fire({
-              icon: "success",
-              title: "Dossier-Generierung gestartet",
-              html: '<p style="text-align: left;">Die Erstellung des Dossiers wurde gestartet. Dieser Vorgang kann <strong>ca. 5 Minuten</strong> dauern.</p><p style="text-align: left; margin-top: 12px;">Sie werden per <strong>E-Mail benachrichtigt</strong>, sobald das Dossier fertig ist.</p>',
-              confirmButtonText: "Verstanden",
-              customClass: {
-                popup: "dc-dossier-popup",
-              },
-            });
+            // Show success message
+            self.renderSuccess(response.data.message, response.data.dossier_id);
           } else {
-            $btn.prop("disabled", false).text("Dossier-Generierung starten");
-            Swal.showValidationMessage(response.data.message || "Fehler beim Starten der Generierung.");
+            // Show validation errors from n8n
+            self.renderErrors(response.data.message, response.data.errors, response.data.warnings);
           }
         },
         error: function () {
-          $btn.prop("disabled", false).text("Dossier-Generierung starten");
-          Swal.showValidationMessage("Ein Fehler ist aufgetreten.");
+          self.renderErrors("Ein Verbindungsfehler ist aufgetreten. Bitte versuchen Sie es erneut.", [], []);
+        },
+      });
+    },
+
+    /**
+     * Render processing/loading state
+     */
+    renderProcessing: function () {
+      Swal.fire({
+        title: null,
+        html: `
+          <div class="dc-dossier-modal" data-step="processing">
+            <div class="dc-dossier-header">
+              <span class="dc-dossier-title">Dossier wird erstellt</span>
+            </div>
+            <div class="dc-dossier-body dc-dossier-body-centered">
+              <div class="dc-dossier-processing">
+                <span class="spinner"></span>
+                <p>Die Daten werden verarbeitet und das Dossier wird generiert...</p>
+                <p class="dc-dossier-processing-hint">Bitte warten Sie, bis der Vorgang abgeschlossen ist.</p>
+              </div>
+            </div>
+          </div>
+        `,
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "550px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      });
+    },
+
+    /**
+     * Render success state
+     */
+    renderSuccess: function (message, dossierId) {
+      const self = this;
+
+      Swal.fire({
+        title: null,
+        html: `
+          <div class="dc-dossier-modal" data-step="success">
+            <div class="dc-dossier-header">
+              <span class="dc-dossier-title">Dossier erstellt</span>
+            </div>
+            <div class="dc-dossier-body dc-dossier-body-centered">
+              <div class="dc-dossier-success">
+                <svg class="dc-dossier-success-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="16 10 11 15 8 12"></polyline></svg>
+                <p>${self.escapeHtml(message || "Das Dossier wurde erfolgreich erstellt.")}</p>
+              </div>
+            </div>
+            <div class="dc-dossier-footer dc-dossier-footer-centered">
+              <button type="button" class="dc-dossier-btn dc-dossier-btn-success-close">Schliessen</button>
+            </div>
+          </div>
+        `,
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "550px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          $(".dc-dossier-btn-success-close").on("click", function () {
+            Swal.close();
+            // Reload page to show new dossier
+            if (dossierId) {
+              window.location.reload();
+            }
+          });
+        },
+      });
+    },
+
+    /**
+     * Render validation errors
+     */
+    renderErrors: function (message, errors, warnings) {
+      const self = this;
+
+      let errorsHtml = "";
+
+      // Build errors list
+      if (errors && Array.isArray(errors) && errors.length > 0) {
+        errorsHtml += '<div class="dc-dossier-errors-section"><strong>Fehler:</strong><ul class="dc-dossier-errors-list">';
+        errors.forEach(function (error) {
+          errorsHtml += `<li>${self.escapeHtml(error)}</li>`;
+        });
+        errorsHtml += "</ul></div>";
+      }
+
+      // Build warnings list
+      if (warnings && Array.isArray(warnings) && warnings.length > 0) {
+        errorsHtml += '<div class="dc-dossier-warnings-section"><strong>Warnungen:</strong><ul class="dc-dossier-warnings-list">';
+        warnings.forEach(function (warning) {
+          errorsHtml += `<li>${self.escapeHtml(warning)}</li>`;
+        });
+        errorsHtml += "</ul></div>";
+      }
+
+      Swal.fire({
+        title: null,
+        html: `
+          <div class="dc-dossier-modal" data-step="error">
+            <div class="dc-dossier-header">
+              <span class="dc-dossier-title">Validierungsfehler</span>
+              <button type="button" class="dc-dossier-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
+            </div>
+            <div class="dc-dossier-body">
+              <div class="dc-dossier-error-message">
+                <svg class="dc-dossier-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <p>${self.escapeHtml(message)}</p>
+              </div>
+              ${errorsHtml}
+            </div>
+            <div class="dc-dossier-footer">
+              <div class="dc-dossier-steps"></div>
+              <div class="dc-dossier-actions">
+                <button type="button" class="dc-dossier-btn dc-dossier-btn-back">Zurück zur Auswahl</button>
+                <button type="button" class="dc-dossier-btn dc-dossier-btn-cancel">Abbrechen</button>
+              </div>
+            </div>
+          </div>
+        `,
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "550px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          $(".dc-dossier-close, .dc-dossier-btn-cancel").on("click", function () {
+            Swal.close();
+          });
+
+          $(".dc-dossier-btn-back").on("click", function () {
+            // Go back to summary step
+            self.renderSummary();
+          });
         },
       });
     },

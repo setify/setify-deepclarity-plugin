@@ -817,28 +817,38 @@ class Client
         // Generate unique request ID
         $request_id = 'dc_dossier_' . $client_id . '_' . time() . '_' . wp_generate_password(8, false);
 
-        // Store initial status in transient (expires in 30 minutes)
-        set_transient($request_id, array(
-            'status'     => 'pending',
-            'client_id'  => $client_id,
-            'session_id' => $session_id,
-            'created_at' => time(),
-            'dossier_id' => null,
-        ), 30 * MINUTE_IN_SECONDS);
-
-        // Send webhook to n8n via API class
+        // Send webhook to n8n via API class (synchronous, waits for response)
         $api = API::get_instance();
         $result = $api->send_dossier_webhook($dossier_data, $request_id);
 
+        // Handle WP_Error (network/connection error)
         if (is_wp_error($result)) {
-            // Delete transient on error
-            delete_transient($request_id);
-            wp_send_json_error(array('message' => 'Webhook error: ' . $result->get_error_message()));
+            wp_send_json_error(array('message' => 'Verbindungsfehler: ' . $result->get_error_message()));
         }
 
+        // Handle n8n validation errors (success: false)
+        if (is_array($result) && isset($result['success']) && $result['success'] === false) {
+            wp_send_json_error(array(
+                'message'  => isset($result['error']) ? $result['error'] : 'Validierungsfehler',
+                'errors'   => isset($result['errors']) ? $result['errors'] : array(),
+                'warnings' => isset($result['warnings']) ? $result['warnings'] : array(),
+            ));
+        }
+
+        // Handle n8n success response
+        if (is_array($result) && isset($result['success']) && $result['success'] === true) {
+            // Get dossier_id from n8n response if available
+            $dossier_id = isset($result['dossier_id']) ? $result['dossier_id'] : null;
+
+            wp_send_json_success(array(
+                'message'    => isset($result['message']) ? $result['message'] : 'Dossier wurde erfolgreich erstellt.',
+                'dossier_id' => $dossier_id,
+            ));
+        }
+
+        // Fallback: If n8n returned true (simple success) or unexpected format
         wp_send_json_success(array(
-            'message'    => 'Dossier-Generierung wurde gestartet.',
-            'request_id' => $request_id,
+            'message' => 'Dossier-Generierung wurde gestartet.',
         ));
     }
 
