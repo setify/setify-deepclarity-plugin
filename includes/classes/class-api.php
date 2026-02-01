@@ -42,6 +42,16 @@ class API
     private $webhook_session_analysis_url = 'https://n8n.setify.de/webhook-test/dc_session_analysis';
 
     /**
+     * Webhook URLs for dossier analysis (production and test)
+     *
+     * @var array
+     */
+    private $webhook_dossier_urls = array(
+        'https://n8n.setify.de/webhook/dc_dossier_analysis',
+        'https://n8n.setify.de/webhook-test/dc_dossier_analysis',
+    );
+
+    /**
      * API Key for authentication
      *
      * @var string
@@ -240,6 +250,373 @@ class API
     }
 
     /**
+     * Get form entry data as Q&A text format
+     *
+     * @param int $entry_id Entry ID.
+     * @param int $form_id  Form ID.
+     * @return string Q&A formatted text or empty string.
+     */
+    private function get_form_entry_as_text($entry_id, $form_id)
+    {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'fluentform_submissions';
+
+        $submission = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$table_name} WHERE id = %d AND form_id = %d",
+                $entry_id,
+                $form_id
+            )
+        );
+
+        if (! $submission) {
+            return '';
+        }
+
+        $response_data = json_decode($submission->response, true);
+        if (! is_array($response_data)) {
+            return '';
+        }
+
+        // Get form fields for labels
+        $form_table = $wpdb->prefix . 'fluentform_forms';
+        $form = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$form_table} WHERE id = %d",
+                $form_id
+            )
+        );
+
+        $field_labels = array();
+        if ($form && ! empty($form->form_fields)) {
+            $form_fields = json_decode($form->form_fields, true);
+            if (is_array($form_fields) && isset($form_fields['fields'])) {
+                $field_labels = $this->extract_field_labels_recursive($form_fields['fields']);
+            }
+        }
+
+        // Build Q&A text
+        $text_parts = array();
+        foreach ($response_data as $field_name => $value) {
+            // Skip internal fields
+            if (strpos($field_name, '_') === 0 || strpos($field_name, 'fluentform') !== false) {
+                continue;
+            }
+
+            $label = isset($field_labels[$field_name]) ? $field_labels[$field_name] : $field_name;
+
+            if (is_array($value)) {
+                $value = implode(', ', $value);
+            }
+
+            if (! empty($value)) {
+                $text_parts[] = "Frage: {$label}\nAntwort: {$value}";
+            }
+        }
+
+        return implode("\n\n", $text_parts);
+    }
+
+    /**
+     * Extract field labels recursively from form fields
+     *
+     * @param array $fields Form fields array.
+     * @return array Associative array of field_name => label.
+     */
+    private function extract_field_labels_recursive($fields)
+    {
+        $labels = array();
+
+        foreach ($fields as $field) {
+            if (isset($field['attributes']['name']) && isset($field['settings']['label'])) {
+                $labels[$field['attributes']['name']] = $field['settings']['label'];
+            }
+
+            if (isset($field['columns']) && is_array($field['columns'])) {
+                foreach ($field['columns'] as $column) {
+                    if (isset($column['fields']) && is_array($column['fields'])) {
+                        $labels = array_merge($labels, $this->extract_field_labels_recursive($column['fields']));
+                    }
+                }
+            }
+
+            if (isset($field['fields']) && is_array($field['fields'])) {
+                $labels = array_merge($labels, $this->extract_field_labels_recursive($field['fields']));
+            }
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Get DCPI scores from form submission
+     *
+     * @param int $entry_id Entry ID.
+     * @return array DCPI scores.
+     */
+    private function get_dcpi_scores($entry_id)
+    {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'fluentform_submissions';
+
+        $submission = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT response FROM {$table_name} WHERE id = %d",
+                $entry_id
+            )
+        );
+
+        if (! $submission) {
+            return array();
+        }
+
+        $data = json_decode($submission->response, true);
+        if (! is_array($data)) {
+            return array();
+        }
+
+        return array(
+            'dimension_1_score'  => isset($data['dimension_1_score']) ? round(floatval($data['dimension_1_score'])) : 0,
+            'dimension_2_score'  => isset($data['dimension_2_score']) ? round(floatval($data['dimension_2_score'])) : 0,
+            'dimension_3_score'  => isset($data['dimension_3_score']) ? round(floatval($data['dimension_3_score'])) : 0,
+            'dimension_4_score'  => isset($data['dimension_4_score']) ? round(floatval($data['dimension_4_score'])) : 0,
+            'dimension_5_score'  => isset($data['dimension_5_score']) ? round(floatval($data['dimension_5_score'])) : 0,
+            'deep_clarity_index' => isset($data['deep_clarity_index']) ? floatval($data['deep_clarity_index']) : 0,
+        );
+    }
+
+    /**
+     * Send dossier analysis request to n8n webhook
+     *
+     * @param array  $dossier_data Dossier data from ajax_create_dossier.
+     * @param string $request_id   Unique request ID for tracking.
+     * @return bool|\WP_Error True on success, WP_Error on failure.
+     */
+    public function send_dossier_webhook($dossier_data, $request_id)
+    {
+        $client_id               = $dossier_data['client_id'];
+        $anamnese_entry_id       = $dossier_data['anamnese_entry_id'];
+        $session_id              = $dossier_data['session_id'];
+        $dcpi_entry_id           = $dossier_data['dcpi_entry_id'];
+        $comparison_session_id   = $dossier_data['comparison_session_id'];
+        $comparison_dcpi_entry_id = $dossier_data['comparison_dcpi_entry_id'];
+
+        // Form IDs
+        $anamnese_form_id = 3;
+        $dcpi_form_id     = 23;
+
+        // Get client data
+        $client_firstname = '';
+        $client_lastname  = '';
+        $client_email     = '';
+
+        if (function_exists('get_field')) {
+            $client_firstname = get_field('client_firstname', $client_id) ?: '';
+            $client_lastname  = get_field('client_lastname', $client_id) ?: '';
+            $client_email     = get_field('client_email', $client_id) ?: '';
+        }
+
+        // Build client object
+        $client_data = array(
+            'client_id'  => $client_id,
+            'firstname'  => $client_firstname,
+            'lastname'   => $client_lastname,
+            'email'      => $client_email,
+        );
+
+        // Build anamnese object (only for first dossier)
+        $anamnese_data = null;
+        if ($anamnese_entry_id) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'fluentform_submissions';
+            $anamnese_submission = $wpdb->get_row(
+                $wpdb->prepare("SELECT created_at FROM {$table_name} WHERE id = %d", $anamnese_entry_id)
+            );
+
+            $anamnese_data = array(
+                'anamnese_id'   => $anamnese_entry_id,
+                'anamnese_date' => $anamnese_submission ? $anamnese_submission->created_at : '',
+                'anamnese_data' => $this->get_form_entry_as_text($anamnese_entry_id, $anamnese_form_id),
+            );
+        }
+
+        // Get session data
+        $session = get_post($session_id);
+        $session_number = 1;
+        $session_date = $session ? $session->post_date : '';
+
+        // Get session count for this client to determine session number
+        if (function_exists('get_field')) {
+            $sessions_query = new \WP_Query(array(
+                'post_type'      => 'session',
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'orderby'        => 'date',
+                'order'          => 'ASC',
+                'meta_query'     => array(
+                    array(
+                        'key'     => 'session_client',
+                        'value'   => $client_id,
+                        'compare' => '=',
+                    ),
+                ),
+            ));
+
+            $session_ids = $sessions_query->posts;
+            $session_number = array_search($session_id, $session_ids);
+            $session_number = $session_number !== false ? $session_number + 1 : 1;
+        }
+
+        // Get DCPI submission date
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'fluentform_submissions';
+        $dcpi_submission = $wpdb->get_row(
+            $wpdb->prepare("SELECT created_at FROM {$table_name} WHERE id = %d", $dcpi_entry_id)
+        );
+
+        // Get DCPI scores
+        $dcpi_scores = $this->get_dcpi_scores($dcpi_entry_id);
+
+        // Determine if follow-up (not first dossier)
+        $is_followup = ! empty($comparison_session_id) && ! empty($comparison_dcpi_entry_id);
+
+        // Build current session object
+        $current_session = array(
+            'session_id'       => $session_id,
+            'session_number'   => $session_number,
+            'session_date'     => $session_date,
+            'session_followup' => $is_followup,
+            'session_data'     => '', // Sessions don't have form data, but may have ACF fields
+        );
+
+        // Add session ACF fields if available
+        if (function_exists('get_field')) {
+            $session_transcript = get_field('session_transcript', $session_id) ?: '';
+            $session_diagnosis  = get_field('session_diagnosis', $session_id) ?: '';
+            $session_note       = get_field('session_note', $session_id) ?: '';
+
+            $session_text_parts = array();
+            if (! empty($session_transcript)) {
+                $session_text_parts[] = "Transkript:\n{$session_transcript}";
+            }
+            if (! empty($session_diagnosis)) {
+                $session_text_parts[] = "Diagnose:\n{$session_diagnosis}";
+            }
+            if (! empty($session_note)) {
+                $session_text_parts[] = "Notiz:\n{$session_note}";
+            }
+            $current_session['session_data'] = implode("\n\n", $session_text_parts);
+        }
+
+        // Count existing DCPIs to determine DCPI number
+        $dcpi_number = 1;
+        if (function_exists('get_field')) {
+            $client_dcpi = get_field('client_dcpi', $client_id);
+            if (is_array($client_dcpi)) {
+                $dcpi_number = count($client_dcpi);
+            }
+        }
+
+        // Build current DCPI object
+        $current_dcpi = array(
+            'dcpi_id'                 => $dcpi_entry_id,
+            'dcpi_number'             => $dcpi_number,
+            'dcpi_date'               => $dcpi_submission ? $dcpi_submission->created_at : '',
+            'dcpi_dimension_1_score'  => $dcpi_scores['dimension_1_score'] ?? 0,
+            'dcpi_dimension_2_score'  => $dcpi_scores['dimension_2_score'] ?? 0,
+            'dcpi_dimension_3_score'  => $dcpi_scores['dimension_3_score'] ?? 0,
+            'dcpi_dimension_4_score'  => $dcpi_scores['dimension_4_score'] ?? 0,
+            'dcpi_dimension_5_score'  => $dcpi_scores['dimension_5_score'] ?? 0,
+            'dcpi_deep_clarity_index' => $dcpi_scores['deep_clarity_index'] ?? 0,
+            'dcpi_data'               => $this->get_form_entry_as_text($dcpi_entry_id, $dcpi_form_id),
+        );
+
+        // Build previous data (for follow-up dossiers)
+        $previous_session = null;
+        $previous_dcpi = null;
+
+        if ($is_followup) {
+            // Previous session
+            $prev_session = get_post($comparison_session_id);
+            $prev_session_number = 1;
+
+            if ($prev_session && function_exists('get_field')) {
+                $session_ids = $sessions_query->posts ?? array();
+                $prev_session_number = array_search($comparison_session_id, $session_ids);
+                $prev_session_number = $prev_session_number !== false ? $prev_session_number + 1 : 1;
+            }
+
+            $previous_session = array(
+                'session_id'       => $comparison_session_id,
+                'session_number'   => $prev_session_number,
+                'session_date'     => $prev_session ? $prev_session->post_date : '',
+                'session_followup' => false,
+                'session_data'     => '',
+            );
+
+            // Add previous session ACF fields
+            if (function_exists('get_field')) {
+                $prev_transcript = get_field('session_transcript', $comparison_session_id) ?: '';
+                $prev_diagnosis  = get_field('session_diagnosis', $comparison_session_id) ?: '';
+                $prev_note       = get_field('session_note', $comparison_session_id) ?: '';
+
+                $prev_text_parts = array();
+                if (! empty($prev_transcript)) {
+                    $prev_text_parts[] = "Transkript:\n{$prev_transcript}";
+                }
+                if (! empty($prev_diagnosis)) {
+                    $prev_text_parts[] = "Diagnose:\n{$prev_diagnosis}";
+                }
+                if (! empty($prev_note)) {
+                    $prev_text_parts[] = "Notiz:\n{$prev_note}";
+                }
+                $previous_session['session_data'] = implode("\n\n", $prev_text_parts);
+            }
+
+            // Previous DCPI
+            $prev_dcpi_submission = $wpdb->get_row(
+                $wpdb->prepare("SELECT created_at FROM {$table_name} WHERE id = %d", $comparison_dcpi_entry_id)
+            );
+            $prev_dcpi_scores = $this->get_dcpi_scores($comparison_dcpi_entry_id);
+
+            $previous_dcpi = array(
+                'dcpi_id'                 => $comparison_dcpi_entry_id,
+                'dcpi_number'             => $dcpi_number - 1,
+                'dcpi_date'               => $prev_dcpi_submission ? $prev_dcpi_submission->created_at : '',
+                'dcpi_dimension_1_score'  => $prev_dcpi_scores['dimension_1_score'] ?? 0,
+                'dcpi_dimension_2_score'  => $prev_dcpi_scores['dimension_2_score'] ?? 0,
+                'dcpi_dimension_3_score'  => $prev_dcpi_scores['dimension_3_score'] ?? 0,
+                'dcpi_dimension_4_score'  => $prev_dcpi_scores['dimension_4_score'] ?? 0,
+                'dcpi_dimension_5_score'  => $prev_dcpi_scores['dimension_5_score'] ?? 0,
+                'dcpi_deep_clarity_index' => $prev_dcpi_scores['deep_clarity_index'] ?? 0,
+                'dcpi_data'               => $this->get_form_entry_as_text($comparison_dcpi_entry_id, $dcpi_form_id),
+            );
+        }
+
+        // Build final webhook data
+        $webhook_data = array(
+            'request_id'       => $request_id,
+            'client'           => $client_data,
+            'anamnese'         => $anamnese_data,
+            'current_session'  => $current_session,
+            'current_dcpi'     => $current_dcpi,
+            'previous_session' => $previous_session,
+            'previous_dcpi'    => $previous_dcpi,
+        );
+
+        // Send to all webhook URLs
+        $last_result = true;
+        foreach ($this->webhook_dossier_urls as $url) {
+            $result = $this->send_webhook($url, $webhook_data);
+            if (is_wp_error($result)) {
+                $last_result = $result;
+            }
+        }
+
+        return $last_result;
+    }
+
+    /**
      * Register REST API routes
      */
     public function register_rest_routes()
@@ -293,6 +670,32 @@ class API
                     'required'          => true,
                     'type'              => 'string',
                     'description'       => 'The analysis result text',
+                ),
+            ),
+        ));
+
+        // Endpoint: Receive dossier analysis result from n8n
+        register_rest_route('deep-clarity/v1', '/dossier/analysis-result', array(
+            'methods'             => 'POST',
+            'callback'            => array($this, 'handle_dossier_analysis_result'),
+            'permission_callback' => array($this, 'verify_api_request'),
+            'args'                => array(
+                'request_id' => array(
+                    'required'          => true,
+                    'type'              => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'description'       => 'The unique request ID',
+                ),
+                'client_id' => array(
+                    'required'          => true,
+                    'type'              => 'integer',
+                    'sanitize_callback' => 'absint',
+                    'description'       => 'The client post ID',
+                ),
+                'dossier_content' => array(
+                    'required'          => true,
+                    'type'              => 'string',
+                    'description'       => 'The generated dossier content',
                 ),
             ),
         ));
@@ -431,6 +834,89 @@ class API
             'success'    => true,
             'message'    => 'Analysis saved successfully',
             'session_id' => $session_id,
+            'client_id'  => $client_id,
+        ), 200);
+    }
+
+    /**
+     * Handle dossier analysis result from n8n
+     *
+     * @param \WP_REST_Request $request The REST request.
+     * @return \WP_REST_Response
+     */
+    public function handle_dossier_analysis_result($request)
+    {
+        $request_id      = $request->get_param('request_id');
+        $client_id       = $request->get_param('client_id');
+        $dossier_content = $request->get_param('dossier_content');
+
+        // Verify client exists
+        $client = get_post($client_id);
+
+        if (! $client) {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Client not found',
+            ), 404);
+        }
+
+        if ($client->post_type !== 'client') {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Post is not a client',
+            ), 400);
+        }
+
+        // Get client name for dossier title
+        $client_firstname = '';
+        $client_lastname  = '';
+        if (function_exists('get_field')) {
+            $client_firstname = get_field('client_firstname', $client_id) ?: '';
+            $client_lastname  = get_field('client_lastname', $client_id) ?: '';
+        }
+        $client_name = trim("{$client_firstname} {$client_lastname}");
+        if (empty($client_name)) {
+            $client_name = $client->post_title;
+        }
+
+        // Create dossier post
+        $dossier_title = sprintf('Dossier: %s - %s', $client_name, current_time('d.m.Y'));
+
+        $dossier_id = wp_insert_post(array(
+            'post_type'    => 'dossier',
+            'post_title'   => $dossier_title,
+            'post_content' => $dossier_content,
+            'post_status'  => 'publish',
+        ), true);
+
+        if (is_wp_error($dossier_id)) {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Failed to create dossier: ' . $dossier_id->get_error_message(),
+            ), 500);
+        }
+
+        // Link dossier to client via ACF field
+        if (function_exists('update_field')) {
+            update_field('dossier_client', $client_id, $dossier_id);
+        }
+
+        // Update transient status for polling
+        $transient_data = get_transient($request_id);
+
+        if ($transient_data) {
+            $transient_data['status']       = 'complete';
+            $transient_data['dossier_id']   = $dossier_id;
+            $transient_data['completed_at'] = time();
+
+            // Keep for 5 more minutes for polling
+            set_transient($request_id, $transient_data, 5 * MINUTE_IN_SECONDS);
+        }
+
+        return new \WP_REST_Response(array(
+            'success'    => true,
+            'message'    => 'Dossier created successfully',
+            'dossier_id' => $dossier_id,
             'client_id'  => $client_id,
         ), 200);
     }

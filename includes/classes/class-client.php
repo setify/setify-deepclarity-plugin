@@ -62,6 +62,7 @@ class Client
         add_action('wp_ajax_deep_clarity_get_client_forms', array($this, 'ajax_get_client_forms'));
         add_action('wp_ajax_deep_clarity_create_dossier', array($this, 'ajax_create_dossier'));
         add_action('wp_ajax_deep_clarity_init_dossier', array($this, 'ajax_init_dossier'));
+        add_action('wp_ajax_deep_clarity_check_dossier_status', array($this, 'ajax_check_dossier_status'));
 
         // AJAX handler for session analysis
         add_action('wp_ajax_deep_clarity_analyze_session', array($this, 'ajax_analyze_session'));
@@ -804,7 +805,7 @@ class Client
             wp_send_json_error(array('message' => 'Ungültige Session'));
         }
 
-        // Build data for do_action with clear keys
+        // Build data for webhook
         $dossier_data = array(
             'client_id'               => $client_id,
             'anamnese_entry_id'       => $anamnese_entry_id,
@@ -814,11 +815,60 @@ class Client
             'comparison_dcpi_entry_id' => $comparison_dcpi_entry_id,
         );
 
-        // Trigger the do_action
-        do_action('bit_pi_do_action', '1-1', $dossier_data);
+        // Generate unique request ID
+        $request_id = 'dc_dossier_' . $client_id . '_' . time() . '_' . wp_generate_password(8, false);
+
+        // Store initial status in transient (expires in 30 minutes)
+        set_transient($request_id, array(
+            'status'     => 'pending',
+            'client_id'  => $client_id,
+            'session_id' => $session_id,
+            'created_at' => time(),
+            'dossier_id' => null,
+        ), 30 * MINUTE_IN_SECONDS);
+
+        // Send webhook to n8n via API class
+        $api = API::get_instance();
+        $result = $api->send_dossier_webhook($dossier_data, $request_id);
+
+        if (is_wp_error($result)) {
+            // Delete transient on error
+            delete_transient($request_id);
+            wp_send_json_error(array('message' => 'Webhook error: ' . $result->get_error_message()));
+        }
 
         wp_send_json_success(array(
-            'message' => 'Dossier-Generierung wurde gestartet.',
+            'message'    => 'Dossier-Generierung wurde gestartet.',
+            'request_id' => $request_id,
+        ));
+    }
+
+    /**
+     * AJAX handler for checking dossier status
+     */
+    public function ajax_check_dossier_status()
+    {
+        // Verify nonce
+        if (! check_ajax_referer('deep_clarity_frontend', 'nonce', false)) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $request_id = isset($_POST['request_id']) ? sanitize_text_field($_POST['request_id']) : '';
+
+        if (empty($request_id)) {
+            wp_send_json_error(array('message' => 'Missing request_id'));
+        }
+
+        // Get transient data
+        $transient_data = get_transient($request_id);
+
+        if (! $transient_data) {
+            wp_send_json_error(array('message' => 'Request not found or expired'));
+        }
+
+        wp_send_json_success(array(
+            'status'     => $transient_data['status'],
+            'dossier_id' => isset($transient_data['dossier_id']) ? $transient_data['dossier_id'] : null,
         ));
     }
 
