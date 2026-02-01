@@ -1910,6 +1910,113 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 .dc-dossier-processing-hint {
   font-size: 0.85rem !important;
   color: var(--dc-color-cool-steel) !important;
+  margin-top: 24px;
+}
+
+/* Dossier Processing Steps */
+.dc-dossier-processing-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 380px;
+  text-align: left;
+}
+
+.dc-processing-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--dc-color-brigth-snow);
+  border: 1px solid var(--dc-color-platinum);
+  border-radius: var(--dc-radius-small);
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.dc-processing-step.active {
+  opacity: 1;
+  background: #fff;
+  border-color: var(--dc-color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dc-processing-step.done {
+  opacity: 1;
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.dc-processing-step-indicator {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--dc-color-parchment);
+}
+
+.dc-processing-step.active .dc-processing-step-indicator {
+  background: var(--dc-color-primary);
+}
+
+.dc-processing-step.done .dc-processing-step-indicator {
+  background: #16a34a;
+  color: #fff;
+}
+
+.dc-processing-step.done .dc-processing-step-indicator svg {
+  width: 18px;
+  height: 18px;
+}
+
+.dc-processing-step-number {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--dc-color-cool-steel);
+}
+
+.dc-processing-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: dc-spin 0.8s linear infinite;
+}
+
+.dc-processing-step:not(.active) .dc-processing-spinner {
+  border-color: var(--dc-color-platinum);
+  border-top-color: var(--dc-color-cool-steel);
+}
+
+.dc-processing-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+.dc-processing-step-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--dc-color-carbon-black);
+}
+
+.dc-processing-step.active .dc-processing-step-title {
+  color: var(--dc-color-primary);
+}
+
+.dc-processing-step.done .dc-processing-step-title {
+  color: #16a34a;
+}
+
+.dc-processing-step-desc {
+  font-size: 0.8rem;
+  color: var(--dc-color-cool-steel);
 }
 
 /* Dossier Success State */

@@ -1022,6 +1022,7 @@
     requestId: null,
     pollTimer: null,
     pollInterval: 3000, // Poll every 3 seconds
+    processingStep: 1, // 1 = Strukturanalyse, 2 = Dossier-Generierung
 
     /**
      * Initialize dossier creator
@@ -1057,6 +1058,7 @@
       this.selectedComparisonSessionId = null;
       this.selectedComparisonDcpiEntryId = null;
       this.requestId = null;
+      this.processingStep = 1;
       if (this.pollTimer) {
         clearInterval(this.pollTimer);
         this.pollTimer = null;
@@ -1750,6 +1752,13 @@
         clearInterval(self.pollTimer);
       }
 
+      // After 8 seconds, progress to step 2 (Dossier generation)
+      setTimeout(function () {
+        if (self.pollTimer && self.processingStep === 1) {
+          self.updateProcessingStep(2);
+        }
+      }, 8000);
+
       // Start polling
       self.pollTimer = setInterval(function () {
         self.checkStatus();
@@ -1813,25 +1822,15 @@
     },
 
     /**
-     * Render processing/loading state
+     * Render processing/loading state with two-step progress
      */
     renderProcessing: function () {
+      const self = this;
+      self.processingStep = 1;
+
       Swal.fire({
         title: null,
-        html: `
-          <div class="dc-dossier-modal" data-step="processing">
-            <div class="dc-dossier-header">
-              <span class="dc-dossier-title">Dossier wird erstellt</span>
-            </div>
-            <div class="dc-dossier-body dc-dossier-body-centered">
-              <div class="dc-dossier-processing">
-                <span class="spinner"></span>
-                <p>Die Daten werden verarbeitet und das Dossier wird generiert...</p>
-                <p class="dc-dossier-processing-hint">Bitte warten Sie, bis der Vorgang abgeschlossen ist.</p>
-              </div>
-            </div>
-          </div>
-        `,
+        html: self.getProcessingTemplate(),
         showConfirmButton: false,
         showCancelButton: false,
         width: "550px",
@@ -1843,6 +1842,61 @@
         allowOutsideClick: false,
         allowEscapeKey: false,
       });
+    },
+
+    /**
+     * Get processing template HTML
+     */
+    getProcessingTemplate: function () {
+      const step = this.processingStep;
+      const step1Active = step === 1 ? " active" : "";
+      const step1Done = step > 1 ? " done" : "";
+      const step2Active = step === 2 ? " active" : "";
+
+      const step1Text = step === 1 ? "Strukturanalyse läuft..." : "Strukturanalyse abgeschlossen";
+      const step2Text = step === 2 ? "Dossier wird generiert..." : "Dossier-Generierung";
+
+      return `
+        <div class="dc-dossier-modal" data-step="processing">
+          <div class="dc-dossier-header">
+            <span class="dc-dossier-title">Dossier wird erstellt</span>
+          </div>
+          <div class="dc-dossier-body dc-dossier-body-centered">
+            <div class="dc-dossier-processing-steps">
+              <div class="dc-processing-step${step1Active}${step1Done}">
+                <div class="dc-processing-step-indicator">
+                  ${step > 1 ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '<span class="dc-processing-spinner"></span>'}
+                </div>
+                <div class="dc-processing-step-text">
+                  <span class="dc-processing-step-title">${step1Text}</span>
+                  <span class="dc-processing-step-desc">Daten werden analysiert und vorbereitet</span>
+                </div>
+              </div>
+              <div class="dc-processing-step${step2Active}">
+                <div class="dc-processing-step-indicator">
+                  ${step === 2 ? '<span class="dc-processing-spinner"></span>' : '<span class="dc-processing-step-number">2</span>'}
+                </div>
+                <div class="dc-processing-step-text">
+                  <span class="dc-processing-step-title">${step2Text}</span>
+                  <span class="dc-processing-step-desc">KI erstellt das personalisierte Dossier</span>
+                </div>
+              </div>
+            </div>
+            <p class="dc-dossier-processing-hint">Bitte warten Sie, dieser Vorgang kann einen Moment dauern.</p>
+          </div>
+        </div>
+      `;
+    },
+
+    /**
+     * Update processing step display
+     */
+    updateProcessingStep: function (step) {
+      this.processingStep = step;
+      const $container = $(".dc-dossier-modal[data-step='processing']");
+      if ($container.length) {
+        $container.replaceWith($(this.getProcessingTemplate()));
+      }
     },
 
     /**
