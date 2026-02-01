@@ -781,14 +781,13 @@ class Client
         $dossier_count = $dossier_query->found_posts;
         $is_first_dossier = $dossier_count === 0;
 
-        // Validation based on dossier type
-        if ($is_first_dossier) {
-            // First dossier: anamnese_entry_id required
-            if (! $anamnese_entry_id) {
-                wp_send_json_error(array('message' => 'Anamnesebogen ist für das erste Dossier erforderlich'));
-            }
-        } else {
-            // 2nd+ dossier: comparison values required
+        // Anamnese is always required
+        if (! $anamnese_entry_id) {
+            wp_send_json_error(array('message' => 'Anamnesebogen ist erforderlich. Bitte stellen Sie sicher, dass ein ausgefüllter Anamnesebogen vorliegt.'));
+        }
+
+        // For 2nd+ dossier: comparison values required
+        if (! $is_first_dossier) {
             if (! $comparison_session_id || ! $comparison_dcpi_entry_id) {
                 wp_send_json_error(array('message' => 'Vergleichswerte sind für weitere Dossiers erforderlich'));
             }
