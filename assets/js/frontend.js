@@ -1018,6 +1018,11 @@
     selectedComparisonSessionId: null,
     selectedComparisonDcpiEntryId: null,
 
+    // Polling state
+    requestId: null,
+    pollTimer: null,
+    pollInterval: 3000, // Poll every 3 seconds
+
     /**
      * Initialize dossier creator
      */
@@ -1051,6 +1056,11 @@
       this.selectedDcpiEntryId = null;
       this.selectedComparisonSessionId = null;
       this.selectedComparisonDcpiEntryId = null;
+      this.requestId = null;
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      }
     },
 
     /**
@@ -1714,18 +1724,92 @@
           comparison_dcpi_entry_id: self.selectedComparisonDcpiEntryId || 0,
         },
         success: function (response) {
-          if (response.success) {
-            // Show success message
-            self.renderSuccess(response.data.message, response.data.dossier_id);
+          if (response.success && response.data.request_id) {
+            // Store request ID and start polling
+            self.requestId = response.data.request_id;
+            self.startPolling();
           } else {
-            // Show validation errors from n8n
-            self.renderErrors(response.data.message, response.data.errors, response.data.warnings);
+            // Show error if webhook failed
+            self.renderErrors(response.data.message || "Ein Fehler ist aufgetreten.", [], []);
           }
         },
         error: function () {
           self.renderErrors("Ein Verbindungsfehler ist aufgetreten. Bitte versuchen Sie es erneut.", [], []);
         },
       });
+    },
+
+    /**
+     * Start polling for dossier status
+     */
+    startPolling: function () {
+      const self = this;
+
+      // Clear any existing timer
+      if (self.pollTimer) {
+        clearInterval(self.pollTimer);
+      }
+
+      // Start polling
+      self.pollTimer = setInterval(function () {
+        self.checkStatus();
+      }, self.pollInterval);
+    },
+
+    /**
+     * Check dossier status via AJAX
+     */
+    checkStatus: function () {
+      const self = this;
+
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "deep_clarity_check_dossier_status",
+          nonce: deepClarityFrontend.nonce,
+          request_id: self.requestId,
+        },
+        success: function (response) {
+          if (response.success) {
+            const status = response.data.status;
+
+            if (status === "complete") {
+              // Stop polling and show success
+              self.stopPolling();
+              self.renderSuccess("Das Dossier wurde erfolgreich erstellt.", response.data.dossier_id);
+            } else if (status === "error") {
+              // Stop polling and show errors
+              self.stopPolling();
+              self.renderErrors(
+                response.data.error || "Ein Fehler ist aufgetreten.",
+                response.data.errors || [],
+                response.data.warnings || []
+              );
+            }
+            // If status is "pending", continue polling
+          } else {
+            // Error checking status - stop polling and show error
+            self.stopPolling();
+            self.renderErrors(response.data.message || "Statusabfrage fehlgeschlagen.", [], []);
+          }
+        },
+        error: function () {
+          // Network error - stop polling and show error
+          self.stopPolling();
+          self.renderErrors("Verbindungsfehler bei der Statusabfrage.", [], []);
+        },
+      });
+    },
+
+    /**
+     * Stop polling
+     */
+    stopPolling: function () {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      }
     },
 
     /**

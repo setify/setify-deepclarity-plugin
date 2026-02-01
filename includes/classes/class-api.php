@@ -628,16 +628,16 @@ class API
             'previous_dcpi'    => $previous_dcpi,
         );
 
-        // Send to production webhook and wait for response
-        // Note: Only send to first (production) URL for synchronous response
-        $result = $this->send_webhook($this->webhook_dossier_urls[0], $webhook_data, true);
-
-        // Also send to test webhook (fire and forget)
-        if (isset($this->webhook_dossier_urls[1])) {
-            $this->send_webhook($this->webhook_dossier_urls[1], $webhook_data, false);
+        // Send to all webhook URLs (async, fire and forget)
+        $last_result = true;
+        foreach ($this->webhook_dossier_urls as $url) {
+            $result = $this->send_webhook($url, $webhook_data);
+            if (is_wp_error($result)) {
+                $last_result = $result;
+            }
         }
 
-        return $result;
+        return $last_result;
     }
 
     /**
@@ -720,6 +720,53 @@ class API
                     'required'          => true,
                     'type'              => 'string',
                     'description'       => 'The generated dossier content',
+                ),
+            ),
+        ));
+
+        // Endpoint: Receive dossier analysis error from n8n
+        register_rest_route('deep-clarity/v1', '/dossier/analysis-error', array(
+            'methods'             => 'POST',
+            'callback'            => array($this, 'handle_dossier_analysis_error'),
+            'permission_callback' => array($this, 'verify_api_request'),
+            'args'                => array(
+                'request_id' => array(
+                    'required'          => true,
+                    'type'              => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'description'       => 'The unique request ID',
+                ),
+                'error_type' => array(
+                    'required'          => false,
+                    'type'              => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'description'       => 'Type of error (validation, processing, etc.)',
+                ),
+                'error_message' => array(
+                    'required'          => false,
+                    'type'              => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'description'       => 'The main error message',
+                ),
+                'errors' => array(
+                    'required'          => false,
+                    'type'              => 'array',
+                    'description'       => 'Array of validation errors',
+                ),
+                'warnings' => array(
+                    'required'          => false,
+                    'type'              => 'array',
+                    'description'       => 'Array of validation warnings',
+                ),
+                'metadata' => array(
+                    'required'          => false,
+                    'type'              => 'object',
+                    'description'       => 'Additional metadata (timestamp, n8n_execution_id, validation_node)',
+                ),
+                'original_payload_preview' => array(
+                    'required'          => false,
+                    'type'              => 'object',
+                    'description'       => 'Preview of original payload for debugging',
                 ),
             ),
         ));
@@ -942,6 +989,78 @@ class API
             'message'    => 'Dossier created successfully',
             'dossier_id' => $dossier_id,
             'client_id'  => $client_id,
+        ), 200);
+    }
+
+    /**
+     * Handle dossier analysis error from n8n
+     *
+     * @param \WP_REST_Request $request The REST request.
+     * @return \WP_REST_Response
+     */
+    public function handle_dossier_analysis_error($request)
+    {
+        // Get body parameters
+        $request_id    = $request->get_param('request_id');
+        $error_type    = $request->get_param('error_type') ?: 'unknown';
+        $error_message = $request->get_param('error_message') ?: 'Ein Fehler ist aufgetreten';
+        $errors        = $request->get_param('errors') ?: array();
+        $warnings      = $request->get_param('warnings') ?: array();
+        $metadata      = $request->get_param('metadata') ?: array();
+
+        // Extract metadata fields
+        $timestamp         = isset($metadata['timestamp']) ? $metadata['timestamp'] : current_time('c');
+        $n8n_execution_id  = isset($metadata['n8n_execution_id']) ? $metadata['n8n_execution_id'] : '';
+        $validation_node   = isset($metadata['validation_node']) ? $metadata['validation_node'] : '';
+
+        // Log the error with details
+        error_log(sprintf(
+            'DeepClarity Dossier Error [%s]: request_id=%s, error="%s", errors_count=%d, warnings_count=%d, timestamp=%s, n8n_execution=%s, node=%s',
+            $error_type,
+            $request_id,
+            $error_message,
+            count($errors),
+            count($warnings),
+            $timestamp,
+            $n8n_execution_id,
+            $validation_node
+        ));
+
+        // Log individual errors if present
+        if (! empty($errors)) {
+            error_log('DeepClarity Dossier Errors: ' . wp_json_encode($errors));
+        }
+
+        // Log individual warnings if present
+        if (! empty($warnings)) {
+            error_log('DeepClarity Dossier Warnings: ' . wp_json_encode($warnings));
+        }
+
+        // Update transient status with error
+        $transient_data = get_transient($request_id);
+
+        if (! $transient_data) {
+            error_log(sprintf('DeepClarity Dossier Error: Transient not found for request_id=%s', $request_id));
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Request not found or expired',
+            ), 404);
+        }
+
+        $transient_data['status']       = 'error';
+        $transient_data['error']        = $error_message;
+        $transient_data['errors']       = $errors;
+        $transient_data['warnings']     = $warnings;
+        $transient_data['error_type']   = $error_type;
+        $transient_data['completed_at'] = time();
+
+        // Keep for 5 more minutes for polling
+        set_transient($request_id, $transient_data, 5 * MINUTE_IN_SECONDS);
+
+        return new \WP_REST_Response(array(
+            'success'    => true,
+            'message'    => 'Error status recorded',
+            'request_id' => $request_id,
         ), 200);
     }
 }
