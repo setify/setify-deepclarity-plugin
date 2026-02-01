@@ -349,6 +349,43 @@ class API
     }
 
     /**
+     * Strip HTML tags and convert to plain text
+     *
+     * @param string $html HTML content.
+     * @return string Plain text.
+     */
+    private function html_to_text($html)
+    {
+        if (empty($html)) {
+            return '';
+        }
+
+        // Convert common HTML elements to text equivalents
+        $text = $html;
+
+        // Replace <br> and <br/> with newlines
+        $text = preg_replace('/<br\s*\/?>/i', "\n", $text);
+
+        // Replace </p> with double newlines
+        $text = preg_replace('/<\/p>/i', "\n\n", $text);
+
+        // Replace </li> with newlines
+        $text = preg_replace('/<\/li>/i', "\n", $text);
+
+        // Strip all remaining HTML tags
+        $text = wp_strip_all_tags($text);
+
+        // Decode HTML entities
+        $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+
+        // Normalize whitespace
+        $text = preg_replace('/[ \t]+/', ' ', $text);
+        $text = preg_replace('/\n{3,}/', "\n\n", $text);
+
+        return trim($text);
+    }
+
+    /**
      * Get DCPI scores from form submission
      *
      * @param int $entry_id Entry ID.
@@ -440,32 +477,25 @@ class API
             );
         }
 
+        // Get dossier count for this client
+        $dossier_query = new \WP_Query(array(
+            'post_type'      => 'dossier',
+            'post_status'    => 'any',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_query'     => array(
+                array(
+                    'key'     => 'dossier_client',
+                    'value'   => $client_id,
+                    'compare' => '=',
+                ),
+            ),
+        ));
+        $dossier_count = $dossier_query->found_posts;
+
         // Get session data
         $session = get_post($session_id);
-        $session_number = 1;
         $session_date = $session ? $session->post_date : '';
-
-        // Get session count for this client to determine session number
-        if (function_exists('get_field')) {
-            $sessions_query = new \WP_Query(array(
-                'post_type'      => 'session',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'orderby'        => 'date',
-                'order'          => 'ASC',
-                'meta_query'     => array(
-                    array(
-                        'key'     => 'session_client',
-                        'value'   => $client_id,
-                        'compare' => '=',
-                    ),
-                ),
-            ));
-
-            $session_ids = $sessions_query->posts;
-            $session_number = array_search($session_id, $session_ids);
-            $session_number = $session_number !== false ? $session_number + 1 : 1;
-        }
 
         // Get DCPI submission date
         global $wpdb;
@@ -480,33 +510,27 @@ class API
         // Determine if follow-up (not first dossier)
         $is_followup = ! empty($comparison_session_id) && ! empty($comparison_dcpi_entry_id);
 
-        // Build current session object
-        $current_session = array(
-            'session_id'       => $session_id,
-            'session_number'   => $session_number,
-            'session_date'     => $session_date,
-            'session_followup' => $is_followup,
-            'session_data'     => '', // Sessions don't have form data, but may have ACF fields
-        );
+        // Calculate dossier number
+        $dossier_number = $dossier_count + 1;
 
-        // Add session ACF fields if available
+        // Build current session object with separate fields (no HTML)
+        $session_transcript = '';
+        $session_diagnosis  = '';
+        $session_notes      = '';
+
         if (function_exists('get_field')) {
-            $session_transcript = get_field('session_transcript', $session_id) ?: '';
-            $session_diagnosis  = get_field('session_diagnosis', $session_id) ?: '';
-            $session_note       = get_field('session_note', $session_id) ?: '';
-
-            $session_text_parts = array();
-            if (! empty($session_transcript)) {
-                $session_text_parts[] = "Transkript:\n{$session_transcript}";
-            }
-            if (! empty($session_diagnosis)) {
-                $session_text_parts[] = "Diagnose:\n{$session_diagnosis}";
-            }
-            if (! empty($session_note)) {
-                $session_text_parts[] = "Notiz:\n{$session_note}";
-            }
-            $current_session['session_data'] = implode("\n\n", $session_text_parts);
+            $session_transcript = $this->html_to_text(get_field('session_transcript', $session_id) ?: '');
+            $session_diagnosis  = $this->html_to_text(get_field('session_diagnosis', $session_id) ?: '');
+            $session_notes      = $this->html_to_text(get_field('session_note', $session_id) ?: '');
         }
+
+        $current_session = array(
+            'session_id'         => $session_id,
+            'session_date'       => $session_date,
+            'session_transcript' => $session_transcript,
+            'session_diagnosis'  => $session_diagnosis,
+            'session_notes'      => $session_notes,
+        );
 
         // Count existing DCPIs to determine DCPI number
         $dcpi_number = 1;
@@ -536,42 +560,26 @@ class API
         $previous_dcpi = null;
 
         if ($is_followup) {
-            // Previous session
+            // Previous session with separate fields (no HTML)
             $prev_session = get_post($comparison_session_id);
-            $prev_session_number = 1;
 
-            if ($prev_session && function_exists('get_field')) {
-                $session_ids = $sessions_query->posts ?? array();
-                $prev_session_number = array_search($comparison_session_id, $session_ids);
-                $prev_session_number = $prev_session_number !== false ? $prev_session_number + 1 : 1;
+            $prev_transcript = '';
+            $prev_diagnosis  = '';
+            $prev_notes      = '';
+
+            if (function_exists('get_field')) {
+                $prev_transcript = $this->html_to_text(get_field('session_transcript', $comparison_session_id) ?: '');
+                $prev_diagnosis  = $this->html_to_text(get_field('session_diagnosis', $comparison_session_id) ?: '');
+                $prev_notes      = $this->html_to_text(get_field('session_note', $comparison_session_id) ?: '');
             }
 
             $previous_session = array(
-                'session_id'       => $comparison_session_id,
-                'session_number'   => $prev_session_number,
-                'session_date'     => $prev_session ? $prev_session->post_date : '',
-                'session_followup' => false,
-                'session_data'     => '',
+                'session_id'         => $comparison_session_id,
+                'session_date'       => $prev_session ? $prev_session->post_date : '',
+                'session_transcript' => $prev_transcript,
+                'session_diagnosis'  => $prev_diagnosis,
+                'session_notes'      => $prev_notes,
             );
-
-            // Add previous session ACF fields
-            if (function_exists('get_field')) {
-                $prev_transcript = get_field('session_transcript', $comparison_session_id) ?: '';
-                $prev_diagnosis  = get_field('session_diagnosis', $comparison_session_id) ?: '';
-                $prev_note       = get_field('session_note', $comparison_session_id) ?: '';
-
-                $prev_text_parts = array();
-                if (! empty($prev_transcript)) {
-                    $prev_text_parts[] = "Transkript:\n{$prev_transcript}";
-                }
-                if (! empty($prev_diagnosis)) {
-                    $prev_text_parts[] = "Diagnose:\n{$prev_diagnosis}";
-                }
-                if (! empty($prev_note)) {
-                    $prev_text_parts[] = "Notiz:\n{$prev_note}";
-                }
-                $previous_session['session_data'] = implode("\n\n", $prev_text_parts);
-            }
 
             // Previous DCPI
             $prev_dcpi_submission = $wpdb->get_row(
@@ -596,6 +604,8 @@ class API
         // Build final webhook data
         $webhook_data = array(
             'request_id'       => $request_id,
+            'dossier_number'   => $dossier_number,
+            'dossier_followup' => $is_followup,
             'client'           => $client_data,
             'anamnese'         => $anamnese_data,
             'current_session'  => $current_session,
