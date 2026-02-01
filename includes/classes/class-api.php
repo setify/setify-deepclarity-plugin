@@ -615,6 +615,11 @@ class API
             );
         }
 
+        // Build skills object from ACF options
+        $skills_data = array(
+            'setting_skill_structure_analysis' => get_field('setting_skill_structure_analysis', 'option') ?: '',
+        );
+
         // Build final webhook data
         $webhook_data = array(
             'request_id'       => $request_id,
@@ -626,6 +631,7 @@ class API
             'current_dcpi'     => $current_dcpi,
             'previous_session' => $previous_session,
             'previous_dcpi'    => $previous_dcpi,
+            'skills'           => $skills_data,
         );
 
         // Send to all webhook URLs (async, fire and forget)
