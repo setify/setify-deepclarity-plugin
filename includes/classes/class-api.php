@@ -722,10 +722,15 @@ class API
                     'sanitize_callback' => 'absint',
                     'description'       => 'The client post ID',
                 ),
-                'dossier_content' => array(
-                    'required'          => true,
+                'structural_analysis' => array(
+                    'required'          => false,
                     'type'              => 'string',
-                    'description'       => 'The generated dossier content',
+                    'description'       => 'The structural analysis result (step 1)',
+                ),
+                'dossier_content' => array(
+                    'required'          => false,
+                    'type'              => 'string',
+                    'description'       => 'The generated dossier content (step 2)',
                 ),
             ),
         ));
@@ -918,14 +923,27 @@ class API
     /**
      * Handle dossier analysis result from n8n
      *
+     * Supports two-step processing:
+     * Step 1: structural_analysis only - creates dossier, saves analysis, status = "processing"
+     * Step 2: dossier_content - updates dossier with content, status = "complete"
+     *
      * @param \WP_REST_Request $request The REST request.
      * @return \WP_REST_Response
      */
     public function handle_dossier_analysis_result($request)
     {
-        $request_id      = $request->get_param('request_id');
-        $client_id       = $request->get_param('client_id');
-        $dossier_content = $request->get_param('dossier_content');
+        $request_id          = $request->get_param('request_id');
+        $client_id           = $request->get_param('client_id');
+        $structural_analysis = $request->get_param('structural_analysis');
+        $dossier_content     = $request->get_param('dossier_content');
+
+        // At least one of structural_analysis or dossier_content must be provided
+        if (empty($structural_analysis) && empty($dossier_content)) {
+            return new \WP_REST_Response(array(
+                'success' => false,
+                'message' => 'Either structural_analysis or dossier_content must be provided',
+            ), 400);
+        }
 
         // Verify client exists
         $client = get_post($client_id);
@@ -944,57 +962,89 @@ class API
             ), 400);
         }
 
-        // Get client name for dossier title
-        $client_firstname = '';
-        $client_lastname  = '';
-        if (function_exists('get_field')) {
-            $client_firstname = get_field('client_firstname', $client_id) ?: '';
-            $client_lastname  = get_field('client_lastname', $client_id) ?: '';
-        }
-        $client_name = trim("{$client_firstname} {$client_lastname}");
-        if (empty($client_name)) {
-            $client_name = $client->post_title;
-        }
-
-        // Create dossier post
-        $dossier_title = sprintf('Dossier: %s - %s', $client_name, current_time('d.m.Y'));
-
-        $dossier_id = wp_insert_post(array(
-            'post_type'    => 'dossier',
-            'post_title'   => $dossier_title,
-            'post_content' => $dossier_content,
-            'post_status'  => 'publish',
-        ), true);
-
-        if (is_wp_error($dossier_id)) {
-            return new \WP_REST_Response(array(
-                'success' => false,
-                'message' => 'Failed to create dossier: ' . $dossier_id->get_error_message(),
-            ), 500);
-        }
-
-        // Link dossier to client via ACF field
-        if (function_exists('update_field')) {
-            update_field('dossier_client', $client_id, $dossier_id);
-        }
-
-        // Update transient status for polling
+        // Get transient data
         $transient_data = get_transient($request_id);
 
-        if ($transient_data) {
-            $transient_data['status']       = 'complete';
-            $transient_data['dossier_id']   = $dossier_id;
-            $transient_data['completed_at'] = time();
+        // Check if dossier already exists (from step 1)
+        $dossier_id = ($transient_data && isset($transient_data['dossier_id'])) ? $transient_data['dossier_id'] : null;
 
-            // Keep for 5 more minutes for polling
-            set_transient($request_id, $transient_data, 5 * MINUTE_IN_SECONDS);
+        // If no dossier exists yet, create one
+        if (! $dossier_id) {
+            // Get client name for dossier title
+            $client_firstname = '';
+            $client_lastname  = '';
+            if (function_exists('get_field')) {
+                $client_firstname = get_field('client_firstname', $client_id) ?: '';
+                $client_lastname  = get_field('client_lastname', $client_id) ?: '';
+            }
+            $client_name = trim("{$client_firstname} {$client_lastname}");
+            if (empty($client_name)) {
+                $client_name = $client->post_title;
+            }
+
+            // Create dossier post (empty content for now if only structural_analysis)
+            $dossier_title = sprintf('Dossier: %s - %s', $client_name, current_time('d.m.Y'));
+
+            $dossier_id = wp_insert_post(array(
+                'post_type'    => 'dossier',
+                'post_title'   => $dossier_title,
+                'post_content' => $dossier_content ?: '',
+                'post_status'  => 'publish',
+            ), true);
+
+            if (is_wp_error($dossier_id)) {
+                return new \WP_REST_Response(array(
+                    'success' => false,
+                    'message' => 'Failed to create dossier: ' . $dossier_id->get_error_message(),
+                ), 500);
+            }
+
+            // Link dossier to client via ACF field
+            if (function_exists('update_field')) {
+                update_field('dossier_client', $client_id, $dossier_id);
+            }
+        } elseif (! empty($dossier_content)) {
+            // Update existing dossier with content
+            wp_update_post(array(
+                'ID'           => $dossier_id,
+                'post_content' => $dossier_content,
+            ));
         }
+
+        // Save structural analysis to ACF field if provided
+        if (! empty($structural_analysis) && function_exists('update_field')) {
+            update_field('dossier_structural_analysis', $structural_analysis, $dossier_id);
+        }
+
+        // Determine status: "processing" if only structural_analysis, "complete" if dossier_content provided
+        $is_complete = ! empty($dossier_content);
+
+        // Update transient status for polling
+        if (! $transient_data) {
+            $transient_data = array();
+        }
+
+        $transient_data['dossier_id'] = $dossier_id;
+
+        if ($is_complete) {
+            $transient_data['status']       = 'complete';
+            $transient_data['completed_at'] = time();
+        } else {
+            // Still processing - structural analysis done, waiting for dossier content
+            $transient_data['status'] = 'processing';
+        }
+
+        // Keep for 30 more minutes for polling
+        set_transient($request_id, $transient_data, 30 * MINUTE_IN_SECONDS);
+
+        $message = $is_complete ? 'Dossier created successfully' : 'Structural analysis saved, awaiting dossier content';
 
         return new \WP_REST_Response(array(
             'success'    => true,
-            'message'    => 'Dossier created successfully',
+            'message'    => $message,
             'dossier_id' => $dossier_id,
             'client_id'  => $client_id,
+            'step'       => $is_complete ? 'complete' : 'structural_analysis',
         ), 200);
     }
 

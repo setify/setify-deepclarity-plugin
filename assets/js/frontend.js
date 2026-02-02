@@ -1752,14 +1752,7 @@
         clearInterval(self.pollTimer);
       }
 
-      // After 8 seconds, progress to step 2 (Dossier generation)
-      setTimeout(function () {
-        if (self.pollTimer && self.processingStep === 1) {
-          self.updateProcessingStep(2);
-        }
-      }, 8000);
-
-      // Start polling
+      // Start polling - step progression is now controlled by backend status
       self.pollTimer = setInterval(function () {
         self.checkStatus();
       }, self.pollInterval);
@@ -1787,6 +1780,12 @@
               // Stop polling and show success
               self.stopPolling();
               self.renderSuccess("Das Dossier wurde erfolgreich erstellt.", response.data.dossier_id);
+            } else if (status === "processing") {
+              // Structural analysis done, now generating dossier - update to step 2
+              if (self.processingStep !== 2) {
+                self.updateProcessingStep(2);
+              }
+              // Continue polling for completion
             } else if (status === "error") {
               // Stop polling and show errors
               self.stopPolling();
@@ -1796,7 +1795,7 @@
                 response.data.warnings || []
               );
             }
-            // If status is "pending", continue polling
+            // If status is "pending", continue polling (step 1)
           } else {
             // Error checking status - stop polling and show error
             self.stopPolling();
