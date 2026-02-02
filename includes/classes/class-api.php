@@ -47,7 +47,7 @@ class API
      * @var array
      */
     private $webhook_dossier_urls = array(
-        'https://n8n.setify.de/webhook/dc_dossier_analysis',
+        // 'https://n8n.setify.de/webhook/dc_dossier_analysis',
         'https://n8n.setify.de/webhook-test/dc_dossier_analysis',
     );
 
