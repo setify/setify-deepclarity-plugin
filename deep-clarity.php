@@ -26,6 +26,11 @@ define('DEEP_CLARITY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('DEEP_CLARITY_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('DEEP_CLARITY_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
+// Composer autoloader
+if (file_exists(DEEP_CLARITY_PLUGIN_DIR . 'vendor/autoload.php')) {
+    require_once DEEP_CLARITY_PLUGIN_DIR . 'vendor/autoload.php';
+}
+
 // Autoloader for classes
 spl_autoload_register(function ($class) {
     $prefix = 'DeepClarity\\';

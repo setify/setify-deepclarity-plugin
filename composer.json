@@ -1,0 +1,17 @@
+{
+    "name": "setify/deepclarity-plugin",
+    "description": "DeepClarity WordPress Plugin",
+    "type": "wordpress-plugin",
+    "require": {
+        "php": ">=7.4",
+        "mpdf/mpdf": "^8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Setify\\DeepClarity\\": "includes/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
