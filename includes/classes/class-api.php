@@ -617,7 +617,10 @@ class API
 
         // Build skills object from ACF options
         $skills_data = array(
-            'setting_skill_structure_analysis' => get_field('setting_skill_structure_analysis', 'option') ?: '',
+            'setting_skill_structure_analysis'  => get_field('setting_skill_structure_analysis', 'option') ?: '',
+            'setting_skill_copywriting_dossier' => get_field('setting_skill_copywirting_dossier', 'option') ?: '',
+            'setting_skill_dossier_creation'    => get_field('setting_skill_dossier_creation', 'option') ?: '',
+            'settings_template_dossier'         => get_field('settings_template_dossier', 'option') ?: '',
         );
 
         // Build final webhook data
