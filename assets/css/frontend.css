@@ -40,12 +40,38 @@
   --dc-color-parchment: #f1ede9;
   --dc-color-soft-linen: #f1ede4;
 
+  /* Indigo (Hinweise) */
+  --dc-color-indigo-100: #E0E8FE;
+  --dc-color-indigo-200: #C5D3FD;
+  --dc-color-indigo-500: #546AF9;
+
+  /* Rose (Warnungen) */
+  --dc-color-rose-100: #FDE5E6;
+  --dc-color-rose-300: #FAA6AE;
+  --dc-color-rose-700: #C02939;
+
+  /* Emerald (Erfolgsmeldungen) */
+  --dc-color-emerald-50: #EEFCF5;
+  --dc-color-emerald-500: #3DB780;
+  --dc-color-emerald-700: #247757;
+
   /* Semantic Colors */
   --dc-color-heading: var(--dc-color-carbon-black);
   --dc-color-text: var(--dc-color-shadow-grey);
   --dc-color-text-muted: var(--dc-color-iron-grey);
   --dc-color-primary: var(--dc-color-royal-plum);
   --dc-color-primary-dark: var(--dc-color-crimson-violet);
+
+  /* Status Colors */
+  --dc-color-success: var(--dc-color-emerald-500);
+  --dc-color-success-light: var(--dc-color-emerald-50);
+  --dc-color-success-dark: var(--dc-color-emerald-700);
+  --dc-color-warning: var(--dc-color-rose-700);
+  --dc-color-warning-light: var(--dc-color-rose-100);
+  --dc-color-warning-dark: var(--dc-color-rose-700);
+  --dc-color-info: var(--dc-color-indigo-500);
+  --dc-color-info-light: var(--dc-color-indigo-100);
+  --dc-color-info-dark: var(--dc-color-indigo-500);
 
   /* Border Radius */
   --dc-radius-large: 16px;
@@ -471,20 +497,20 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   }
 }
 
-/* Error */
+/* Error / Warning */
 .deep-clarity-error {
   padding: 20px;
-  background: #fef7f1;
-  border-left: 4px solid #d63638;
-  color: #8a2424;
+  background: var(--dc-color-warning-light);
+  border-left: 4px solid var(--dc-color-warning);
+  color: var(--dc-color-warning-dark);
 }
 
 /* Success */
 .deep-clarity-success {
   padding: 20px;
-  background: #edfaef;
-  border-left: 4px solid #00a32a;
-  color: #1e4620;
+  background: var(--dc-color-success-light);
+  border-left: 4px solid var(--dc-color-success);
+  color: var(--dc-color-success-dark);
 }
 
 /* ==========================================================================
@@ -2011,7 +2037,7 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 }
 
 .dc-processing-step.done .dc-processing-step-title {
-  color: #16a34a;
+  color: var(--dc-color-success);
 }
 
 .dc-processing-step-desc {
@@ -2030,7 +2056,7 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 .dc-dossier-success-icon {
   width: 48px;
   height: 48px;
-  color: var(--dc-color-success, #16a34a);
+  color: var(--dc-color-success);
 }
 
 .dc-dossier-success p {
