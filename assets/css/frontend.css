@@ -1108,15 +1108,21 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   display: flex;
   flex-direction: column;
   padding: 16px 20px;
-  background: var(--dc-color-soft-linen);
-  border-radius: var(--dc-radius-small);
-  border-left: 3px solid var(--dc-color-khaki-beige);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: linear-gradient(135deg, #fffef5 0%, #fdfcf0 100%);
+  border-radius: var(--dc-radius-xsmall);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 2px 4px rgba(0, 0, 0, 0.02),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .dc-note:hover {
-  border-left-color: var(--dc-color-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 4px 8px rgba(0, 0, 0, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+  transform: translateY(-1px);
 }
 
 .dc-note-actions {
@@ -1124,7 +1130,7 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   top: 12px;
   right: 12px;
   display: flex;
-  gap: 4px;
+  gap: 8px;
 }
 
 .dc-note-edit,
@@ -1132,31 +1138,22 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
   padding: 0;
   border: none;
-  background: transparent;
-  border-radius: var(--dc-radius-xsmall);
+  background: none;
   cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.dc-note-edit:hover,
-.dc-note-delete:hover {
-  background: rgba(0, 0, 0, 0.05);
 }
 
 .dc-note-edit svg,
 .dc-note-delete svg {
-  width: 15px;
-  height: 15px;
-  fill: var(--dc-color-cool-steel);
+  width: 16px;
+  height: 16px;
+  fill: var(--dc-color-khaki-beige);
   transition: fill 0.15s ease;
 }
 
 .dc-note-edit:hover svg {
-  fill: var(--dc-color-text-muted);
+  fill: var(--dc-color-olive-wood);
 }
 
 .dc-note-delete:hover svg {
@@ -1166,9 +1163,9 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 .dc-note-content {
   font-size: 0.9rem;
   line-height: 1.6;
-  color: var(--dc-color-carbon-black);
+  color: var(--dc-color-taupe);
   word-break: break-word;
-  padding-right: 60px;
+  padding-right: 50px;
 }
 
 .dc-note-content p {
