@@ -4,7 +4,8 @@
     "type": "wordpress-plugin",
     "require": {
         "php": ">=7.4",
-        "mpdf/mpdf": "^8.2"
+        "mpdf/mpdf": "^8.2",
+        "erusev/parsedown": "^1.7"
     },
     "autoload": {
         "psr-4": {

@@ -72,6 +72,16 @@ class ComposerStaticInitba4ae9045da6adf671df156425521127
         ),
     );
 
+    public static $prefixesPsr0 = array (
+        'P' =>
+        array (
+            'Parsedown' =>
+            array (
+                0 => __DIR__ . '/..' . '/erusev/parsedown',
+            ),
+        ),
+    );
+
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'DeepCopy\\DeepCopy' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/DeepCopy.php',
@@ -332,6 +342,7 @@ class ComposerStaticInitba4ae9045da6adf671df156425521127
         'Mpdf\\Writer\\OptionalContentWriter' => __DIR__ . '/..' . '/mpdf/mpdf/src/Writer/OptionalContentWriter.php',
         'Mpdf\\Writer\\PageWriter' => __DIR__ . '/..' . '/mpdf/mpdf/src/Writer/PageWriter.php',
         'Mpdf\\Writer\\ResourceWriter' => __DIR__ . '/..' . '/mpdf/mpdf/src/Writer/ResourceWriter.php',
+        'Parsedown' => __DIR__ . '/..' . '/erusev/parsedown/Parsedown.php',
         'Psr\\Http\\Message\\MessageInterface' => __DIR__ . '/..' . '/psr/http-message/src/MessageInterface.php',
         'Psr\\Http\\Message\\RequestInterface' => __DIR__ . '/..' . '/psr/http-message/src/RequestInterface.php',
         'Psr\\Http\\Message\\ResponseInterface' => __DIR__ . '/..' . '/psr/http-message/src/ResponseInterface.php',
@@ -405,6 +416,7 @@ class ComposerStaticInitba4ae9045da6adf671df156425521127
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitba4ae9045da6adf671df156425521127::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitba4ae9045da6adf671df156425521127::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitba4ae9045da6adf671df156425521127::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitba4ae9045da6adf671df156425521127::$classMap;
 
         }, null, ClassLoader::class);

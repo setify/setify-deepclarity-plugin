@@ -3,13 +3,22 @@
         'name' => 'setify/deepclarity-plugin',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '370a61d1656553f1a6d95c50ec4abaa0667871a4',
+        'reference' => '3b50996bb1d9a6718a3d2dbdcb6127c958f662cb',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
+        'erusev/parsedown' => array(
+            'pretty_version' => '1.7.4',
+            'version' => '1.7.4.0',
+            'reference' => 'cb17b6477dfff935958ba01325f2e8a2bfa6dab3',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../erusev/parsedown',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'mpdf/mpdf' => array(
             'pretty_version' => 'v8.2.7',
             'version' => '8.2.7.0',
@@ -85,7 +94,7 @@
         'setify/deepclarity-plugin' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '370a61d1656553f1a6d95c50ec4abaa0667871a4',
+            'reference' => '3b50996bb1d9a6718a3d2dbdcb6127c958f662cb',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -265,6 +265,7 @@ return array(
     'Mpdf\\Writer\\OptionalContentWriter' => $vendorDir . '/mpdf/mpdf/src/Writer/OptionalContentWriter.php',
     'Mpdf\\Writer\\PageWriter' => $vendorDir . '/mpdf/mpdf/src/Writer/PageWriter.php',
     'Mpdf\\Writer\\ResourceWriter' => $vendorDir . '/mpdf/mpdf/src/Writer/ResourceWriter.php',
+    'Parsedown' => $vendorDir . '/erusev/parsedown/Parsedown.php',
     'Psr\\Http\\Message\\MessageInterface' => $vendorDir . '/psr/http-message/src/MessageInterface.php',
     'Psr\\Http\\Message\\RequestInterface' => $vendorDir . '/psr/http-message/src/RequestInterface.php',
     'Psr\\Http\\Message\\ResponseInterface' => $vendorDir . '/psr/http-message/src/ResponseInterface.php',

@@ -47,6 +47,7 @@ class Shortcodes
         add_shortcode('post_id', array($this, 'post_id'));
         add_shortcode('session_client_link', array($this, 'session_client_link'));
         add_shortcode('session_client_id', array($this, 'session_client_id'));
+        add_shortcode('dossier_structural_analysis', array($this, 'dossier_structural_analysis'));
     }
 
     /**
@@ -444,5 +445,54 @@ class Shortcodes
         $client_id = is_object($client) ? $client->ID : $client;
 
         return (string) $client_id;
+    }
+
+    /**
+     * Shortcode: dossier_structural_analysis
+     *
+     * Outputs the structural analysis field from a dossier post, converted from Markdown to HTML.
+     *
+     * Usage: [dossier_structural_analysis]
+     * Options: [dossier_structural_analysis post_id="123"]
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string Structural analysis HTML or empty string.
+     */
+    public function dossier_structural_analysis($atts)
+    {
+        $atts = shortcode_atts(array(
+            'post_id'       => 0,
+            'empty_message' => '',
+        ), $atts, 'dossier_structural_analysis');
+
+        // Get post ID from attribute or current post
+        $post_id = intval($atts['post_id']) ?: get_the_ID();
+
+        if (! $post_id) {
+            return $atts['empty_message'] ? '<p>' . esc_html($atts['empty_message']) . '</p>' : '';
+        }
+
+        // Get structural analysis from ACF field
+        if (! function_exists('get_field')) {
+            return '';
+        }
+
+        $markdown_content = get_field('dossier_structural_analysis', $post_id);
+
+        if (empty($markdown_content)) {
+            return $atts['empty_message'] ? '<p>' . esc_html($atts['empty_message']) . '</p>' : '';
+        }
+
+        // Convert Markdown to HTML using Parsedown
+        if (class_exists('Parsedown')) {
+            $parsedown = new \Parsedown();
+            $parsedown->setSafeMode(true);
+            $html_content = $parsedown->text($markdown_content);
+        } else {
+            // Fallback: use wpautop for basic formatting
+            $html_content = wpautop(esc_html($markdown_content));
+        }
+
+        return '<div class="dc-structural-analysis">' . $html_content . '</div>';
     }
 }
