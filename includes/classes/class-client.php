@@ -70,6 +70,9 @@ class Client
 
         // REST API endpoint for Bit Flows callback
         add_action('rest_api_init', array($this, 'register_rest_routes'));
+
+        // Custom query filter for Unlimited Elements
+        add_filter('dossiers_current_client', array($this, 'query_dossiers_current_client'), 10, 2);
     }
 
     /**
@@ -1084,5 +1087,53 @@ class Client
         $diff = $today->diff($next_birthday);
 
         return $diff->days;
+    }
+
+    /**
+     * Query dossiers for current client (Unlimited Elements)
+     *
+     * Returns dossiers where the ACF relation field contains the current post ID.
+     *
+     * @param array $args        The query arguments array.
+     * @param array $widget_data Widget settings.
+     * @return array Modified query arguments.
+     */
+    public function query_dossiers_current_client($args, $widget_data)
+    {
+        // Get current post ID
+        $current_post_id = get_the_ID();
+
+        if (! $current_post_id) {
+            return $args;
+        }
+
+        // Set post type
+        $args['post_type'] = 'dossier';
+
+        // Build meta query for ACF relation field
+        $meta_query = array(
+            'relation' => 'OR',
+            // For serialized array (multiple values)
+            array(
+                'key'     => 'dossier_client',
+                'value'   => '"' . $current_post_id . '"',
+                'compare' => 'LIKE',
+            ),
+            // For single value (stored as post ID directly)
+            array(
+                'key'     => 'dossier_client',
+                'value'   => $current_post_id,
+                'compare' => '=',
+            ),
+        );
+
+        // Merge with existing meta_query if present
+        if (isset($args['meta_query']) && is_array($args['meta_query'])) {
+            $args['meta_query'][] = $meta_query;
+        } else {
+            $args['meta_query'] = array($meta_query);
+        }
+
+        return $args;
     }
 }
