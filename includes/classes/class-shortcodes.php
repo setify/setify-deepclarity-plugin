@@ -48,6 +48,7 @@ class Shortcodes
         add_shortcode('session_client_link', array($this, 'session_client_link'));
         add_shortcode('session_client_id', array($this, 'session_client_id'));
         add_shortcode('dossier_structural_analysis', array($this, 'dossier_structural_analysis'));
+        add_shortcode('acf_field', array($this, 'acf_field'));
     }
 
     /**
@@ -494,5 +495,71 @@ class Shortcodes
         }
 
         return '<div class="dc-structural-analysis">' . $html_content . '</div>';
+    }
+
+    /**
+     * Shortcode: acf_field
+     *
+     * Outputs the value of an ACF field (text, number, or date).
+     *
+     * Usage: [acf_field field="field_name"]
+     * Options: [acf_field field="field_name" post_id="123" date_format="d.m.Y" fallback="N/A"]
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string Field value or fallback.
+     */
+    public function acf_field($atts)
+    {
+        $atts = shortcode_atts(array(
+            'field'       => '',
+            'post_id'     => 0,
+            'date_format' => 'd.m.Y',
+            'fallback'    => '',
+        ), $atts, 'acf_field');
+
+        // Field name is required
+        if (empty($atts['field'])) {
+            return '';
+        }
+
+        // Check if ACF is available
+        if (! function_exists('get_field')) {
+            return esc_html($atts['fallback']);
+        }
+
+        // Get post ID from attribute or current post
+        $post_id = intval($atts['post_id']) ?: get_the_ID();
+
+        if (! $post_id) {
+            return esc_html($atts['fallback']);
+        }
+
+        // Get field value
+        $value = get_field($atts['field'], $post_id);
+
+        // Return fallback if empty
+        if ($value === null || $value === '' || $value === false) {
+            return esc_html($atts['fallback']);
+        }
+
+        // Handle different value types
+        if (is_numeric($value)) {
+            return esc_html($value);
+        }
+
+        // Check if it's a date (ACF returns dates as strings in various formats)
+        if (is_string($value)) {
+            // Try to parse as date if it looks like a date
+            $timestamp = strtotime($value);
+            if ($timestamp !== false && preg_match('/^\d{4}[-\/]\d{2}[-\/]\d{2}/', $value)) {
+                return esc_html(date_i18n($atts['date_format'], $timestamp));
+            }
+
+            // Regular text
+            return esc_html($value);
+        }
+
+        // For arrays or objects, return fallback
+        return esc_html($atts['fallback']);
     }
 }
