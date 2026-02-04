@@ -678,11 +678,18 @@
       return `
         <div class="dc-note-edit-modal">
           <div class="dc-note-edit-header">
-            <span class="dc-note-edit-title">Notiz bearbeiten</span>
+            <div class="dc-note-edit-header-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </div>
+            <div class="dc-note-edit-header-content">
+              <div class="dc-note-edit-title">Notiz bearbeiten</div>
+              <div class="dc-note-edit-subtitle">Ändere den Inhalt deiner Notiz</div>
+            </div>
             <button type="button" class="dc-note-edit-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-note-edit-body">
-            <textarea id="dc-note-content" placeholder="Notiz eingeben...">${this.escapeHtml(data.content)}</textarea>
+            <label for="dc-note-content">Notiz</label>
+            <textarea id="dc-note-content" placeholder="Schreibe hier deine Notiz...">${this.escapeHtml(data.content)}</textarea>
           </div>
           <div class="dc-note-edit-footer">
             <button type="button" class="dc-note-btn dc-note-btn-cancel">Abbrechen</button>
@@ -2435,11 +2442,18 @@
       return `
         <div class="dc-note-edit-modal">
           <div class="dc-note-edit-header">
-            <span class="dc-note-edit-title">Neue Notiz erstellen</span>
+            <div class="dc-note-edit-header-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            </div>
+            <div class="dc-note-edit-header-content">
+              <div class="dc-note-edit-title">Neue Notiz erstellen</div>
+              <div class="dc-note-edit-subtitle">Füge eine persönliche Notiz hinzu</div>
+            </div>
             <button type="button" class="dc-note-edit-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.29 19.7c.39.39 1.02.39 1.41 0 .39-.4.39-1.03 0-1.42l-6.3-6.3 6.29-6.3c.39-.4.39-1.03 0-1.42 -.4-.4-1.03-.4-1.42 0l-6.3 6.29 -6.3-6.3c-.4-.4-1.03-.4-1.42 0 -.4.39-.4 1.02 0 1.41l6.29 6.29 -6.3 6.29c-.4.39-.4 1.02 0 1.41 .39.39 1.02.39 1.41 0l6.29-6.3 6.29 6.29Z"></path></svg></button>
           </div>
           <div class="dc-note-edit-body">
-            <textarea id="dc-note-content" placeholder="Notiz eingeben..."></textarea>
+            <label for="dc-note-content">Notiz</label>
+            <textarea id="dc-note-content" placeholder="Schreibe hier deine Notiz..."></textarea>
           </div>
           <div class="dc-note-edit-footer">
             <button type="button" class="dc-note-btn dc-note-btn-cancel">Abbrechen</button>

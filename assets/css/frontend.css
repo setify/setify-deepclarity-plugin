@@ -1195,104 +1195,163 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 .dc-note-edit-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  background: #fffef5;
-  border-bottom: 1px solid #eee;
+  gap: 12px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--dc-color-soft-linen) 0%, var(--dc-color-parchment) 100%);
+  border-bottom: 1px solid var(--dc-color-dust-grey);
+}
+
+.dc-note-edit-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--dc-color-primary);
+  border-radius: var(--dc-radius-small);
+  flex-shrink: 0;
+}
+
+.dc-note-edit-header-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: #fff;
+}
+
+.dc-note-edit-header-content {
+  flex: 1;
 }
 
 .dc-note-edit-title {
   font-size: 1.1rem;
-  font-weight: bold;
-  color: #333;
+  font-weight: 600;
+  color: var(--dc-color-carbon-black);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.dc-note-edit-subtitle {
+  font-size: 0.85rem;
+  color: var(--dc-color-text-muted);
+  margin-top: 2px;
 }
 
 .dc-note-edit-close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px !important;
-  height: 24px !important;
+  width: 32px !important;
+  height: 32px !important;
   border: none !important;
-  background: none !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-radius: var(--dc-radius-xsmall) !important;
   padding: 0 !important;
-  color: #888 !important;
+  color: var(--dc-color-text-muted) !important;
   cursor: pointer;
-  transition: color 0.15s;
+  transition: all 0.15s ease;
 }
 
 .dc-note-edit-close svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   fill: currentColor;
 }
 
 .dc-note-edit-close:hover {
-  color: #333 !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: var(--dc-color-carbon-black) !important;
 }
 
 .dc-note-edit-body {
-  padding: 16px;
+  padding: 24px;
+  background: #fff;
+}
+
+.dc-note-edit-body label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--dc-color-text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .dc-note-edit-body textarea {
   width: 100%;
-  min-height: 200px;
-  padding: 12px;
-  border: 1px solid #ddd;
+  min-height: 180px;
+  padding: 16px;
+  border: 2px solid var(--dc-color-platinum);
   border-radius: var(--dc-radius-small);
   font-family: inherit;
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1.6;
   resize: vertical;
+  background: var(--dc-color-brigth-snow);
+  color: var(--dc-color-carbon-black);
+  transition: all 0.2s ease;
+}
+
+.dc-note-edit-body textarea::placeholder {
+  color: var(--dc-color-cool-steel);
 }
 
 .dc-note-edit-body textarea:focus {
   outline: none;
-  border-color: #bbb;
+  border-color: var(--dc-color-primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(92, 39, 46, 0.1);
 }
 
 .dc-note-edit-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 16px;
-  background: #f9f9f9;
-  border-top: 1px solid #eee;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--dc-color-brigth-snow);
+  border-top: 1px solid var(--dc-color-platinum);
 }
 
 .dc-note-btn {
-  padding: 10px 16px !important;
-  font-size: 0.85rem !important;
+  padding: 12px 20px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
   line-height: 1.2 !important;
   border: none !important;
-  border-radius: var(--dc-radius-xsmall) !important;
+  border-radius: var(--dc-radius-small) !important;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s ease;
 }
 
 .dc-note-btn-cancel {
-  background: #e5e5e5 !important;
-  color: #666 !important;
+  background: transparent !important;
+  color: var(--dc-color-text-muted) !important;
+  border: 1px solid var(--dc-color-pale-slate) !important;
 }
 
 .dc-note-btn-cancel:hover {
-  background: #d5d5d5 !important;
+  background: var(--dc-color-platinum) !important;
+  color: var(--dc-color-carbon-black) !important;
 }
 
 .dc-note-btn-save {
   background: var(--dc-color-primary) !important;
   color: #fff !important;
-  font-weight: bold;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(92, 39, 46, 0.2);
 }
 
 .dc-note-btn-save:hover {
   background: var(--dc-color-primary-dark) !important;
+  box-shadow: 0 4px 8px rgba(92, 39, 46, 0.25);
+  transform: translateY(-1px);
 }
 
 .dc-note-btn-save:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ==========================================
