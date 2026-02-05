@@ -60,8 +60,13 @@ class DossierPDF
      */
     public function enqueue_scripts()
     {
-        if (! is_singular('dossier')) {
-            return;
+        // Load on dossier pages or when shortcode/button might be present
+        if (! is_singular('dossier') && ! is_post_type_archive('dossier')) {
+            // Also check if we're on a page that might have the button
+            global $post;
+            if (! $post || (strpos($post->post_content, 'create_dossier_pdf') === false && strpos($post->post_content, 'dossier_pdf') === false)) {
+                return;
+            }
         }
 
         wp_enqueue_script(
