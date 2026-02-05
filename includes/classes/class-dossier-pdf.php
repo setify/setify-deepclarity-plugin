@@ -262,8 +262,8 @@ class DossierPDF
             'tempDir' => $temp_dir,
             'fontDir' => array_merge($font_dirs, [$fonts_dir]),
             'fontdata' => $font_data + [
-                'rergian' => [
-                    'R' => 'Rergian.woff',
+                'regina' => [
+                    'R' => 'Regina.ttf',
                 ],
                 'grift' => [
                     'R' => 'Grift-Variable-VF.ttf',
@@ -307,7 +307,7 @@ class DossierPDF
     private function ensure_fonts_exist($fonts_dir)
     {
         $fonts = [
-            'Rergian.woff' => 'https://deepclarity.de/wp-content/uploads/Rergian.woff',
+            'Regina.ttf' => 'https://deepclarity.de/wp-content/uploads/Regina.ttf',
             'Grift-Variable-VF.ttf' => 'https://deepclarity.de/wp-content/uploads/Grift-Variable-VF.ttf',
         ];
 
@@ -338,7 +338,7 @@ class DossierPDF
                 color: #27282b;
             }
             h1, h2, h3, h4, h5, h6 {
-                font-family: rergian, serif;
+                font-family: regina, serif;
                 color: #332a22;
                 font-weight: normal;
             }
@@ -402,7 +402,7 @@ class DossierPDF
             }
             th {
                 background-color: rgba(185, 174, 155, 0.3);
-                font-family: rergian, serif;
+                font-family: regina, serif;
                 color: #332a22;
             }
             .cover-section {
