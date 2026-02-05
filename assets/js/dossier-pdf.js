@@ -17,7 +17,7 @@
          * Bind event handlers
          */
         bindEvents: function() {
-            $(document).on('click', '.create-dossier-pdf', this.handleCreatePDF.bind(this));
+            $(document).on('click', '.create_dossier_pdf', this.handleCreatePDF.bind(this));
             $(document).on('click', '.dc-pdf-modal-close, .dc-pdf-modal-overlay', this.closeModal.bind(this));
         },
 
