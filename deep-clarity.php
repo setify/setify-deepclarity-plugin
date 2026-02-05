@@ -63,6 +63,7 @@ require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-client.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-notes.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-api.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-signature-generator.php';
+require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-access.php';
 
 /**
  * Main plugin class
@@ -162,6 +163,13 @@ final class Deep_Clarity
     public $api;
 
     /**
+     * Access instance
+     *
+     * @var DeepClarity\Access
+     */
+    public $access;
+
+    /**
      * Get single instance of the class
      *
      * @return Deep_Clarity
@@ -200,6 +208,7 @@ final class Deep_Clarity
         $this->client     = DeepClarity\Client::get_instance();
         $this->notes      = DeepClarity\Notes::get_instance();
         $this->api        = DeepClarity\API::get_instance();
+        $this->access     = new DeepClarity\Access();
 
         // Initialize signature generator (shortcode only)
         DeepClarity\SignatureGenerator::get_instance();
