@@ -64,6 +64,7 @@ require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-notes.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-api.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-signature-generator.php';
 require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-access.php';
+require_once DEEP_CLARITY_PLUGIN_DIR . 'includes/classes/class-dossier-pdf.php';
 
 /**
  * Main plugin class
@@ -170,6 +171,13 @@ final class Deep_Clarity
     public $access;
 
     /**
+     * DossierPDF instance
+     *
+     * @var DeepClarity\DossierPDF
+     */
+    public $dossier_pdf;
+
+    /**
      * Get single instance of the class
      *
      * @return Deep_Clarity
@@ -208,7 +216,8 @@ final class Deep_Clarity
         $this->client     = DeepClarity\Client::get_instance();
         $this->notes      = DeepClarity\Notes::get_instance();
         $this->api        = DeepClarity\API::get_instance();
-        $this->access     = new DeepClarity\Access();
+        $this->access      = new DeepClarity\Access();
+        $this->dossier_pdf = DeepClarity\DossierPDF::get_instance();
 
         // Initialize signature generator (shortcode only)
         DeepClarity\SignatureGenerator::get_instance();

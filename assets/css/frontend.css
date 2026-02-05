@@ -2298,3 +2298,134 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 .toastify.on.dc-toast {
   opacity: 1 !important;
 }
+
+/* ==========================================
+   PDF Generation Modal
+   ========================================== */
+
+.dc-pdf-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.dc-pdf-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dc-pdf-modal {
+  background: #fff;
+  border-radius: var(--dc-radius-medium, 12px);
+  padding: 40px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.dc-pdf-modal-overlay.active .dc-pdf-modal {
+  transform: scale(1);
+}
+
+.dc-pdf-modal-icon {
+  margin-bottom: 20px;
+}
+
+.dc-pdf-modal-icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+.dc-pdf-modal-title {
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--dc-color-carbon-black, #1c1d1f);
+}
+
+.dc-pdf-modal-message {
+  margin: 0 0 24px 0;
+  font-size: 0.95rem;
+  color: var(--dc-color-cool-steel, #666);
+  line-height: 1.5;
+}
+
+.dc-pdf-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dc-pdf-modal-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: var(--dc-color-emerald-500, #10b981);
+  color: #fff !important;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  border-radius: var(--dc-radius-small, 8px);
+  transition: all 0.2s ease;
+}
+
+.dc-pdf-modal-download:hover {
+  background: var(--dc-color-emerald-600, #059669);
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+.dc-pdf-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background: var(--dc-color-platinum, #e9ebec);
+  color: var(--dc-color-iron-grey, #494c51);
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--dc-radius-small, 8px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dc-pdf-modal-close:hover {
+  background: var(--dc-color-pale-slate, #ccced2);
+}
+
+/* Loading state for button */
+.create-dossier-pdf.loading {
+  opacity: 0.7;
+  pointer-events: none;
+  position: relative;
+}
+
+.create-dossier-pdf.loading::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: dc-spin 0.8s linear infinite;
+}
