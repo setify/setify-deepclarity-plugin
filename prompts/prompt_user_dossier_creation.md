@@ -1,146 +1,263 @@
 # USER PROMPT: Deep Clarity Dossier-Erstellung
 
-Erstelle ein vollständiges Deep Clarity Executive Leadership Dossier im HTML-Format.
+Erstelle ein vollständiges Deep Clarity Executive Leadership Dossier.
 
 ---
 
-## KLIENT
+## WICHTIGE HINWEISE VOR DEM START
 
-**Vorname:** XXX_CLIENT_FIRSTNAME_XXX
-**Nachname:** XXX_CLIENT_LASTNAME_XXX
-**E-Mail:** XXX_CLIENT_EMAIL_XXX
-**Klienten-ID:** XXX_CLIENT_ID_XXX
+1. **Lies ZUERST den Copywriting-Skill** (Tonalität, Sprache, Business-Fokus)
+2. **Dann lies den Struktur-Skill** (Kapitel, Inhalte, Wortanzahl)
+3. **Erst danach:** Beginne mit dem Schreiben
 
----
-
-## DOSSIER-INFORMATIONEN
-
-**Dossier-Nummer:** XXX_DOSSIER_NUMBER_XXX
-**Datum:** XXX_SESSION_DATE_XXX
-**Follow-up:** XXX_DOSSIER_FOLLOWUP_XXX
+**Ohne Copywriting-Skill → Output wird abgelehnt!**
 
 ---
 
-## STRUKTURANALYSE
+## KLIENT-INFORMATIONEN
 
-Die folgende Strukturanalyse wurde bereits erstellt und ist die Grundlage für das Dossier:
-
-```
-XXX_STRUKTURANALYSE_CONTENT_XXX
-```
+**Name:** {{ $('Webhook: Dossier Request').item.json.body.client.firstname }} {{ $('Webhook: Dossier Request').item.json.body.client.lastname }}
+**E-Mail:** {{ $('Webhook: Dossier Request').item.json.body.client.email }}
+**Klienten-ID:** {{ $('Webhook: Dossier Request').item.json.body.client.client_id }}
 
 ---
 
-## ANAMNESE-DATEN
+## DOSSIER-METADATEN
 
-**Anamnese-ID:** XXX_ANAMNESE_ID_XXX
-
-```
-XXX_ANAMNESE_DATA_XXX
-```
+**Dossier-Nummer:** {{ $('Webhook: Dossier Request').item.json.body.dossier_number }}
+**Session-Datum:** {{ $('Webhook: Dossier Request').item.json.body.current_session.session_date }}
+**Follow-up:** {{ $('Webhook: Dossier Request').item.json.body.dossier_followup }}
 
 ---
 
-## SESSION-DATEN
+## INPUT-DATEN
 
-**Session-ID:** XXX_SESSION_ID_XXX
+### 1. STRUKTURANALYSE (Hauptquelle)
 
-### Transkript:
-```
-XXX_SESSION_TRANSCRIPT_XXX
-```
+Die folgende Strukturanalyse ist die Grundlage für das Dossier:
 
-### Timo's Diagnose:
 ```
-XXX_SESSION_DIAGNOSIS_XXX
+{{ $('Check: Validation Passed?').item.json.strukturanalyse }}
 ```
 
-### Zusätzliche Notizen:
+**Aufgabe:** Übersetze Fachsprache in Business-Sprache!
+
+---
+
+### 2. ANAMNESE-DATEN
+
+**Anamnese-ID:** {{ $('Webhook: Dossier Request').item.json.body.anamnese.anamnese_id }}
+
 ```
-XXX_SESSION_NOTES_XXX
+{{ $('Webhook: Dossier Request').item.json.body.anamnese.anamnese_data }}
 ```
 
 ---
 
-## DEEP CLARITY POTENTIAL INDEX (DCPI)
+### 3. SESSION-DATEN
 
-**DCPI-ID:** XXX_DCPI_ID_XXX
+**Session-ID:** {{ $('Webhook: Dossier Request').item.json.body.current_session.session_id }}
 
-### Dimension-Scores:
-- **Dimension 1 (Clarity Core):** XXX_DCPI_DIMENSION_1_SCORE_XXX/100
-- **Dimension 2 (Regulation & Nervous System):** XXX_DCPI_DIMENSION_2_SCORE_XXX/100
-- **Dimension 3 (Decision Architecture):** XXX_DCPI_DIMENSION_3_SCORE_XXX/100
-- **Dimension 4 (Leadership Presence):** XXX_DCPI_DIMENSION_4_SCORE_XXX/100
-- **Dimension 5 (Performance & Risks):** XXX_DCPI_DIMENSION_5_SCORE_XXX/100
+#### Transkript (für Zitate!):
 
-### Deep Clarity Index (Gesamtwert): XXX_DCPI_DEEP_CLARITY_INDEX_XXX/100
-
-### DCPI Fragen & Antworten:
 ```
-XXX_DCPI_DATA_XXX
+{{ $('Webhook: Dossier Request').item.json.body.current_session.session_transcript }}
 ```
 
----
+**Aufgabe:** Finde 3-5 direkte Zitate für das Dossier!
 
-## VORHERIGE DATEN (nur bei Follow-up)
+#### Timo's Diagnose:
 
-### Vorherige Strukturanalyse:
 ```
-XXX_PREVIOUS_STRUKTURANALYSE_XXX
+{{ $('Webhook: Dossier Request').item.json.body.current_session.session_diagnosis }}
 ```
 
-### Vorheriger DCPI:
+#### Zusätzliche Notizen:
+
 ```
-XXX_PREVIOUS_DCPI_XXX
+{{ $('Webhook: Dossier Request').item.json.body.current_session.session_notes }}
 ```
 
 ---
 
-## SKILLS & WISSEN
+### 4. DEEP CLARITY POTENTIAL INDEX (DCPI)
 
-Die folgenden Skills stehen dir zur Verfügung und sollten berücksichtigt werden:
+**DCPI-ID:** {{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_id }}
 
-### SKILL: Copywriting Timo Voice
+#### Gesamtindex:
+**{{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_deep_clarity_index }}/100**
+
+#### Dimensionen:
+- **Dimension 1 (Clarity Core):** {{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_dimension_1_score }}/100
+- **Dimension 2 (Regulation & Nervous System):** {{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_dimension_2_score }}/100
+- **Dimension 3 (Decision Architecture):** {{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_dimension_3_score }}/100
+- **Dimension 4 (Leadership Presence):** {{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_dimension_4_score }}/100
+- **Dimension 5 (Performance & Risks):** {{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_dimension_5_score }}/100
+
+#### DCPI Fragen & Antworten:
+
 ```
-XXX_SKILL_COPYWRITING_DOSSIER_XXX
+{{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_data }}
 ```
 
-### SKILL: Dossier-Erstellung
+---
+
+## SKILLS & VORLAGEN
+
+### SKILL: Copywriting (Tonalität & Sprache)
+
 ```
-XXX_SKILL_DOSSIER_CREATION_XXX
+{{ $('Webhook: Dossier Request').item.json.body.skills.setting_skill_copywriting_dossier }}
 ```
 
-### VORLAGE: Dossier-Template
+**→ LIES DIES ZUERST!**
+
+### SKILL: Dossier-Struktur (Kapitel & Inhalte)
+
 ```
-XXX_TEMPLATE_DOSSIER_XXX
+{{ $('Webhook: Dossier Request').item.json.body.skills.setting_skill_dossier_creation }}
+```
+
+### VORLAGE: Dossier-Template (HTML-Struktur, optional)
+
+```
+{{ $('Webhook: Dossier Request').item.json.body.skills.settings_template_dossier }}
 ```
 
 ---
 
 ## DEINE AUFGABE
 
-1. **Lies zuerst** alle bereitgestellten Daten und Skills vollständig durch
-2. **Analysiere** die Strukturanalyse und extrahiere die Kernerkenntnisse
-3. **Erstelle** das Dossier Kapitel für Kapitel (1-12)
-4. **Achte** auf die Tonalität (Timo's Stimme, respektvoll, nicht pathologisierend)
-5. **Füge** Grafik-Platzhalter an den relevanten Stellen ein
-6. **Quantifiziere** den Business-Impact wo möglich
-7. **Gib** nur das fertige HTML zurück (ohne ```html``` Codeblock-Marker)
+### Schritt-für-Schritt:
+
+1. **Copywriting-Skill lesen** (Tonalität, verbotene Begriffe, Business-Sprache)
+2. **Struktur-Skill lesen** (11 Kapitel, 47 Abschnitte, Wortanzahl)
+3. **Strukturanalyse durcharbeiten** (Kernerkenntnisse extrahieren)
+4. **DCPI-Scores interpretieren** (nicht nur Zahlen nennen!)
+5. **Transkript nach Zitaten durchsuchen** (3-5 direkte Zitate)
+6. **Alle 47 Content-Felder befüllen** (siehe Output-Format unten)
+7. **Business-Impact quantifizieren** (€, Zeit, Mitarbeiter)
+8. **JSON validieren** (Syntax-Check)
 
 ---
 
-## WICHTIG
+## OUTPUT-FORMAT (KRITISCH!)
 
-- Der Klient heißt **XXX_CLIENT_FIRSTNAME_XXX XXX_CLIENT_LASTNAME_XXX**
-- Das Dossier-Datum ist **XXX_SESSION_DATE_XXX**
-- Dies ist Dossier Nummer **XXX_DOSSIER_NUMBER_XXX**
-- Verwende durchgehend "Sie" (nicht "Du")
-- Keine Marketing-Sprache
-- Keine Pathologisierung
-- Konkreter Business-Fokus
+Du gibst **NUR** ein JSON-Objekt zurück mit genau **47 Feldern**:
+
+```json
+{
+  "CHAPTER_1_CONTENT": "<p>HTML-Inhalt für Executive Summary...</p>",
+  "CHAPTER_2_1_CONTENT": "<p>HTML-Inhalt für Aktueller Kontext...</p>",
+  "CHAPTER_2_2_CONTENT": "<p>HTML-Inhalt für Anlass...</p>",
+  "CHAPTER_3_1_CONTENT": "<p>HTML-Inhalt für Herausforderung 1...</p>",
+  "CHAPTER_3_2_CONTENT": "<p>HTML-Inhalt für Herausforderung 2...</p>",
+  "CHAPTER_3_3_CONTENT": "<p>HTML-Inhalt für Herausforderung 3...</p>",
+  "CHAPTER_4_1_CONTENT": "<p>Verarbeitungskanäle...</p>",
+  "CHAPTER_4_2_CONTENT": "<p>Informationskette...</p>",
+  "CHAPTER_4_3_CONTENT": "<p>Innerer Dialog & Introjekte...</p>",
+  "CHAPTER_4_4_CONTENT": "<p>Kinästhetischer Zugang...</p>",
+  "CHAPTER_4_5_CONTENT": "<p>Bewertungs- & Abwehrmuster...</p>",
+  "CHAPTER_4_6_CONTENT": "<p>Bindungsmuster...</p>",
+  "CHAPTER_4_7_CONTENT": "<p>Zeitmodell...</p>",
+  "CHAPTER_4_8_CONTENT": "<p>Synthese & Kernmuster...</p>",
+  "CHAPTER_5_1_CONTENT": "<p>Frühe Prägungen...</p>",
+  "CHAPTER_5_2_CONTENT": "<p>Introjekte...</p>",
+  "CHAPTER_5_3_CONTENT": "<p>Nervensystem-Muster...</p>",
+  "CHAPTER_5_4_CONTENT": "<p>Bindungs- & Beziehungsmuster...</p>",
+  "CHAPTER_5_5_CONTENT": "<p>Kompensationsstrategien...</p>",
+  "CHAPTER_6_1_CONTENT": "<p>DCPI-Gesamtindex...</p>",
+  "CHAPTER_6_2_CONTENT": "<p>Dimension 1: Clarity Core...</p>",
+  "CHAPTER_6_3_CONTENT": "<p>Dimension 2: Regulation...</p>",
+  "CHAPTER_6_4_CONTENT": "<p>Dimension 3: Decision Architecture...</p>",
+  "CHAPTER_6_5_CONTENT": "<p>Dimension 4: Leadership Presence...</p>",
+  "CHAPTER_6_6_CONTENT": "<p>Dimension 5: Performance & Risks...</p>",
+  "CHAPTER_6_7_CONTENT": "<p>Verknüpfung mit Strukturanalyse...</p>",
+  "CHAPTER_7_1_CONTENT": "<p>Die 5 Phasen im Überblick...</p>",
+  "CHAPTER_7_2_CONTENT": "<p>Phase 1: INSIGHT...</p>",
+  "CHAPTER_7_3_CONTENT": "<p>Phase 2: ORIGIN...</p>",
+  "CHAPTER_7_4_CONTENT": "<p>Phase 3: RELEASE...</p>",
+  "CHAPTER_7_5_CONTENT": "<p>Phase 4: ALIGNMENT...</p>",
+  "CHAPTER_7_6_CONTENT": "<p>Phase 5: CLARITY...</p>",
+  "CHAPTER_7_7_CONTENT": "<p>Anwendung auf Ihren Fall...</p>",
+  "CHAPTER_8_1_CONTENT": "<p>Monate 1-3...</p>",
+  "CHAPTER_8_2_CONTENT": "<p>Monate 4-6...</p>",
+  "CHAPTER_8_3_CONTENT": "<p>Monate 7-9...</p>",
+  "CHAPTER_8_4_CONTENT": "<p>Monate 10-12...</p>",
+  "CHAPTER_8_5_CONTENT": "<p>Erwartbare Herausforderungen...</p>",
+  "CHAPTER_9_1_CONTENT": "<p>Interventionsfeld 1...</p>",
+  "CHAPTER_9_2_CONTENT": "<p>Interventionsfeld 2...</p>",
+  "CHAPTER_9_3_CONTENT": "<p>Interventionsfeld 3...</p>",
+  "CHAPTER_9_4_CONTENT": "<p>Methodische Zugänge...</p>",
+  "CHAPTER_10_1_CONTENT": "<p>Subjektive Kriterien...</p>",
+  "CHAPTER_10_2_CONTENT": "<p>Verhaltens-Kriterien...</p>",
+  "CHAPTER_10_3_CONTENT": "<p>Messbare Kriterien...</p>",
+  "CHAPTER_11_1_CONTENT": "<p>Aktuelle Kosten (IST)...</p>",
+  "CHAPTER_11_2_CONTENT": "<p>Potenzielle Einsparungen (SOLL)...</p>",
+  "CHAPTER_11_3_CONTENT": "<p>ROI-Berechnung...</p>",
+  "CHAPTER_11_4_CONTENT": "<p>Zeitliche Perspektive...</p>"
+}
+```
 
 ---
 
-## OUTPUT
+## KRITISCHE OUTPUT-REGELN
 
-Gib NUR das fertige HTML-Dokument zurück. Kein Markdown, keine Erklärungen, nur das HTML.
+### ✅ ERLAUBT:
+- Reines JSON-Objekt
+- Genau 47 Felder mit exakt diesen Namen
+- HTML-Content in jedem Feld
+- Anführungszeichen als `\"` escaped
+
+### ❌ ABSOLUT VERBOTEN:
+- Markdown-Codeblock (```json ... ```)
+- Erklärungen vor oder nach dem JSON
+- Zusätzliche Meta-Felder
+- Kommentare im JSON
+- Trailing commas
+- Leere Felder oder Platzhalter
+
+---
+
+## ERINNERUNG: WICHTIGSTE REGELN
+
+1. **"Sie" statt "Du"** (AUSNAHMSLOS!)
+2. **Business-Sprache** (keine Therapeuten-Fachbegriffe!)
+3. **Keine Esoterik** (Energie, Blockaden = verboten!)
+4. **Quantifiziere Kosten** (€, Zeit, Mitarbeiter)
+5. **3-5 Zitate aus Transkript** einbauen
+6. **Nur erlaubte HTML-Tags** (`<p>`, `<strong>`, `<em>`, `<ul>`, `<li>`)
+
+---
+
+## QUALITÄTS-CHECKLISTE (vor Abgabe)
+
+- [ ] Copywriting-Skill befolgt?
+- [ ] Struktur-Skill befolgt?
+- [ ] Alle 47 Felder befüllt?
+- [ ] Durchgehend "Sie" (nie "Du")?
+- [ ] 3-5 Zitate aus Transkript?
+- [ ] Business-Impact quantifiziert?
+- [ ] Keine Fachbegriffe ohne Übersetzung?
+- [ ] Keine verbotenen Begriffe? (leiden, Störung, Energie, Blockaden)
+- [ ] HTML-Tags korrekt?
+- [ ] JSON syntaktisch valide?
+
+---
+
+## KONTEXT FÜR DIE KI
+
+**Klient:** {{ $('Webhook: Dossier Request').item.json.body.client.firstname }} {{ $('Webhook: Dossier Request').item.json.body.client.lastname }}
+**Datum:** {{ $('Webhook: Dossier Request').item.json.body.current_session.session_date }}
+**Dossier:** #{{ $('Webhook: Dossier Request').item.json.body.dossier_number }}
+**DCPI:** {{ $('Webhook: Dossier Request').item.json.body.current_dcpi.dcpi_deep_clarity_index }}/100
+
+---
+
+**LOS GEHT'S!**
+
+Gib jetzt NUR das JSON-Objekt zurück – nichts davor, nichts danach!
+
+---
+
+**ENDE USER PROMPT**

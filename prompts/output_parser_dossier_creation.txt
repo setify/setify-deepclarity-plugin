@@ -1,0 +1,75 @@
+{
+  "type": "object",
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "client_name": {"type": "string"},
+        "dossier_number": {"type": "string"},
+        "session_date": {"type": "string"},
+        "creation_date": {"type": "string"},
+        "dcpi_index": {"type": "string"},
+        "total_pages_estimate": {"type": "string"}
+      },
+      "required": ["client_name", "dossier_number", "session_date", "dcpi_index"]
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"type": "string", "enum": ["cover", "table_of_contents", "chapter", "closing"]},
+          "chapter_number": {"type": "number"},
+          "title": {"type": "string"},
+          "html": {"type": "string"},
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string"},
+                "title": {"type": "string"},
+                "html": {"type": "string"},
+                "word_count": {"type": "number"}
+              },
+              "required": ["id", "title", "html"]
+            }
+          },
+          "graphics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string"},
+                "type": {"type": "string"},
+                "title": {"type": "string"},
+                "placeholder": {"type": "string"},
+                "data_source": {"type": "string"},
+                "required": {"type": "boolean"}
+              },
+              "required": ["id", "type", "title"]
+            }
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+          }
+        },
+        "required": ["id", "type", "title", "html"]
+      }
+    },
+    "full_html": {"type": "string"},
+    "statistics": {
+      "type": "object",
+      "properties": {
+        "total_word_count": {"type": "number"},
+        "total_segments": {"type": "number"},
+        "estimated_pages": {"type": "number"},
+        "graphics_count": {"type": "number"}
+      },
+      "required": ["total_word_count", "total_segments", "estimated_pages"]
+    }
+  },
+  "required": ["meta", "segments", "full_html", "statistics"]
+}

@@ -2331,7 +2331,7 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   background: #fff;
   border-radius: var(--dc-radius-small, 8px);
   padding: 20px 24px;
-  max-width: 400px;
+  max-width: 500px;
   width: 90%;
   transform: translateY(-10px);
   transition: transform 0.2s ease;
@@ -2368,8 +2368,8 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 }
 
 .dc-pdf-modal-content {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 auto;
+  min-width: 100px;
 }
 
 .dc-pdf-modal-title {
@@ -2377,6 +2377,30 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--dc-color-carbon-black, #1c1d1f);
+}
+
+@media (max-width: 540px) {
+  .dc-pdf-modal {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .dc-pdf-modal-content {
+    flex: 1 0 100%;
+    order: -1;
+    margin-bottom: 12px;
+  }
+
+  .dc-pdf-modal-icon {
+    order: -2;
+    margin-bottom: 8px;
+  }
+
+  .dc-pdf-modal-actions {
+    flex: 1 0 100%;
+    justify-content: center;
+  }
 }
 
 .dc-pdf-modal-message {
