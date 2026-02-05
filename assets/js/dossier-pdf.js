@@ -99,19 +99,21 @@
             this.closeModal();
 
             var iconSvg = type === 'success'
-                ? '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-                : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                ? '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
 
             var downloadButton = pdfUrl
-                ? '<a href="' + pdfUrl + '" target="_blank" class="dc-pdf-modal-download">' + dcDossierPdf.strings.download + '</a>'
+                ? '<a href="' + pdfUrl + '" target="_blank" class="dc-pdf-modal-download" onclick="event.stopPropagation();">' + dcDossierPdf.strings.download + '</a>'
                 : '';
 
             var modalHtml =
                 '<div class="dc-pdf-modal-overlay">' +
-                    '<div class="dc-pdf-modal">' +
+                    '<div class="dc-pdf-modal dc-pdf-modal--' + type + '">' +
                         '<div class="dc-pdf-modal-icon">' + iconSvg + '</div>' +
-                        '<h3 class="dc-pdf-modal-title">' + title + '</h3>' +
-                        (message ? '<p class="dc-pdf-modal-message">' + message + '</p>' : '') +
+                        '<div class="dc-pdf-modal-content">' +
+                            '<h3 class="dc-pdf-modal-title">' + title + '</h3>' +
+                            (message ? '<p class="dc-pdf-modal-message">' + message + '</p>' : '') +
+                        '</div>' +
                         '<div class="dc-pdf-modal-actions">' +
                             downloadButton +
                             '<button type="button" class="dc-pdf-modal-close">' + dcDossierPdf.strings.close + '</button>' +
@@ -134,12 +136,17 @@
          */
         closeModal: function(e) {
             if (e) {
-                e.preventDefault();
+                // Allow download link to work
+                if ($(e.target).hasClass('dc-pdf-modal-download') || $(e.target).closest('.dc-pdf-modal-download').length) {
+                    return;
+                }
 
                 // Don't close if clicking inside modal (except close button)
                 if ($(e.target).closest('.dc-pdf-modal').length && !$(e.target).hasClass('dc-pdf-modal-close')) {
                     return;
                 }
+
+                e.preventDefault();
             }
 
             var $modal = $('.dc-pdf-modal-overlay');

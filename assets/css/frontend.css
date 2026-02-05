@@ -2309,14 +2309,14 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999999;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .dc-pdf-modal-overlay.active {
@@ -2325,88 +2325,111 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 }
 
 .dc-pdf-modal {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   background: #fff;
-  border-radius: var(--dc-radius-medium, 12px);
-  padding: 40px;
-  max-width: 420px;
+  border-radius: var(--dc-radius-small, 8px);
+  padding: 20px 24px;
+  max-width: 400px;
   width: 90%;
-  text-align: center;
-  transform: scale(0.9);
-  transition: transform 0.3s ease;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  transform: translateY(-10px);
+  transition: transform 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .dc-pdf-modal-overlay.active .dc-pdf-modal {
-  transform: scale(1);
+  transform: translateY(0);
 }
 
 .dc-pdf-modal-icon {
-  margin-bottom: 20px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.dc-pdf-modal--success .dc-pdf-modal-icon {
+  background: var(--dc-color-emerald-50, #ecfdf5);
+  color: var(--dc-color-emerald-500, #10b981);
+}
+
+.dc-pdf-modal--error .dc-pdf-modal-icon {
+  background: var(--dc-color-rose-100, #ffe4e6);
+  color: var(--dc-color-rose-700, #be123c);
 }
 
 .dc-pdf-modal-icon svg {
-  width: 64px;
-  height: 64px;
+  width: 20px;
+  height: 20px;
+}
+
+.dc-pdf-modal-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .dc-pdf-modal-title {
-  margin: 0 0 12px 0;
-  font-size: 1.5rem;
+  margin: 0;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--dc-color-carbon-black, #1c1d1f);
 }
 
 .dc-pdf-modal-message {
-  margin: 0 0 24px 0;
-  font-size: 0.95rem;
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
   color: var(--dc-color-cool-steel, #666);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .dc-pdf-modal-actions {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .dc-pdf-modal-download {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 24px;
-  background: var(--dc-color-emerald-500, #10b981);
+  padding: 8px 14px;
+  background: var(--dc-color-primary, #5c272e);
   color: #fff !important;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 500;
   text-decoration: none !important;
-  border-radius: var(--dc-radius-small, 8px);
-  transition: all 0.2s ease;
+  border-radius: var(--dc-radius-xsmall, 4px);
+  transition: all 0.15s ease;
 }
 
 .dc-pdf-modal-download:hover {
-  background: var(--dc-color-emerald-600, #059669);
+  background: var(--dc-color-primary-dark, #74313b);
   color: #fff !important;
-  transform: translateY(-1px);
 }
 
 .dc-pdf-modal-close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 24px;
-  background: var(--dc-color-platinum, #e9ebec);
-  color: var(--dc-color-iron-grey, #494c51);
-  font-size: 0.95rem;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--dc-color-cool-steel, #666);
+  font-size: 0.8rem;
   font-weight: 500;
-  border: none;
-  border-radius: var(--dc-radius-small, 8px);
+  border: 1px solid var(--dc-color-platinum, #e9ebec);
+  border-radius: var(--dc-radius-xsmall, 4px);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .dc-pdf-modal-close:hover {
-  background: var(--dc-color-pale-slate, #ccced2);
+  background: var(--dc-color-platinum, #e9ebec);
+  color: var(--dc-color-carbon-black, #1c1d1f);
 }
 
 /* Loading state for button */

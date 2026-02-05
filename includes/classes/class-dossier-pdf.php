@@ -215,16 +215,26 @@ class DossierPDF
         // Create temp directory if not exists
         $upload_dir = wp_upload_dir();
         $temp_dir = $upload_dir['basedir'] . '/dc-temp';
+        $fonts_dir = $upload_dir['basedir'] . '/dc-fonts';
 
         if (! file_exists($temp_dir)) {
             wp_mkdir_p($temp_dir);
         }
 
-        // Get client data for header
+        if (! file_exists($fonts_dir)) {
+            wp_mkdir_p($fonts_dir);
+        }
+
+        // Download fonts if not exists
+        $this->ensure_fonts_exist($fonts_dir);
+
+        // Get client data for header/footer
         $client = get_field('dossier_client', $dossier_id);
         $client_id = is_array($client) ? $client[0] : $client;
         $client_id = is_object($client_id) ? $client_id->ID : $client_id;
 
+        $vorname = '';
+        $nachname = '';
         $client_name = '';
         if ($client_id) {
             $vorname = get_field('client_firstname', $client_id) ?: '';
@@ -232,17 +242,34 @@ class DossierPDF
             $client_name = trim($vorname . ' ' . $nachname);
         }
 
-        // Configure mPDF
+        // Define custom fonts
+        $default_font_config = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $font_dirs = $default_font_config['fontDir'];
+
+        $default_font_data = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $font_data = $default_font_data['fontdata'];
+
+        // Configure mPDF with custom fonts
         $mpdf = new \Mpdf\Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
-            'margin_left' => 15,
-            'margin_right' => 15,
-            'margin_top' => 20,
-            'margin_bottom' => 20,
+            'margin_left' => 20,
+            'margin_right' => 20,
+            'margin_top' => 25,
+            'margin_bottom' => 25,
             'margin_header' => 10,
             'margin_footer' => 10,
             'tempDir' => $temp_dir,
+            'fontDir' => array_merge($font_dirs, [$fonts_dir]),
+            'fontdata' => $font_data + [
+                'rergian' => [
+                    'R' => 'Rergian.woff',
+                ],
+                'grift' => [
+                    'R' => 'Grift-Variable-VF.ttf',
+                ],
+            ],
+            'default_font' => 'grift',
         ]);
 
         // Set document info
@@ -250,15 +277,17 @@ class DossierPDF
         $mpdf->SetAuthor('Deep Clarity');
         $mpdf->SetCreator('Deep Clarity WordPress Plugin');
 
+        // Set background image for all pages
+        $bg_image = 'https://deepclarity.de/wp-content/uploads/dc-paper_normal.jpg';
+        $mpdf->SetDefaultBodyCSS('background', "url('$bg_image')");
+        $mpdf->SetDefaultBodyCSS('background-image-resize', 6);
+
         // Add CSS
         $css = $this->get_pdf_styles();
         $mpdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
 
-        // Add header
-        $mpdf->SetHTMLHeader($this->get_pdf_header($client_name));
-
-        // Add footer
-        $mpdf->SetHTMLFooter($this->get_pdf_footer());
+        // Add footer (no header)
+        $mpdf->SetHTMLFooter($this->get_pdf_footer($vorname, $nachname));
 
         // Write content
         $mpdf->WriteHTML($content, \Mpdf\HTMLParserMode::HTML_BODY);
@@ -271,6 +300,29 @@ class DossierPDF
     }
 
     /**
+     * Ensure custom fonts exist in the fonts directory
+     *
+     * @param string $fonts_dir Path to fonts directory.
+     */
+    private function ensure_fonts_exist($fonts_dir)
+    {
+        $fonts = [
+            'Rergian.woff' => 'https://deepclarity.de/wp-content/uploads/Rergian.woff',
+            'Grift-Variable-VF.ttf' => 'https://deepclarity.de/wp-content/uploads/Grift-Variable-VF.ttf',
+        ];
+
+        foreach ($fonts as $filename => $url) {
+            $local_path = $fonts_dir . '/' . $filename;
+            if (! file_exists($local_path)) {
+                $response = wp_remote_get($url, ['timeout' => 30]);
+                if (! is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+                    file_put_contents($local_path, wp_remote_retrieve_body($response));
+                }
+            }
+        }
+    }
+
+    /**
      * Get PDF styles
      *
      * @return string CSS styles.
@@ -280,37 +332,35 @@ class DossierPDF
         return '
         <style>
             body {
-                font-family: "DejaVu Sans", sans-serif;
+                font-family: grift, sans-serif;
                 font-size: 11pt;
-                line-height: 1.6;
-                color: #333;
+                line-height: 1.7;
+                color: #27282b;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                font-family: rergian, serif;
+                color: #332a22;
+                font-weight: normal;
             }
             h1 {
-                font-size: 24pt;
-                color: #1a1a2e;
-                margin-bottom: 20px;
-                border-bottom: 2px solid #4a90d9;
-                padding-bottom: 10px;
+                font-size: 28pt;
+                margin-bottom: 24px;
+                margin-top: 0;
             }
             h2 {
-                font-size: 18pt;
-                color: #1a1a2e;
-                margin-top: 30px;
-                margin-bottom: 15px;
-                border-bottom: 1px solid #ddd;
-                padding-bottom: 8px;
+                font-size: 20pt;
+                margin-top: 32px;
+                margin-bottom: 16px;
             }
             h3 {
-                font-size: 14pt;
-                color: #333;
-                margin-top: 20px;
-                margin-bottom: 10px;
+                font-size: 16pt;
+                margin-top: 24px;
+                margin-bottom: 12px;
             }
             h4 {
-                font-size: 12pt;
-                color: #555;
-                margin-top: 15px;
-                margin-bottom: 8px;
+                font-size: 13pt;
+                margin-top: 18px;
+                margin-bottom: 10px;
             }
             p {
                 margin-bottom: 12px;
@@ -324,20 +374,20 @@ class DossierPDF
                 margin-bottom: 8px;
             }
             strong {
-                color: #1a1a2e;
+                color: #332a22;
             }
             em {
                 font-style: italic;
             }
             mark {
-                background-color: #fff3cd;
+                background-color: rgba(185, 174, 155, 0.4);
                 padding: 2px 4px;
             }
             blockquote {
-                border-left: 4px solid #4a90d9;
+                border-left: 3px solid #7b6e56;
                 padding-left: 15px;
                 margin-left: 0;
-                color: #555;
+                color: #4a3f36;
                 font-style: italic;
             }
             table {
@@ -346,23 +396,21 @@ class DossierPDF
                 margin-bottom: 20px;
             }
             th, td {
-                border: 1px solid #ddd;
+                border: 1px solid #b9ae9b;
                 padding: 10px;
                 text-align: left;
             }
             th {
-                background-color: #f5f5f5;
-                font-weight: bold;
+                background-color: rgba(185, 174, 155, 0.3);
+                font-family: rergian, serif;
+                color: #332a22;
             }
             .cover-section {
                 text-align: center;
                 margin-bottom: 40px;
                 padding: 30px;
-                background-color: #f8f9fa;
-                border-radius: 8px;
             }
             .cover-section h2 {
-                border: none;
                 margin-top: 0;
             }
         </style>
@@ -370,40 +418,22 @@ class DossierPDF
     }
 
     /**
-     * Get PDF header
-     *
-     * @param string $client_name Client name.
-     * @return string HTML header.
-     */
-    private function get_pdf_header($client_name)
-    {
-        $logo_url = DEEP_CLARITY_PLUGIN_URL . 'assets/images/logo.png';
-
-        return '
-        <div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; font-size: 9pt; color: #666;">
-            <table width="100%">
-                <tr>
-                    <td style="border: none; padding: 0;">Deep Clarity Executive Leadership Dossier</td>
-                    <td style="border: none; padding: 0; text-align: right;">' . esc_html($client_name) . '</td>
-                </tr>
-            </table>
-        </div>
-        ';
-    }
-
-    /**
      * Get PDF footer
      *
+     * @param string $vorname Client first name.
+     * @param string $nachname Client last name.
      * @return string HTML footer.
      */
-    private function get_pdf_footer()
+    private function get_pdf_footer($vorname = '', $nachname = '')
     {
+        $client_name = trim($vorname . ' ' . $nachname);
+        $dossier_text = $client_name ? 'Dossier - ' . esc_html($client_name) : 'Dossier';
+
         return '
-        <div style="border-top: 1px solid #ddd; padding-top: 5px; font-size: 9pt; color: #666;">
+        <div style="font-family: grift, sans-serif; font-size: 9pt; color: #7b6e56;">
             <table width="100%">
                 <tr>
-                    <td style="border: none; padding: 0;">Vertraulich</td>
-                    <td style="border: none; padding: 0; text-align: center;">© Deep Clarity ' . date('Y') . '</td>
+                    <td style="border: none; padding: 0;">' . $dossier_text . '</td>
                     <td style="border: none; padding: 0; text-align: right;">Seite {PAGENO} von {nbpg}</td>
                 </tr>
             </table>
