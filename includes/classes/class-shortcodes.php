@@ -563,47 +563,4 @@ class Shortcodes
         // For arrays or objects, return fallback
         return esc_html($atts['fallback']);
     }
-
-    /**
-     * Shortcode: dossier_client_link
-     *
-     * Outputs the URL to the client profile from a dossier.
-     *
-     * Usage: [dossier_client_link]
-     *
-     * @return string Client URL or empty string.
-     */
-    public function dossier_client_link()
-    {
-        // Get current post ID (dossier)
-        $post_id = get_the_ID();
-
-        if (! $post_id) {
-            return '';
-        }
-
-        // Get client from ACF relation field
-        $client = get_field('dossier_client', $post_id);
-
-        if (! $client) {
-            return '';
-        }
-
-        // Handle both single post object and array of posts
-        if (is_array($client)) {
-            $client = $client[0];
-        }
-
-        // Get client ID
-        $client_id = is_object($client) ? $client->ID : $client;
-
-        // Get client permalink
-        $client_url = get_permalink($client_id);
-
-        if (! $client_url) {
-            return '';
-        }
-
-        return esc_url($client_url);
-    }
 }
