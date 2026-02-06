@@ -118,10 +118,10 @@ class DossierPDF
             wp_send_json_error(array('message' => 'Dossier nicht gefunden'));
         }
 
-        // Get dossier content
-        $content = get_field('dossier_content', $dossier_id);
+        // Build HTML from structure and template
+        $content = $this->build_html_from_structure($dossier_id);
         if (empty($content)) {
-            wp_send_json_error(array('message' => 'Kein Dossier-Inhalt vorhanden'));
+            wp_send_json_error(array('message' => 'Kein Dossier-Inhalt vorhanden. Bitte prüfen Sie, ob dossier_structure gefüllt ist.'));
         }
 
         // Get client data for filename
@@ -522,5 +522,108 @@ class DossierPDF
         }
 
         return esc_url(wp_get_attachment_url($pdf));
+    }
+
+    /**
+     * Build HTML content from dossier_structure and template
+     *
+     * @param int $dossier_id Dossier ID.
+     * @return string Generated HTML content.
+     */
+    private function build_html_from_structure($dossier_id)
+    {
+        // Get dossier_structure from ACF field
+        $structure_json = get_field('dossier_structure', $dossier_id);
+        if (empty($structure_json)) {
+            return '';
+        }
+
+        // Parse JSON if needed
+        $segments = is_string($structure_json) ? json_decode($structure_json, true) : $structure_json;
+        if (empty($segments) || ! is_array($segments)) {
+            return '';
+        }
+
+        // Get template from ACF Options, fallback to local file
+        $template = get_field('settings_template_dossier', 'option');
+        if (empty($template)) {
+            $local_template_path = DEEP_CLARITY_PLUGIN_DIR . 'prompts/DOSSIER_HTML_TEMPLATE.html';
+            if (file_exists($local_template_path)) {
+                $template = file_get_contents($local_template_path);
+            }
+        }
+
+        if (empty($template)) {
+            return '';
+        }
+
+        // Build placeholders array
+        $placeholders = array();
+
+        // Extract cover variables and chapter data from segments
+        foreach ($segments as $segment) {
+            if ($segment['type'] === 'cover' && isset($segment['variables'])) {
+                $placeholders['CLIENT_NAME'] = $segment['variables']['CLIENT_NAME'] ?? '';
+                $placeholders['DOSSIER_NUMBER'] = $segment['variables']['DOSSIER_NUMBER'] ?? '';
+            }
+
+            if ($segment['type'] === 'chapter' && isset($segment['chapter_number'])) {
+                $chapter_num = $segment['chapter_number'];
+
+                // Chapter title
+                $placeholders["chapter_{$chapter_num}_title"] = $segment['title'] ?? '';
+
+                // Sections
+                if (isset($segment['sections']) && is_array($segment['sections'])) {
+                    foreach ($segment['sections'] as $index => $section) {
+                        $section_num = $index + 1;
+                        $placeholders["chapter_{$chapter_num}_{$section_num}_title"] = $section['title'] ?? '';
+                        $placeholders["chapter_{$chapter_num}_{$section_num}"] = $section['html'] ?? '';
+                    }
+                }
+            }
+        }
+
+        // Add date placeholders
+        $months_de = array(
+            'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+            'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+        );
+        $placeholders['CREATION_MONTH'] = $months_de[intval(date('n')) - 1];
+        $placeholders['CREATION_YEAR'] = date('Y');
+
+        // Get DCPI scores from dossier ACF fields
+        $placeholders['DCPI_INDEX'] = get_field('dossier_deep_clarity_index', $dossier_id) ?: '';
+        $placeholders['DCPI_DIM_1_SCORE'] = get_field('dossier_dimension_1_score', $dossier_id) ?: '';
+        $placeholders['DCPI_DIM_2_SCORE'] = get_field('dossier_dimension_2_score', $dossier_id) ?: '';
+        $placeholders['DCPI_DIM_3_SCORE'] = get_field('dossier_dimension_3_score', $dossier_id) ?: '';
+        $placeholders['DCPI_DIM_4_SCORE'] = get_field('dossier_dimension_4_score', $dossier_id) ?: '';
+        $placeholders['DCPI_DIM_5_SCORE'] = get_field('dossier_dimension_5_score', $dossier_id) ?: '';
+
+        // Fallback for CLIENT_NAME from linked client if not in cover
+        if (empty($placeholders['CLIENT_NAME'])) {
+            $client = get_field('dossier_client', $dossier_id);
+            $client_id = is_array($client) ? $client[0] : $client;
+            $client_id = is_object($client_id) ? $client_id->ID : $client_id;
+
+            if ($client_id) {
+                $vorname = get_field('client_firstname', $client_id) ?: '';
+                $nachname = get_field('client_lastname', $client_id) ?: '';
+                $placeholders['CLIENT_NAME'] = trim($vorname . ' ' . $nachname);
+            }
+        }
+
+        // Replace all placeholders in template
+        $html = $template;
+        foreach ($placeholders as $key => $value) {
+            $html = str_replace('{{' . $key . '}}', $value, $html);
+        }
+
+        // Save generated HTML to dossier_html ACF field
+        if (function_exists('update_field')) {
+            update_field('dossier_html', $html, $dossier_id);
+        }
+
+        return $html;
     }
 }
