@@ -939,12 +939,14 @@ class API
         $client_id           = $request->get_param('client_id');
         $structural_analysis = $request->get_param('structural_analysis');
         $dossier_content     = $request->get_param('dossier_content');
+        $dossier_html        = $request->get_param('dossier_html');
+        $dossier_segments    = $request->get_param('dossier_segments');
 
-        // At least one of structural_analysis or dossier_content must be provided
-        if (empty($structural_analysis) && empty($dossier_content)) {
+        // At least one of structural_analysis, dossier_content, or dossier_html must be provided
+        if (empty($structural_analysis) && empty($dossier_content) && empty($dossier_html)) {
             return new \WP_REST_Response(array(
                 'success' => false,
-                'message' => 'Either structural_analysis or dossier_content must be provided',
+                'message' => 'Either structural_analysis, dossier_content, or dossier_html must be provided',
             ), 400);
         }
 
@@ -1037,8 +1039,20 @@ class API
             }
         }
 
-        // Determine status: "processing" if only structural_analysis, "complete" if dossier_content provided
-        $is_complete = ! empty($dossier_content);
+        // Save dossier_html to ACF field if provided
+        if (! empty($dossier_html) && function_exists('update_field')) {
+            update_field('dossier_html', $dossier_html, $dossier_id);
+        }
+
+        // Save dossier_segments to ACF field 'dossier_structure' if provided
+        if (! empty($dossier_segments) && function_exists('update_field')) {
+            // Store as JSON string if it's an array
+            $segments_to_save = is_array($dossier_segments) ? wp_json_encode($dossier_segments) : $dossier_segments;
+            update_field('dossier_structure', $segments_to_save, $dossier_id);
+        }
+
+        // Determine status: "processing" if only structural_analysis, "complete" if dossier_content or dossier_html provided
+        $is_complete = ! empty($dossier_content) || ! empty($dossier_html);
 
         // Update transient status for polling
         if (! $transient_data) {
