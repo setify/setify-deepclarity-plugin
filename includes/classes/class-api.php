@@ -1057,6 +1057,22 @@ class API
 
         // Save dossier_segments to ACF field 'dossier_structure' if provided
         if (! empty($dossier_segments) && function_exists('update_field')) {
+            // Debug logging
+            error_log('Deep Clarity API: dossier_segments received');
+            error_log('Deep Clarity API: Type: ' . gettype($dossier_segments));
+            if (is_array($dossier_segments)) {
+                error_log('Deep Clarity API: Is array with ' . count($dossier_segments) . ' elements');
+                if (isset($dossier_segments[0])) {
+                    error_log('Deep Clarity API: First element keys: ' . implode(', ', array_keys($dossier_segments[0])));
+                    if (isset($dossier_segments[0]['html'])) {
+                        error_log('Deep Clarity API: First element html (first 100 chars): ' . substr($dossier_segments[0]['html'], 0, 100));
+                    }
+                }
+            } elseif (is_string($dossier_segments)) {
+                error_log('Deep Clarity API: Is string with length ' . strlen($dossier_segments));
+                error_log('Deep Clarity API: First 200 chars: ' . substr($dossier_segments, 0, 200));
+            }
+
             // Ensure proper JSON encoding
             $segments_array = null;
 
@@ -1079,6 +1095,8 @@ class API
             if ($segments_array !== null) {
                 // Re-encode with proper escaping using wp_json_encode
                 $segments_to_save = wp_json_encode($segments_array, JSON_UNESCAPED_UNICODE);
+                error_log('Deep Clarity API: Saving JSON with length ' . strlen($segments_to_save));
+                error_log('Deep Clarity API: First 200 chars of saved JSON: ' . substr($segments_to_save, 0, 200));
                 update_field('dossier_structure', $segments_to_save, $dossier_id);
             } else {
                 // Fallback: save as-is but log a warning
