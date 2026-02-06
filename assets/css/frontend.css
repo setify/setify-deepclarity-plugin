@@ -2504,7 +2504,8 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   width: 100%;
 }
 
-.dc-pdf-modal--error {
+.dc-pdf-modal--error,
+.dc-pdf-modal--warning {
   max-width: 520px;
 }
 

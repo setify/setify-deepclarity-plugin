@@ -74,7 +74,8 @@
                             modalType,
                             dcDossierPdf.strings.success,
                             sourceInfo,
-                            response.data.pdf_url
+                            response.data.pdf_url,
+                            isFallback ? (response.data.debug || null) : null
                         );
                     } else {
                         DossierPDF.showModal(
@@ -129,9 +130,9 @@
                 ? '<a href="' + pdfUrl + '" target="_blank" class="dc-pdf-modal-download" onclick="event.stopPropagation();">' + dcDossierPdf.strings.download + '</a>'
                 : '';
 
-            // Build debug info HTML if available
+            // Build debug info HTML if available (for error and warning types)
             var debugHtml = '';
-            if (debugData && type === 'error') {
+            if (debugData && (type === 'error' || type === 'warning')) {
                 debugHtml = '<div class="dc-pdf-modal-debug">' +
                     '<details>' +
                         '<summary>Debug-Informationen anzeigen</summary>' +

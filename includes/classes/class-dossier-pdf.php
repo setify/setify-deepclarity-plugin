@@ -121,14 +121,33 @@ class DossierPDF
         // Build HTML from structure and template
         $content = $this->build_html_from_structure($dossier_id);
         $content_source = 'structure'; // Track which source was used
+        $fallback_debug = null; // Debug info if fallback is used
 
         // Fallback: If structure parsing failed, try to use dossier_html directly
         if (empty($content)) {
+            // Collect debug info about why dossier_structure failed
+            $structure_json = get_field('dossier_structure', $dossier_id);
+            $fallback_debug = array(
+                'field_empty' => empty($structure_json),
+                'field_type' => gettype($structure_json),
+                'field_length' => is_string($structure_json) ? strlen($structure_json) : 'n/a',
+                'first_100_chars' => is_string($structure_json) ? substr($structure_json, 0, 100) : 'n/a',
+            );
+
+            // Try to decode and get error
+            if (is_string($structure_json) && !empty($structure_json)) {
+                $test = json_decode($structure_json, true);
+                $fallback_debug['json_decode_result'] = ($test === null) ? 'failed' : 'success';
+                $fallback_debug['json_error'] = json_last_error_msg();
+            }
+
             $dossier_html = get_field('dossier_html', $dossier_id);
             if (!empty($dossier_html)) {
                 error_log('Deep Clarity PDF: Using dossier_html fallback for dossier ' . $dossier_id);
                 $content = $this->wrap_html_for_pdf($dossier_html, $dossier_id);
                 $content_source = 'html_fallback';
+                $fallback_debug['dossier_html_empty'] = false;
+                $fallback_debug['dossier_html_length'] = strlen($dossier_html);
             }
         }
 
@@ -222,12 +241,19 @@ class DossierPDF
                 unlink($pdf_path);
             }
 
-            wp_send_json_success(array(
+            $response_data = array(
                 'message' => 'PDF erfolgreich erstellt',
                 'pdf_url' => $pdf_url,
                 'attachment_id' => $attachment_id,
                 'source' => $content_source,
-            ));
+            );
+
+            // Include debug info if fallback was used
+            if ($content_source === 'html_fallback' && $fallback_debug !== null) {
+                $response_data['debug'] = $fallback_debug;
+            }
+
+            wp_send_json_success($response_data);
 
         } catch (\Exception $e) {
             wp_send_json_error(array('message' => 'Fehler: ' . $e->getMessage()));
