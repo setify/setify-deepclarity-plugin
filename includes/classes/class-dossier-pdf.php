@@ -121,7 +121,26 @@ class DossierPDF
         // Build HTML from structure and template
         $content = $this->build_html_from_structure($dossier_id);
         if (empty($content)) {
-            wp_send_json_error(array('message' => 'Kein Dossier-Inhalt vorhanden. Bitte prüfen Sie, ob dossier_structure gefüllt ist.'));
+            // Get debug info about the dossier_structure field
+            $structure_json = get_field('dossier_structure', $dossier_id);
+            $debug_info = array(
+                'field_empty' => empty($structure_json),
+                'field_type' => gettype($structure_json),
+                'field_length' => is_string($structure_json) ? strlen($structure_json) : 'n/a',
+                'first_100_chars' => is_string($structure_json) ? substr($structure_json, 0, 100) : 'n/a',
+            );
+
+            // Try to decode and get error
+            if (is_string($structure_json) && !empty($structure_json)) {
+                $test = json_decode($structure_json, true);
+                $debug_info['json_decode_result'] = ($test === null) ? 'failed' : 'success';
+                $debug_info['json_error'] = json_last_error_msg();
+            }
+
+            wp_send_json_error(array(
+                'message' => 'Kein Dossier-Inhalt vorhanden. Bitte prüfen Sie, ob dossier_structure gefüllt ist.',
+                'debug' => $debug_info
+            ));
         }
 
         // Get client data for filename
