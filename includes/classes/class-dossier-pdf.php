@@ -654,9 +654,9 @@ class DossierPDF
     /**
      * Fix unescaped quotes in JSON string values.
      *
-     * This handles malformed JSON where quotes inside string values are not escaped.
-     * It processes character by character, escaping ALL quotes within string values
-     * except the opening and closing quotes.
+     * Handles malformed JSON where HTML attribute quotes (e.g. class="cover-page")
+     * are not escaped. Distinguishes JSON keys from values using look-ahead:
+     * after { or , a quote followed by "..": within 50 chars is a key.
      *
      * @param string $json The malformed JSON string.
      * @return string The repaired JSON string.
@@ -670,54 +670,80 @@ class DossierPDF
         while ($i < $len) {
             $char = $json[$i];
 
-            // Look for start of a JSON string value (": pattern)
-            if ($char === '"' && $i > 0) {
-                $prev_char = $json[$i - 1];
-
-                // Check if this is the start of a string value (after : or after [ for array items)
-                if ($prev_char === ':' || $prev_char === '[' || $prev_char === ',') {
-                    // This quote starts a string value
-                    $result .= '"';
-                    $i++;
-
-                    // Process the string value content
-                    $value_content = '';
-
-                    while ($i < $len) {
-                        $c = $json[$i];
-                        $next = ($i + 1 < $len) ? $json[$i + 1] : '';
-
-                        // Check for end of JSON string value
-                        // End markers: " followed by , or } or ] or end of string
-                        if ($c === '"') {
-                            if ($next === ',' || $next === '}' || $next === ']' || $next === '') {
-                                // This is the closing quote of the JSON value
-                                $result .= $value_content . '"';
-                                $i++;
-                                break;
-                            } else {
-                                // This is an unescaped quote inside the value - escape it
-                                $value_content .= '\\"';
-                                $i++;
-                                continue;
-                            }
-                        }
-
-                        // Check for already escaped quotes (don't double-escape)
-                        if ($c === '\\' && $next === '"') {
-                            $value_content .= '\\"';
-                            $i += 2;
-                            continue;
-                        }
-
-                        $value_content .= $c;
-                        $i++;
-                    }
-
-                    continue;
-                }
+            if ($char !== '"') {
+                $result .= $char;
+                $i++;
+                continue;
             }
 
+            // We found a ". Determine context from preceding character.
+            $prev = ($i > 0) ? $json[$i - 1] : '';
+
+            // After { or , — could be a JSON key. Use look-ahead to verify.
+            if ($prev === '{' || $prev === ',') {
+                $is_key = false;
+                $key_close_pos = -1;
+                for ($k = $i + 1; $k < min($i + 50, $len); $k++) {
+                    // Skip escaped quotes in key name
+                    if ($json[$k] === '\\' && $k + 1 < $len && $json[$k + 1] === '"') {
+                        $k++;
+                        continue;
+                    }
+                    if ($json[$k] === '"') {
+                        if ($k + 1 < $len && $json[$k + 1] === ':') {
+                            $is_key = true;
+                            $key_close_pos = $k;
+                        }
+                        break;
+                    }
+                }
+
+                if ($is_key) {
+                    // Output entire key including both quotes as-is
+                    $result .= substr($json, $i, $key_close_pos - $i + 1);
+                    $i = $key_close_pos + 1;
+                    continue;
+                }
+                // Not a key — fall through to string value handling
+            }
+
+            // String value start: after :, [, or , (when confirmed not a key)
+            if ($prev === ':' || $prev === '[' || $prev === ',') {
+                $result .= '"'; // opening quote
+                $i++;
+
+                // Process value content — escape unescaped internal quotes
+                while ($i < $len) {
+                    $c = $json[$i];
+                    $next = ($i + 1 < $len) ? $json[$i + 1] : '';
+
+                    // Already escaped quote — preserve
+                    if ($c === '\\' && $next === '"') {
+                        $result .= '\\"';
+                        $i += 2;
+                        continue;
+                    }
+
+                    // Quote — check if it ends the JSON string value
+                    if ($c === '"') {
+                        if ($next === ',' || $next === '}' || $next === ']' || $next === '') {
+                            $result .= '"'; // closing quote
+                            $i++;
+                            break;
+                        }
+                        // Unescaped internal quote — escape it
+                        $result .= '\\"';
+                        $i++;
+                        continue;
+                    }
+
+                    $result .= $c;
+                    $i++;
+                }
+                continue;
+            }
+
+            // Default: output quote as-is
             $result .= $char;
             $i++;
         }
