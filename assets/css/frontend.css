@@ -2378,12 +2378,14 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 
 .dc-pdf-modal {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
+  text-align: center;
+  gap: 12px;
   background: #fff;
   border-radius: var(--dc-radius-small, 8px);
-  padding: 20px 24px;
-  max-width: 500px;
+  padding: 28px 32px;
+  max-width: 480px;
   width: 90%;
   transform: translateY(-10px);
   transition: transform 0.2s ease;
@@ -2396,8 +2398,8 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
 
 .dc-pdf-modal-icon {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2409,64 +2411,51 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   color: var(--dc-color-emerald-500, #10b981);
 }
 
+.dc-pdf-modal--warning .dc-pdf-modal-icon {
+  background: #fef3c7;
+  color: #d97706;
+}
+
 .dc-pdf-modal--error .dc-pdf-modal-icon {
   background: var(--dc-color-rose-100, #ffe4e6);
   color: var(--dc-color-rose-700, #be123c);
 }
 
 .dc-pdf-modal-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.dc-pdf-modal-content {
-  flex: 1 1 auto;
-  min-width: 100px;
+  width: 24px;
+  height: 24px;
 }
 
 .dc-pdf-modal-title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--dc-color-carbon-black, #1c1d1f);
 }
 
-@media (max-width: 540px) {
-  .dc-pdf-modal {
-    flex-wrap: wrap;
-    justify-content: center;
-    text-align: center;
-  }
-
-  .dc-pdf-modal-content {
-    flex: 1 0 100%;
-    order: -1;
-    margin-bottom: 12px;
-  }
-
-  .dc-pdf-modal-icon {
-    order: -2;
-    margin-bottom: 8px;
-  }
-
-  .dc-pdf-modal-actions {
-    flex: 1 0 100%;
-    justify-content: center;
-  }
-}
-
 .dc-pdf-modal-message {
-  margin: 4px 0 0 0;
+  margin: 0;
   font-size: 0.85rem;
   color: var(--dc-color-cool-steel, #666);
-  line-height: 1.4;
+  line-height: 1.5;
+  max-width: 380px;
+}
+
+.dc-pdf-modal--warning .dc-pdf-modal-message {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: var(--dc-radius-xsmall, 4px);
+  padding: 10px 14px;
+  color: #92400e;
+  text-align: left;
 }
 
 .dc-pdf-modal-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .dc-pdf-modal-download {
@@ -2508,31 +2497,15 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   color: var(--dc-color-carbon-black, #1c1d1f);
 }
 
-/* Modal with debug info - vertical layout */
-.dc-pdf-modal--with-debug {
-  flex-direction: column;
-  align-items: stretch;
-  max-width: 600px;
-}
-
-.dc-pdf-modal--with-debug .dc-pdf-modal-icon {
-  align-self: center;
-  margin-bottom: 12px;
-}
-
-.dc-pdf-modal--with-debug .dc-pdf-modal-content {
-  text-align: center;
-}
-
-.dc-pdf-modal--with-debug .dc-pdf-modal-actions {
-  justify-content: center;
-  margin-top: 16px;
-}
-
 /* Debug section styles */
 .dc-pdf-modal-debug {
-  margin-top: 16px;
+  margin-top: 8px;
   text-align: left;
+  width: 100%;
+}
+
+.dc-pdf-modal--error {
+  max-width: 520px;
 }
 
 .dc-pdf-modal-debug details {
