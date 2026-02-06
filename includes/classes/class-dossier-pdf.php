@@ -120,6 +120,16 @@ class DossierPDF
 
         // Build HTML from structure and template
         $content = $this->build_html_from_structure($dossier_id);
+
+        // Fallback: If structure parsing failed, try to use dossier_html directly
+        if (empty($content)) {
+            $dossier_html = get_field('dossier_html', $dossier_id);
+            if (!empty($dossier_html)) {
+                error_log('Deep Clarity PDF: Using dossier_html fallback for dossier ' . $dossier_id);
+                $content = $this->wrap_html_for_pdf($dossier_html, $dossier_id);
+            }
+        }
+
         if (empty($content)) {
             // Get debug info about the dossier_structure field
             $structure_json = get_field('dossier_structure', $dossier_id);
@@ -137,8 +147,13 @@ class DossierPDF
                 $debug_info['json_error'] = json_last_error_msg();
             }
 
+            // Also check dossier_html
+            $dossier_html = get_field('dossier_html', $dossier_id);
+            $debug_info['dossier_html_empty'] = empty($dossier_html);
+            $debug_info['dossier_html_length'] = is_string($dossier_html) ? strlen($dossier_html) : 'n/a';
+
             wp_send_json_error(array(
-                'message' => 'Kein Dossier-Inhalt vorhanden. Bitte prüfen Sie, ob dossier_structure gefüllt ist.',
+                'message' => 'Kein Dossier-Inhalt vorhanden. Bitte prüfen Sie, ob dossier_structure oder dossier_html gefüllt ist.',
                 'debug' => $debug_info
             ));
         }
@@ -826,5 +841,54 @@ class DossierPDF
         }
 
         return $html;
+    }
+
+    /**
+     * Wrap raw HTML content for PDF generation.
+     *
+     * This is used as a fallback when dossier_structure parsing fails
+     * but dossier_html contains valid HTML content.
+     *
+     * @param string $html     The raw HTML content.
+     * @param int    $dossier_id Dossier ID for fetching additional data.
+     * @return string Wrapped HTML ready for PDF generation.
+     */
+    private function wrap_html_for_pdf($html, $dossier_id)
+    {
+        // Get template CSS from ACF Options or use inline styles
+        $template = get_field('settings_template_dossier', 'option');
+
+        // If template exists, extract CSS from it
+        $css = '';
+        if (!empty($template) && preg_match('/<style[^>]*>(.*?)<\/style>/is', $template, $matches)) {
+            $css = $matches[1];
+        }
+
+        // If no CSS from template, use a basic fallback
+        if (empty($css)) {
+            $local_template_path = DEEP_CLARITY_PLUGIN_DIR . 'prompts/DOSSIER_HTML_TEMPLATE.html';
+            if (file_exists($local_template_path)) {
+                $local_template = file_get_contents($local_template_path);
+                if (preg_match('/<style[^>]*>(.*?)<\/style>/is', $local_template, $matches)) {
+                    $css = $matches[1];
+                }
+            }
+        }
+
+        // Build the complete HTML document
+        $wrapped_html = '<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Clarity Dossier</title>
+    <style>' . $css . '</style>
+</head>
+<body>
+' . $html . '
+</body>
+</html>';
+
+        return $wrapped_html;
     }
 }
