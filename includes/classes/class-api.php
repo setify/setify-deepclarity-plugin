@@ -1019,6 +1019,24 @@ class API
             update_field('dossier_structural_analysis', $structural_analysis, $dossier_id);
         }
 
+        // Save DCPI dimension scores if provided (from structural analysis step)
+        if (function_exists('update_field')) {
+            $dcpi_fields = array(
+                'dossier_dimension_1_score'   => $request->get_param('dossier_dimension_1_score'),
+                'dossier_dimension_2_score'   => $request->get_param('dossier_dimension_2_score'),
+                'dossier_dimension_3_score'   => $request->get_param('dossier_dimension_3_score'),
+                'dossier_dimension_4_score'   => $request->get_param('dossier_dimension_4_score'),
+                'dossier_dimension_5_score'   => $request->get_param('dossier_dimension_5_score'),
+                'dossier_deep_clarity_index'  => $request->get_param('dossier_deep_clarity_index'),
+            );
+
+            foreach ($dcpi_fields as $field_name => $value) {
+                if ($value !== null) {
+                    update_field($field_name, round(floatval($value)), $dossier_id);
+                }
+            }
+        }
+
         // Determine status: "processing" if only structural_analysis, "complete" if dossier_content provided
         $is_complete = ! empty($dossier_content);
 
