@@ -432,7 +432,7 @@ class API
             'dimension_3_score'  => isset($data['dimension_3_score']) ? round(floatval($data['dimension_3_score'])) : 0,
             'dimension_4_score'  => isset($data['dimension_4_score']) ? round(floatval($data['dimension_4_score'])) : 0,
             'dimension_5_score'  => isset($data['dimension_5_score']) ? round(floatval($data['dimension_5_score'])) : 0,
-            'deep_clarity_index' => isset($data['deep_clarity_index']) ? floatval($data['deep_clarity_index']) : 0,
+            'deep_clarity_index' => isset($data['deep_clarity_index']) ? round(floatval($data['deep_clarity_index'])) : 0,
         );
     }
 
