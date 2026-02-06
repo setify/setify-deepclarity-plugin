@@ -196,6 +196,7 @@ class Assets {
             array(
                 'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
                 'nonce'      => wp_create_nonce( 'deep_clarity_frontend' ),
+                'pdfNonce'   => wp_create_nonce( 'dc_create_dossier_pdf' ),
                 'isLoggedIn' => is_user_logged_in(),
             )
         );

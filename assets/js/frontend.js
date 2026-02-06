@@ -1029,7 +1029,9 @@
     requestId: null,
     pollTimer: null,
     pollInterval: 3000, // Poll every 3 seconds
-    processingStep: 1, // 1 = Strukturanalyse, 2 = Dossier-Generierung
+    processingStep: 1, // 1 = Strukturanalyse, 2 = Dossier-Generierung, 3 = PDF-Generierung
+    lastDossierId: null, // Store dossier ID for PDF generation
+    pdfUrl: null, // Store PDF URL after generation
 
     /**
      * Initialize dossier creator
@@ -1066,6 +1068,8 @@
       this.selectedComparisonDcpiEntryId = null;
       this.requestId = null;
       this.processingStep = 1;
+      this.lastDossierId = null;
+      this.pdfUrl = null;
       if (this.pollTimer) {
         clearInterval(this.pollTimer);
         this.pollTimer = null;
@@ -1784,9 +1788,11 @@
             const status = response.data.status;
 
             if (status === "complete") {
-              // Stop polling and show success
+              // Stop polling and start PDF generation
               self.stopPolling();
-              self.renderSuccess("Das Dossier wurde erfolgreich erstellt.", response.data.dossier_id);
+              self.lastDossierId = response.data.dossier_id;
+              self.updateProcessingStep(3);
+              self.generatePdf(response.data.dossier_id);
             } else if (status === "processing") {
               // Structural analysis done, now generating dossier - update to step 2
               if (self.processingStep !== 2) {
@@ -1828,7 +1834,128 @@
     },
 
     /**
-     * Render processing/loading state with two-step progress
+     * Generate PDF for the dossier
+     */
+    generatePdf: function (dossierId) {
+      const self = this;
+
+      $.ajax({
+        url: deepClarityFrontend.ajaxUrl,
+        type: "POST",
+        data: {
+          action: "dc_create_dossier_pdf",
+          nonce: deepClarityFrontend.pdfNonce || deepClarityFrontend.nonce,
+          dossier_id: dossierId,
+        },
+        success: function (response) {
+          if (response.success && response.data.pdf_url) {
+            self.pdfUrl = response.data.pdf_url;
+            self.renderCompleted(dossierId, self.pdfUrl);
+          } else {
+            // PDF generation failed, but dossier was created
+            self.renderCompleted(dossierId, null, response.data?.message || "PDF-Generierung fehlgeschlagen");
+          }
+        },
+        error: function () {
+          // Network error during PDF generation
+          self.renderCompleted(dossierId, null, "Verbindungsfehler bei PDF-Generierung");
+        },
+      });
+    },
+
+    /**
+     * Render completed state with all steps green
+     */
+    renderCompleted: function (dossierId, pdfUrl, pdfError) {
+      const self = this;
+
+      // Build buttons
+      let buttonsHtml = '';
+      if (pdfUrl) {
+        buttonsHtml = `
+          <a href="${self.escapeHtml(pdfUrl)}" target="_blank" class="dc-dossier-btn dc-dossier-btn-primary">Dossier PDF ansehen</a>
+          <button type="button" class="dc-dossier-btn dc-dossier-btn-secondary dc-dossier-btn-reload">Seite neu laden</button>
+        `;
+      } else {
+        buttonsHtml = `
+          <button type="button" class="dc-dossier-btn dc-dossier-btn-primary dc-dossier-btn-reload">Seite neu laden</button>
+        `;
+      }
+
+      // Build error message if PDF failed
+      let errorHtml = '';
+      if (pdfError) {
+        errorHtml = `<p class="dc-dossier-processing-error">${self.escapeHtml(pdfError)}</p>`;
+      }
+
+      const completedHtml = `
+        <div class="dc-dossier-modal" data-step="completed">
+          <div class="dc-dossier-header">
+            <span class="dc-dossier-title">Dossier erstellt</span>
+          </div>
+          <div class="dc-dossier-body dc-dossier-body-centered">
+            <div class="dc-dossier-processing-steps">
+              <div class="dc-processing-step done">
+                <div class="dc-processing-step-indicator">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="dc-processing-step-text">
+                  <span class="dc-processing-step-title">Strukturanalyse abgeschlossen</span>
+                  <span class="dc-processing-step-desc">Daten wurden analysiert und vorbereitet</span>
+                </div>
+              </div>
+              <div class="dc-processing-step done">
+                <div class="dc-processing-step-indicator">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="dc-processing-step-text">
+                  <span class="dc-processing-step-title">Dossier-Generierung abgeschlossen</span>
+                  <span class="dc-processing-step-desc">KI hat das personalisierte Dossier erstellt</span>
+                </div>
+              </div>
+              <div class="dc-processing-step ${pdfUrl ? 'done' : 'error'}">
+                <div class="dc-processing-step-indicator">
+                  ${pdfUrl
+                    ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+                    : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+                  }
+                </div>
+                <div class="dc-processing-step-text">
+                  <span class="dc-processing-step-title">${pdfUrl ? 'PDF-Generierung abgeschlossen' : 'PDF-Generierung fehlgeschlagen'}</span>
+                  <span class="dc-processing-step-desc">${pdfUrl ? 'PDF-Dokument wurde erzeugt' : 'Das Dossier wurde trotzdem erstellt'}</span>
+                </div>
+              </div>
+            </div>
+            ${errorHtml}
+          </div>
+          <div class="dc-dossier-footer dc-dossier-footer-centered">
+            ${buttonsHtml}
+          </div>
+        </div>
+      `;
+
+      Swal.fire({
+        title: null,
+        html: completedHtml,
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: "550px",
+        padding: 0,
+        customClass: {
+          popup: "dc-dossier-popup",
+          htmlContainer: "dc-dossier-container",
+        },
+        didOpen: function () {
+          $(".dc-dossier-btn-reload").on("click", function () {
+            Swal.close();
+            window.location.reload();
+          });
+        },
+      });
+    },
+
+    /**
+     * Render processing/loading state with three-step progress
      */
     renderProcessing: function () {
       const self = this;
@@ -1858,9 +1985,12 @@
       const step1Active = step === 1 ? " active" : "";
       const step1Done = step > 1 ? " done" : "";
       const step2Active = step === 2 ? " active" : "";
+      const step2Done = step > 2 ? " done" : "";
+      const step3Active = step === 3 ? " active" : "";
 
       const step1Text = step === 1 ? "Strukturanalyse läuft..." : "Strukturanalyse abgeschlossen";
-      const step2Text = step === 2 ? "Dossier wird generiert..." : "Dossier-Generierung";
+      const step2Text = step === 2 ? "Dossier wird generiert..." : (step > 2 ? "Dossier-Generierung abgeschlossen" : "Dossier-Generierung");
+      const step3Text = step === 3 ? "PDF wird erstellt..." : "PDF-Generierung";
 
       return `
         <div class="dc-dossier-modal" data-step="processing">
@@ -1878,13 +2008,22 @@
                   <span class="dc-processing-step-desc">Daten werden analysiert und vorbereitet</span>
                 </div>
               </div>
-              <div class="dc-processing-step${step2Active}">
+              <div class="dc-processing-step${step2Active}${step2Done}">
                 <div class="dc-processing-step-indicator">
-                  ${step === 2 ? '<span class="dc-processing-spinner"></span>' : '<span class="dc-processing-step-number">2</span>'}
+                  ${step > 2 ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : (step === 2 ? '<span class="dc-processing-spinner"></span>' : '<span class="dc-processing-step-number">2</span>')}
                 </div>
                 <div class="dc-processing-step-text">
                   <span class="dc-processing-step-title">${step2Text}</span>
                   <span class="dc-processing-step-desc">KI erstellt das personalisierte Dossier</span>
+                </div>
+              </div>
+              <div class="dc-processing-step${step3Active}">
+                <div class="dc-processing-step-indicator">
+                  ${step === 3 ? '<span class="dc-processing-spinner"></span>' : '<span class="dc-processing-step-number">3</span>'}
+                </div>
+                <div class="dc-processing-step-text">
+                  <span class="dc-processing-step-title">${step3Text}</span>
+                  <span class="dc-processing-step-desc">PDF-Dokument wird erzeugt</span>
                 </div>
               </div>
             </div>
@@ -1908,8 +2047,21 @@
     /**
      * Render success state
      */
-    renderSuccess: function (message, dossierId) {
+    renderSuccess: function (message, dossierId, pdfUrl) {
       const self = this;
+
+      // Build buttons based on PDF availability
+      let buttonsHtml = '';
+      if (pdfUrl) {
+        buttonsHtml = `
+          <a href="${self.escapeHtml(pdfUrl)}" target="_blank" class="dc-dossier-btn dc-dossier-btn-primary">PDF ansehen</a>
+          <button type="button" class="dc-dossier-btn dc-dossier-btn-secondary dc-dossier-btn-reload">Seite neu laden</button>
+        `;
+      } else {
+        buttonsHtml = `
+          <button type="button" class="dc-dossier-btn dc-dossier-btn-primary dc-dossier-btn-reload">Seite neu laden</button>
+        `;
+      }
 
       Swal.fire({
         title: null,
@@ -1925,7 +2077,7 @@
               </div>
             </div>
             <div class="dc-dossier-footer dc-dossier-footer-centered">
-              <button type="button" class="dc-dossier-btn dc-dossier-btn-success-close">Schliessen</button>
+              ${buttonsHtml}
             </div>
           </div>
         `,
@@ -1938,12 +2090,10 @@
           htmlContainer: "dc-dossier-container",
         },
         didOpen: function () {
-          $(".dc-dossier-btn-success-close").on("click", function () {
+          $(".dc-dossier-btn-reload").on("click", function () {
             Swal.close();
             // Reload page to show new dossier
-            if (dossierId) {
-              window.location.reload();
-            }
+            window.location.reload();
           });
         },
       });

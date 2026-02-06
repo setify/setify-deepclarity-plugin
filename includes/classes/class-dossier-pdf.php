@@ -277,16 +277,32 @@ class DossierPDF
         $mpdf->SetAuthor('Deep Clarity');
         $mpdf->SetCreator('Deep Clarity WordPress Plugin');
 
-        // Set background image for all pages
-        $bg_image = 'https://deepclarity.de/wp-content/uploads/dc-paper_normal.jpg';
-        $mpdf->SetDefaultBodyCSS('background', "url('$bg_image')");
-        $mpdf->SetDefaultBodyCSS('background-image-resize', 6);
+        // Background images
+        $bg_front = 'https://deepclarity.de/wp-content/uploads/dc-paper_front.jpg';
+        $bg_normal = 'https://deepclarity.de/wp-content/uploads/dc-paper_normal.jpg';
 
         // Add CSS
         $css = $this->get_pdf_styles();
         $mpdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
 
-        // Add footer (no header)
+        // === FIRST PAGE: Empty cover with front background ===
+        $mpdf->SetDefaultBodyCSS('background', "url('$bg_front')");
+        $mpdf->SetDefaultBodyCSS('background-image-resize', 6);
+
+        // No footer on first page
+        $mpdf->SetHTMLFooter('');
+
+        // Write empty content for first page (just a space to ensure the page exists)
+        $mpdf->WriteHTML('<div style="height: 100%;"></div>', \Mpdf\HTMLParserMode::HTML_BODY);
+
+        // === SUBSEQUENT PAGES: Content with normal background ===
+        $mpdf->AddPage();
+
+        // Set normal background for all following pages
+        $mpdf->SetDefaultBodyCSS('background', "url('$bg_normal')");
+        $mpdf->SetDefaultBodyCSS('background-image-resize', 6);
+
+        // Add footer from second page onwards
         $mpdf->SetHTMLFooter($this->get_pdf_footer($vorname, $nachname));
 
         // Write content
