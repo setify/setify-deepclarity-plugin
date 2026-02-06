@@ -120,6 +120,7 @@ class DossierPDF
 
         // Build HTML from structure and template
         $content = $this->build_html_from_structure($dossier_id);
+        $content_source = 'structure'; // Track which source was used
 
         // Fallback: If structure parsing failed, try to use dossier_html directly
         if (empty($content)) {
@@ -127,6 +128,7 @@ class DossierPDF
             if (!empty($dossier_html)) {
                 error_log('Deep Clarity PDF: Using dossier_html fallback for dossier ' . $dossier_id);
                 $content = $this->wrap_html_for_pdf($dossier_html, $dossier_id);
+                $content_source = 'html_fallback';
             }
         }
 
@@ -224,6 +226,7 @@ class DossierPDF
                 'message' => 'PDF erfolgreich erstellt',
                 'pdf_url' => $pdf_url,
                 'attachment_id' => $attachment_id,
+                'source' => $content_source,
             ));
 
         } catch (\Exception $e) {

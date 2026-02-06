@@ -55,10 +55,18 @@
                 },
                 success: function(response) {
                     if (response.success) {
+                        // Build source info message
+                        var sourceInfo = '';
+                        if (response.data.source) {
+                            sourceInfo = response.data.source === 'structure'
+                                ? 'Quelle: dossier_structure (Template)'
+                                : 'Quelle: dossier_html (Fallback)';
+                        }
+
                         DossierPDF.showModal(
                             'success',
                             dcDossierPdf.strings.success,
-                            '',
+                            sourceInfo,
                             response.data.pdf_url
                         );
                     } else {
