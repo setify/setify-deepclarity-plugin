@@ -73,7 +73,9 @@
                         DossierPDF.showModal(
                             'error',
                             dcDossierPdf.strings.error,
-                            response.data.message || 'Unbekannter Fehler'
+                            response.data.message || 'Unbekannter Fehler',
+                            null,
+                            response.data.debug || null
                         );
                     }
                 },
@@ -97,12 +99,13 @@
         /**
          * Show modal
          *
-         * @param {string} type    Modal type (success/error).
-         * @param {string} title   Modal title.
-         * @param {string} message Modal message.
-         * @param {string} pdfUrl  PDF URL (optional).
+         * @param {string} type      Modal type (success/error).
+         * @param {string} title     Modal title.
+         * @param {string} message   Modal message.
+         * @param {string} pdfUrl    PDF URL (optional).
+         * @param {object} debugData Debug data object (optional).
          */
-        showModal: function(type, title, message, pdfUrl) {
+        showModal: function(type, title, message, pdfUrl, debugData) {
             // Remove existing modal
             this.closeModal();
 
@@ -114,13 +117,36 @@
                 ? '<a href="' + pdfUrl + '" target="_blank" class="dc-pdf-modal-download" onclick="event.stopPropagation();">' + dcDossierPdf.strings.download + '</a>'
                 : '';
 
+            // Build debug info HTML if available
+            var debugHtml = '';
+            if (debugData && type === 'error') {
+                debugHtml = '<div class="dc-pdf-modal-debug">' +
+                    '<details>' +
+                        '<summary>Debug-Informationen anzeigen</summary>' +
+                        '<div class="dc-pdf-modal-debug-content">' +
+                            '<table>' +
+                                '<tr><td><strong>dossier_structure leer:</strong></td><td>' + (debugData.field_empty ? 'Ja' : 'Nein') + '</td></tr>' +
+                                '<tr><td><strong>Feldtyp:</strong></td><td>' + (debugData.field_type || 'n/a') + '</td></tr>' +
+                                '<tr><td><strong>Feldlänge:</strong></td><td>' + (debugData.field_length || 'n/a') + ' Zeichen</td></tr>' +
+                                '<tr><td><strong>JSON-Parsing:</strong></td><td>' + (debugData.json_decode_result || 'nicht getestet') + '</td></tr>' +
+                                '<tr><td><strong>JSON-Fehler:</strong></td><td>' + (debugData.json_error || 'keiner') + '</td></tr>' +
+                                '<tr><td><strong>dossier_html leer:</strong></td><td>' + (debugData.dossier_html_empty ? 'Ja' : 'Nein') + '</td></tr>' +
+                                '<tr><td><strong>dossier_html Länge:</strong></td><td>' + (debugData.dossier_html_length || 'n/a') + ' Zeichen</td></tr>' +
+                            '</table>' +
+                            (debugData.first_100_chars ? '<div class="dc-pdf-modal-debug-preview"><strong>Erste 100 Zeichen:</strong><pre>' + this.escapeHtml(debugData.first_100_chars) + '</pre></div>' : '') +
+                        '</div>' +
+                    '</details>' +
+                '</div>';
+            }
+
             var modalHtml =
                 '<div class="dc-pdf-modal-overlay">' +
-                    '<div class="dc-pdf-modal dc-pdf-modal--' + type + '">' +
+                    '<div class="dc-pdf-modal dc-pdf-modal--' + type + (debugData ? ' dc-pdf-modal--with-debug' : '') + '">' +
                         '<div class="dc-pdf-modal-icon">' + iconSvg + '</div>' +
                         '<div class="dc-pdf-modal-content">' +
                             '<h3 class="dc-pdf-modal-title">' + title + '</h3>' +
                             (message ? '<p class="dc-pdf-modal-message">' + message + '</p>' : '') +
+                            debugHtml +
                         '</div>' +
                         '<div class="dc-pdf-modal-actions">' +
                             downloadButton +
@@ -135,6 +161,22 @@
             setTimeout(function() {
                 $('.dc-pdf-modal-overlay').addClass('active');
             }, 10);
+        },
+
+        /**
+         * Escape HTML special characters
+         *
+         * @param {string} str String to escape.
+         * @return {string} Escaped string.
+         */
+        escapeHtml: function(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         },
 
         /**

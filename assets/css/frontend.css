@@ -2508,6 +2508,93 @@ body:not(.wp-admin) .acf-fields > .acf-tab-wrap .acf-tab-group li.active a:hover
   color: var(--dc-color-carbon-black, #1c1d1f);
 }
 
+/* Modal with debug info - vertical layout */
+.dc-pdf-modal--with-debug {
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 600px;
+}
+
+.dc-pdf-modal--with-debug .dc-pdf-modal-icon {
+  align-self: center;
+  margin-bottom: 12px;
+}
+
+.dc-pdf-modal--with-debug .dc-pdf-modal-content {
+  text-align: center;
+}
+
+.dc-pdf-modal--with-debug .dc-pdf-modal-actions {
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* Debug section styles */
+.dc-pdf-modal-debug {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.dc-pdf-modal-debug details {
+  background: #f8f9fa;
+  border: 1px solid #e9ebec;
+  border-radius: var(--dc-radius-xsmall, 4px);
+}
+
+.dc-pdf-modal-debug summary {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--dc-color-cool-steel, #666);
+  user-select: none;
+}
+
+.dc-pdf-modal-debug summary:hover {
+  color: var(--dc-color-carbon-black, #1c1d1f);
+}
+
+.dc-pdf-modal-debug-content {
+  padding: 0 14px 14px 14px;
+  font-size: 0.75rem;
+}
+
+.dc-pdf-modal-debug-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dc-pdf-modal-debug-content td {
+  padding: 4px 8px 4px 0;
+  vertical-align: top;
+  border: none;
+}
+
+.dc-pdf-modal-debug-content td:first-child {
+  white-space: nowrap;
+  color: var(--dc-color-cool-steel, #666);
+}
+
+.dc-pdf-modal-debug-preview {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e9ebec;
+}
+
+.dc-pdf-modal-debug-preview pre {
+  margin: 8px 0 0 0;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #e9ebec;
+  border-radius: var(--dc-radius-xsmall, 4px);
+  font-size: 0.7rem;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
 /* Loading state for button */
 .create_dossier_pdf.loading,
 #create_dossier_pdf.loading {
