@@ -422,22 +422,22 @@ class DossierPDF
                 font-weight: normal;
             }
             h1 {
-                font-size: 28pt;
+                font-size: 34pt;
                 margin-bottom: 24px;
                 margin-top: 0;
             }
             h2 {
-                font-size: 20pt;
+                font-size: 24pt;
                 margin-top: 32px;
                 margin-bottom: 16px;
             }
             h3 {
-                font-size: 16pt;
+                font-size: 19pt;
                 margin-top: 24px;
                 margin-bottom: 12px;
             }
             h4 {
-                font-size: 13pt;
+                font-size: 16pt;
                 margin-top: 18px;
                 margin-bottom: 10px;
             }
@@ -509,7 +509,7 @@ class DossierPDF
         $dossier_text = $client_name ? 'Dossier - ' . esc_html($client_name) : 'Dossier';
 
         return '
-        <div style="font-family: grift, sans-serif; font-size: 7pt; color: #7b6e56; line-height: 1;">
+        <div style="font-family: grift, sans-serif; font-size: 6pt; color: #7b6e56; line-height: 1;">
             <table width="100%" style="border: none; border-collapse: collapse;">
                 <tr>
                     <td style="border: none; padding: 0; color: #7b6e56;">' . $dossier_text . '</td>
