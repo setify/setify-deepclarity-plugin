@@ -1022,14 +1022,15 @@ class API
         }
 
         // Save DCPI dimension scores if provided (from structural analysis step)
+        // Accept both dcpi_* and dossier_* prefixes for flexibility
         if (function_exists('update_field')) {
             $dcpi_fields = array(
-                'dossier_dimension_1_score'   => $request->get_param('dossier_dimension_1_score'),
-                'dossier_dimension_2_score'   => $request->get_param('dossier_dimension_2_score'),
-                'dossier_dimension_3_score'   => $request->get_param('dossier_dimension_3_score'),
-                'dossier_dimension_4_score'   => $request->get_param('dossier_dimension_4_score'),
-                'dossier_dimension_5_score'   => $request->get_param('dossier_dimension_5_score'),
-                'dossier_deep_clarity_index'  => $request->get_param('dossier_deep_clarity_index'),
+                'dossier_dimension_1_score'   => $request->get_param('dcpi_dimension_1_score') ?? $request->get_param('dossier_dimension_1_score'),
+                'dossier_dimension_2_score'   => $request->get_param('dcpi_dimension_2_score') ?? $request->get_param('dossier_dimension_2_score'),
+                'dossier_dimension_3_score'   => $request->get_param('dcpi_dimension_3_score') ?? $request->get_param('dossier_dimension_3_score'),
+                'dossier_dimension_4_score'   => $request->get_param('dcpi_dimension_4_score') ?? $request->get_param('dossier_dimension_4_score'),
+                'dossier_dimension_5_score'   => $request->get_param('dcpi_dimension_5_score') ?? $request->get_param('dossier_dimension_5_score'),
+                'dossier_deep_clarity_index'  => $request->get_param('dcpi_deep_clarity_index') ?? $request->get_param('dossier_deep_clarity_index'),
             );
 
             foreach ($dcpi_fields as $field_name => $value) {
