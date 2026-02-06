@@ -1,0 +1,285 @@
+<!-- ============================================
+     DEEP CLARITY DOSSIER HTML TEMPLATE
+     ============================================
+
+     Dieses Template wird mit den Daten aus dossier_segments befüllt.
+     Alle Platzhalter (Titel + Inhalte) kommen aus dem JSON.
+
+     Variablen aus cover.variables:
+     - {{CLIENT_NAME}} - Kundenname
+     - {{DOSSIER_NUMBER}} - Dossier-Nummer
+
+     DCPI Scores (aus Webhook-Daten):
+     - {{DCPI_INDEX}} - Deep Clarity Index Gesamtwert
+     - {{DCPI_DIM_1_SCORE}} - Dimension 1
+     - {{DCPI_DIM_2_SCORE}} - Dimension 2
+     - {{DCPI_DIM_3_SCORE}} - Dimension 3
+     - {{DCPI_DIM_4_SCORE}} - Dimension 4
+     - {{DCPI_DIM_5_SCORE}} - Dimension 5
+
+     Segment-Platzhalter:
+     - {{chapter_X_title}} - Kapitel X Titel
+     - {{chapter_X_Y_title}} - Kapitel X, Abschnitt Y Titel
+     - {{chapter_X_Y}} - Kapitel X, Abschnitt Y HTML-Inhalt
+
+     ============================================ -->
+
+<div class="dossier">
+
+    <!-- ============================================
+         DECKBLATT
+         ============================================ -->
+    <div class="cover-page">
+        <h1>Deep Clarity Executive Leadership Dossier</h1>
+        <h2>{{CLIENT_NAME}}</h2>
+        <p>Dossier Nr. {{DOSSIER_NUMBER}} | {{CREATION_MONTH}} {{CREATION_YEAR}}</p>
+        <p>Vertraulich</p>
+    </div>
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         INHALTSVERZEICHNIS
+         ============================================ -->
+    <div class="toc">
+        <h2>Inhaltsverzeichnis</h2>
+        <ol>
+            <li>{{chapter_1_title}}</li>
+            <li>{{chapter_2_title}}</li>
+            <li>{{chapter_3_title}}</li>
+            <li>{{chapter_4_title}}</li>
+            <li>{{chapter_5_title}}</li>
+            <li>{{chapter_6_title}}</li>
+            <li>{{chapter_7_title}}</li>
+            <li>{{chapter_8_title}}</li>
+            <li>{{chapter_9_title}}</li>
+            <li>{{chapter_10_title}}</li>
+            <li>{{chapter_11_title}}</li>
+        </ol>
+    </div>
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 1
+         ============================================ -->
+    <h2>1. {{chapter_1_title}}</h2>
+
+    <h3>{{chapter_1_1_title}}</h3>
+    {{chapter_1_1}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 2
+         ============================================ -->
+    <h2>2. {{chapter_2_title}}</h2>
+
+    <h3>{{chapter_2_1_title}}</h3>
+    {{chapter_2_1}}
+
+    <h3>{{chapter_2_2_title}}</h3>
+    {{chapter_2_2}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 3
+         ============================================ -->
+    <h2>3. {{chapter_3_title}}</h2>
+
+    <h3>{{chapter_3_1_title}}</h3>
+    {{chapter_3_1}}
+
+    <h3>{{chapter_3_2_title}}</h3>
+    {{chapter_3_2}}
+
+    <h3>{{chapter_3_3_title}}</h3>
+    {{chapter_3_3}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 4
+         ============================================ -->
+    <h2>4. {{chapter_4_title}}</h2>
+
+    <h3>{{chapter_4_1_title}}</h3>
+    {{chapter_4_1}}
+
+    <h3>{{chapter_4_2_title}}</h3>
+    {{chapter_4_2}}
+
+    <h3>{{chapter_4_3_title}}</h3>
+    {{chapter_4_3}}
+
+    <h3>{{chapter_4_4_title}}</h3>
+    {{chapter_4_4}}
+
+    <h3>{{chapter_4_5_title}}</h3>
+    {{chapter_4_5}}
+
+    <h3>{{chapter_4_6_title}}</h3>
+    {{chapter_4_6}}
+
+    <h3>{{chapter_4_7_title}}</h3>
+    {{chapter_4_7}}
+
+    <h3>{{chapter_4_8_title}}</h3>
+    {{chapter_4_8}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 5
+         ============================================ -->
+    <h2>5. {{chapter_5_title}}</h2>
+
+    <h3>{{chapter_5_1_title}}</h3>
+    {{chapter_5_1}}
+
+    <h3>{{chapter_5_2_title}}</h3>
+    {{chapter_5_2}}
+
+    <h3>{{chapter_5_3_title}}</h3>
+    {{chapter_5_3}}
+
+    <h3>{{chapter_5_4_title}}</h3>
+    {{chapter_5_4}}
+
+    <h3>{{chapter_5_5_title}}</h3>
+    {{chapter_5_5}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 6
+         ============================================ -->
+    <h2>6. {{chapter_6_title}}</h2>
+
+    <h3>{{chapter_6_1_title}}</h3>
+    {{chapter_6_1}}
+
+    <h3>{{chapter_6_2_title}} ({{DCPI_DIM_1_SCORE}})</h3>
+    {{chapter_6_2}}
+
+    <h3>{{chapter_6_3_title}} ({{DCPI_DIM_2_SCORE}})</h3>
+    {{chapter_6_3}}
+
+    <h3>{{chapter_6_4_title}} ({{DCPI_DIM_3_SCORE}})</h3>
+    {{chapter_6_4}}
+
+    <h3>{{chapter_6_5_title}} ({{DCPI_DIM_4_SCORE}})</h3>
+    {{chapter_6_5}}
+
+    <h3>{{chapter_6_6_title}} ({{DCPI_DIM_5_SCORE}})</h3>
+    {{chapter_6_6}}
+
+    <h3>{{chapter_6_7_title}}</h3>
+    {{chapter_6_7}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 7
+         ============================================ -->
+    <h2>7. {{chapter_7_title}}</h2>
+
+    <h3>{{chapter_7_1_title}}</h3>
+    {{chapter_7_1}}
+
+    <h3>{{chapter_7_2_title}}</h3>
+    {{chapter_7_2}}
+
+    <h3>{{chapter_7_3_title}}</h3>
+    {{chapter_7_3}}
+
+    <h3>{{chapter_7_4_title}}</h3>
+    {{chapter_7_4}}
+
+    <h3>{{chapter_7_5_title}}</h3>
+    {{chapter_7_5}}
+
+    <h3>{{chapter_7_6_title}}</h3>
+    {{chapter_7_6}}
+
+    <h3>{{chapter_7_7_title}}</h3>
+    {{chapter_7_7}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 8
+         ============================================ -->
+    <h2>8. {{chapter_8_title}}</h2>
+
+    <h3>{{chapter_8_1_title}}</h3>
+    {{chapter_8_1}}
+
+    <h3>{{chapter_8_2_title}}</h3>
+    {{chapter_8_2}}
+
+    <h3>{{chapter_8_3_title}}</h3>
+    {{chapter_8_3}}
+
+    <h3>{{chapter_8_4_title}}</h3>
+    {{chapter_8_4}}
+
+    <h3>{{chapter_8_5_title}}</h3>
+    {{chapter_8_5}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 9
+         ============================================ -->
+    <h2>9. {{chapter_9_title}}</h2>
+
+    <h3>{{chapter_9_1_title}}</h3>
+    {{chapter_9_1}}
+
+    <h3>{{chapter_9_2_title}}</h3>
+    {{chapter_9_2}}
+
+    <h3>{{chapter_9_3_title}}</h3>
+    {{chapter_9_3}}
+
+    <h3>{{chapter_9_4_title}}</h3>
+    {{chapter_9_4}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 10
+         ============================================ -->
+    <h2>10. {{chapter_10_title}}</h2>
+
+    <h3>{{chapter_10_1_title}}</h3>
+    {{chapter_10_1}}
+
+    <h3>{{chapter_10_2_title}}</h3>
+    {{chapter_10_2}}
+
+    <h3>{{chapter_10_3_title}}</h3>
+    {{chapter_10_3}}
+
+    <hr class="page-break">
+
+    <!-- ============================================
+         KAPITEL 11
+         ============================================ -->
+    <h2>11. {{chapter_11_title}}</h2>
+
+    <h3>{{chapter_11_1_title}}</h3>
+    {{chapter_11_1}}
+
+    <h3>{{chapter_11_2_title}}</h3>
+    {{chapter_11_2}}
+
+    <h3>{{chapter_11_3_title}}</h3>
+    {{chapter_11_3}}
+
+    <h3>{{chapter_11_4_title}}</h3>
+    {{chapter_11_4}}
+
+</div>
