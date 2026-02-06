@@ -735,6 +735,16 @@ class API
                     'type'              => 'string',
                     'description'       => 'The generated dossier content (step 2)',
                 ),
+                'dossier_html' => array(
+                    'required'          => false,
+                    'type'              => 'string',
+                    'description'       => 'The generated dossier HTML content',
+                ),
+                'dossier_segments' => array(
+                    'required'          => false,
+                    'type'              => 'array',
+                    'description'       => 'The dossier segments array for template rendering',
+                ),
             ),
         ));
 

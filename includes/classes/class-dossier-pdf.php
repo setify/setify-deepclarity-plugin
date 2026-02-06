@@ -608,10 +608,11 @@ class DossierPDF
     }
 
     /**
-     * Fix unescaped quotes in HTML content within JSON strings.
+     * Fix unescaped quotes in JSON string values.
      *
-     * Processes the JSON character by character, tracking context to identify
-     * and escape quotes that are inside HTML content.
+     * This handles malformed JSON where quotes inside string values are not escaped.
+     * It processes character by character, escaping ALL quotes within string values
+     * except the opening and closing quotes.
      *
      * @param string $json The malformed JSON string.
      * @return string The repaired JSON string.
@@ -622,78 +623,59 @@ class DossierPDF
         $len = strlen($json);
         $i = 0;
 
-        // Fields that may contain HTML with unescaped quotes
-        $html_fields = ['"html":"', '"title":"'];
-
         while ($i < $len) {
-            $found_field = false;
+            $char = $json[$i];
 
-            // Look for field patterns that may contain HTML
-            foreach ($html_fields as $field_pattern) {
-                $pattern_len = strlen($field_pattern);
-                if (substr($json, $i, $pattern_len) === $field_pattern) {
-                    // Found a field that may contain HTML
-                    $result .= $field_pattern;
-                    $i += $pattern_len;
+            // Look for start of a JSON string value (": pattern)
+            if ($char === '"' && $i > 0) {
+                $prev_char = $json[$i - 1];
 
-                    // Now find the end of this value and escape internal quotes
+                // Check if this is the start of a string value (after : or after [ for array items)
+                if ($prev_char === ':' || $prev_char === '[' || $prev_char === ',') {
+                    // This quote starts a string value
+                    $result .= '"';
+                    $i++;
+
+                    // Process the string value content
                     $value_content = '';
-                    $in_html_tag = false;
-                    $in_html_attr = false;
 
                     while ($i < $len) {
-                        $char = $json[$i];
-                        $next_char = ($i + 1 < $len) ? $json[$i + 1] : '';
+                        $c = $json[$i];
+                        $next = ($i + 1 < $len) ? $json[$i + 1] : '';
 
-                        // Check if this quote ends the JSON value
-                        // End markers: " followed by , or } or ] (not inside HTML attribute)
-                        if ($char === '"' && ! $in_html_attr && ($next_char === ',' || $next_char === '}' || $next_char === ']')) {
-                            // This is the end of the JSON value
-                            $result .= $value_content . '"';
-                            $i++;
-                            break;
-                        }
-
-                        // Track HTML tag context
-                        if ($char === '<') {
-                            $in_html_tag = true;
-                        } elseif ($char === '>') {
-                            $in_html_tag = false;
-                            $in_html_attr = false;
-                        }
-
-                        // Inside HTML tag, check for attribute start (=")
-                        if ($in_html_tag && $char === '=' && $next_char === '"') {
-                            $in_html_attr = true;
-                            $value_content .= '=\\"';
-                            $i += 2;
-                            continue;
-                        }
-
-                        // Inside HTML attribute, closing quote
-                        if ($in_html_attr && $char === '"') {
-                            // Check if next char suggests end of attribute (space, >, /)
-                            if ($next_char === ' ' || $next_char === '>' || $next_char === '/' || $next_char === "\n" || $next_char === "\t") {
+                        // Check for end of JSON string value
+                        // End markers: " followed by , or } or ] or end of string
+                        if ($c === '"') {
+                            if ($next === ',' || $next === '}' || $next === ']' || $next === '') {
+                                // This is the closing quote of the JSON value
+                                $result .= $value_content . '"';
+                                $i++;
+                                break;
+                            } else {
+                                // This is an unescaped quote inside the value - escape it
                                 $value_content .= '\\"';
-                                $in_html_attr = false;
                                 $i++;
                                 continue;
                             }
                         }
 
-                        $value_content .= $char;
+                        // Check for already escaped quotes (don't double-escape)
+                        if ($c === '\\' && $next === '"') {
+                            $value_content .= '\\"';
+                            $i += 2;
+                            continue;
+                        }
+
+                        $value_content .= $c;
                         $i++;
                     }
 
-                    $found_field = true;
-                    break;
+                    continue;
                 }
             }
 
-            if (! $found_field) {
-                $result .= $json[$i];
-                $i++;
-            }
+            $result .= $char;
+            $i++;
         }
 
         return $result;
