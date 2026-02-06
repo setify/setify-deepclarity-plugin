@@ -483,11 +483,11 @@ class DossierPDF
         $dossier_text = $client_name ? 'Dossier - ' . esc_html($client_name) : 'Dossier';
 
         return '
-        <div style="font-family: grift, sans-serif; font-size: 8pt; color: #7b6e56;">
-            <table width="100%">
+        <div style="font-family: grift, sans-serif; font-size: 7pt; color: #7b6e56; line-height: 1;">
+            <table width="100%" style="border: none; border-collapse: collapse;">
                 <tr>
-                    <td style="border: none; padding: 0;">' . $dossier_text . '</td>
-                    <td style="border: none; padding: 0; text-align: right;">Seite {PAGENO} von {nbpg}</td>
+                    <td style="border: none; padding: 0; color: #7b6e56;">' . $dossier_text . '</td>
+                    <td style="border: none; padding: 0; text-align: right; color: #7b6e56;">Seite {PAGENO} von {nbpg}</td>
                 </tr>
             </table>
         </div>
