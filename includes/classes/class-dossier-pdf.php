@@ -483,7 +483,7 @@ class DossierPDF
         $dossier_text = $client_name ? 'Dossier - ' . esc_html($client_name) : 'Dossier';
 
         return '
-        <div style="font-family: grift, sans-serif; font-size: 9pt; color: #7b6e56;">
+        <div style="font-family: grift, sans-serif; font-size: 8pt; color: #7b6e56;">
             <table width="100%">
                 <tr>
                     <td style="border: none; padding: 0;">' . $dossier_text . '</td>
