@@ -541,6 +541,88 @@ class DossierPDF
     }
 
     /**
+     * Attempt to repair malformed JSON (e.g., unescaped quotes in HTML)
+     *
+     * @param string $json The potentially malformed JSON string.
+     * @return string The repaired JSON string.
+     */
+    private function repair_json($json)
+    {
+        // If it's already valid JSON, return as-is
+        $test = json_decode($json, true);
+        if ($test !== null || json_last_error() === JSON_ERROR_NONE) {
+            return $json;
+        }
+
+        // Handle common issue: unescaped Unicode sequences like u00fc instead of \u00fc
+        // This can happen when the JSON was improperly serialized
+        $json = preg_replace('/(?<!\\\\)u([0-9a-fA-F]{4})/', '\\u$1', $json);
+
+        // Fix unescaped quotes within HTML content
+        // Strategy: Find string values and properly escape quotes within them
+        // This regex matches: "key":"value" patterns and escapes quotes inside values
+
+        // First, let's try a simpler approach: fix common HTML attribute patterns
+        // Pattern: ="value" inside JSON string values should be =\"value\"
+
+        // Replace patterns like class="something" with class=\"something\"
+        // but only when inside a JSON string (after a "html":" or similar)
+        $json = preg_replace_callback(
+            '/"html"\s*:\s*"([^"]*(?:"[^"]*)*)"(?=\s*[,}\]])/',
+            function ($matches) {
+                // This matched a potential html field - but the regex is imperfect
+                // Let's use a different approach
+                return $matches[0];
+            },
+            $json
+        );
+
+        // Alternative approach: Try to find and fix the pattern where
+        // we have :"<... class="..." ...>" which should be :"<... class=\"...\" ...>"
+
+        // Look for patterns where we have HTML inside JSON and fix quote escaping
+        // Find :"< and >" patterns (JSON value containing HTML)
+        $repaired = preg_replace_callback(
+            '/:"(<[^>]*>.*?<\/[a-z]+>|<[^>]+>)"/sU',
+            function ($matches) {
+                $html = $matches[1];
+                // Escape unescaped double quotes within HTML attributes
+                // But don't double-escape already escaped quotes
+                $html = preg_replace('/(?<!\\\\)"/', '\\"', $html);
+                return ':"' . $html . '"';
+            },
+            $json
+        );
+
+        // Check if our repair worked
+        $test = json_decode($repaired, true);
+        if ($test !== null) {
+            error_log('Deep Clarity PDF: JSON repair successful');
+            return $repaired;
+        }
+
+        // If standard repair didn't work, try a more aggressive approach:
+        // WordPress sometimes double-encodes or uses wp_slash
+        $unslashed = wp_unslash($json);
+        $test = json_decode($unslashed, true);
+        if ($test !== null) {
+            error_log('Deep Clarity PDF: JSON repair via wp_unslash successful');
+            return $unslashed;
+        }
+
+        // Try stripslashes for double-escaped JSON
+        $stripped = stripslashes($json);
+        $test = json_decode($stripped, true);
+        if ($test !== null) {
+            error_log('Deep Clarity PDF: JSON repair via stripslashes successful');
+            return $stripped;
+        }
+
+        // Return original if nothing worked
+        return $json;
+    }
+
+    /**
      * Build HTML content from dossier_structure and template
      *
      * @param int $dossier_id Dossier ID.
@@ -551,12 +633,52 @@ class DossierPDF
         // Get dossier_structure from ACF field
         $structure_json = get_field('dossier_structure', $dossier_id);
         if (empty($structure_json)) {
+            error_log('Deep Clarity PDF: dossier_structure is empty for dossier ' . $dossier_id);
             return '';
         }
 
         // Parse JSON if needed
-        $segments = is_string($structure_json) ? json_decode($structure_json, true) : $structure_json;
+        $segments = null;
+        if (is_string($structure_json)) {
+            // First try direct decode
+            $segments = json_decode($structure_json, true);
+
+            // If JSON decode failed, try to repair the JSON
+            if ($segments === null && json_last_error() !== JSON_ERROR_NONE) {
+                $original_error = json_last_error_msg();
+                error_log('Deep Clarity PDF: Initial JSON decode error for dossier ' . $dossier_id . ': ' . $original_error);
+
+                // Try to repair the JSON
+                $repaired_json = $this->repair_json($structure_json);
+                $segments = json_decode($repaired_json, true);
+
+                // If still failing, log detailed error
+                if ($segments === null && json_last_error() !== JSON_ERROR_NONE) {
+                    error_log('Deep Clarity PDF: JSON repair failed for dossier ' . $dossier_id . ': ' . json_last_error_msg());
+                    error_log('Deep Clarity PDF: First 1000 chars of JSON: ' . substr($structure_json, 0, 1000));
+
+                    // Try one more approach: maybe ACF already decoded it but as an object
+                    if (is_object($structure_json)) {
+                        $segments = json_decode(json_encode($structure_json), true);
+                    }
+
+                    if ($segments === null) {
+                        return '';
+                    }
+                }
+            }
+        } else if (is_array($structure_json)) {
+            // ACF might have already decoded it
+            $segments = $structure_json;
+        } else if (is_object($structure_json)) {
+            // Convert object to array
+            $segments = json_decode(json_encode($structure_json), true);
+        } else {
+            $segments = $structure_json;
+        }
+
         if (empty($segments) || ! is_array($segments)) {
+            error_log('Deep Clarity PDF: segments is empty or not an array for dossier ' . $dossier_id);
             return '';
         }
 

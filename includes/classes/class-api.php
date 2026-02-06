@@ -1047,9 +1047,35 @@ class API
 
         // Save dossier_segments to ACF field 'dossier_structure' if provided
         if (! empty($dossier_segments) && function_exists('update_field')) {
-            // Store as JSON string if it's an array
-            $segments_to_save = is_array($dossier_segments) ? wp_json_encode($dossier_segments) : $dossier_segments;
-            update_field('dossier_structure', $segments_to_save, $dossier_id);
+            // Ensure proper JSON encoding
+            $segments_array = null;
+
+            if (is_array($dossier_segments)) {
+                $segments_array = $dossier_segments;
+            } elseif (is_string($dossier_segments)) {
+                // Try to decode JSON string
+                $decoded = json_decode($dossier_segments, true);
+                if ($decoded !== null && is_array($decoded)) {
+                    $segments_array = $decoded;
+                } else {
+                    // Try with stripslashes (in case of double-encoding)
+                    $decoded = json_decode(stripslashes($dossier_segments), true);
+                    if ($decoded !== null && is_array($decoded)) {
+                        $segments_array = $decoded;
+                    }
+                }
+            }
+
+            if ($segments_array !== null) {
+                // Re-encode with proper escaping using wp_json_encode
+                $segments_to_save = wp_json_encode($segments_array, JSON_UNESCAPED_UNICODE);
+                update_field('dossier_structure', $segments_to_save, $dossier_id);
+            } else {
+                // Fallback: save as-is but log a warning
+                error_log('Deep Clarity API: Could not parse dossier_segments as JSON for dossier ' . $dossier_id);
+                $segments_to_save = is_string($dossier_segments) ? $dossier_segments : wp_json_encode($dossier_segments);
+                update_field('dossier_structure', $segments_to_save, $dossier_id);
+            }
         }
 
         // Determine status: "processing" if only structural_analysis, "complete" if dossier_content or dossier_html provided
