@@ -73,6 +73,9 @@ class Client
 
         // Custom query filter for Unlimited Elements
         add_filter('dossiers_current_client', array($this, 'query_dossiers_current_client'), 10, 2);
+
+        // Handle client deletion: set related posts to draft
+        add_action('wp_trash_post', array($this, 'handle_client_trash'));
     }
 
     /**
@@ -1136,5 +1139,61 @@ class Client
         }
 
         return $args;
+    }
+
+    /**
+     * Handle client being trashed: set related posts to draft and mark titles.
+     *
+     * @param int $post_id The post ID being trashed.
+     */
+    public function handle_client_trash($post_id)
+    {
+        if (get_post_type($post_id) !== 'client') {
+            return;
+        }
+
+        $suffix = ' [Client gelöscht]';
+
+        $related_fields = array(
+            'session' => 'session_client',
+            'dossier' => 'dossier_client',
+            'note'    => 'note_client',
+            'mail'    => 'mail_client',
+        );
+
+        foreach ($related_fields as $post_type => $meta_key) {
+            $query = new \WP_Query(array(
+                'post_type'      => $post_type,
+                'post_status'    => array('publish', 'private'),
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'meta_query'     => array(
+                    'relation' => 'OR',
+                    array(
+                        'key'     => $meta_key,
+                        'value'   => $post_id,
+                        'compare' => '=',
+                    ),
+                    array(
+                        'key'     => $meta_key,
+                        'value'   => '"' . $post_id . '"',
+                        'compare' => 'LIKE',
+                    ),
+                ),
+            ));
+
+            if ($query->posts) {
+                foreach ($query->posts as $related_id) {
+                    $title = get_the_title($related_id);
+                    if (strpos($title, $suffix) === false) {
+                        wp_update_post(array(
+                            'ID'          => $related_id,
+                            'post_status' => 'draft',
+                            'post_title'  => $title . $suffix,
+                        ));
+                    }
+                }
+            }
+        }
     }
 }
