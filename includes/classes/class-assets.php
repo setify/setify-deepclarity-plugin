@@ -198,6 +198,7 @@ class Assets {
                 'nonce'      => wp_create_nonce( 'deep_clarity_frontend' ),
                 'pdfNonce'   => wp_create_nonce( 'dc_create_dossier_pdf' ),
                 'isLoggedIn' => is_user_logged_in(),
+                'isAdmin'    => current_user_can( 'manage_options' ),
             )
         );
     }

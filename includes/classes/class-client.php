@@ -755,6 +755,7 @@ class Client
         $dcpi_entry_id           = isset($_POST['dcpi_entry_id']) ? intval($_POST['dcpi_entry_id']) : 0;
         $comparison_session_id   = isset($_POST['comparison_session_id']) ? intval($_POST['comparison_session_id']) : 0;
         $comparison_dcpi_entry_id = isset($_POST['comparison_dcpi_entry_id']) ? intval($_POST['comparison_dcpi_entry_id']) : 0;
+        $webhook_mode            = isset($_POST['webhook_mode']) && current_user_can('manage_options') ? sanitize_text_field($_POST['webhook_mode']) : 'live';
 
         // Basic validation: client_id and session_id always required
         if (! $client_id || ! $session_id) {
@@ -834,7 +835,7 @@ class Client
 
         // Send webhook to n8n via API class (async)
         $api = API::get_instance();
-        $result = $api->send_dossier_webhook($dossier_data, $request_id);
+        $result = $api->send_dossier_webhook($dossier_data, $request_id, $webhook_mode);
 
         // Handle WP_Error (network/connection error)
         if (is_wp_error($result)) {

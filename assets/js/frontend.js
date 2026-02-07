@@ -1670,6 +1670,25 @@
         `;
       }
 
+      // Admin-only webhook mode selector
+      let webhookModeHtml = '';
+      if (deepClarityFrontend.isAdmin) {
+        webhookModeHtml = `
+          <div class="dc-dossier-webhook-mode">
+            <label class="dc-dossier-webhook-option">
+              <input type="radio" name="webhook_mode" value="live" checked>
+              <span class="dc-dossier-webhook-option-label">Live Version</span>
+              <span class="dc-dossier-webhook-option-url">https://n8n.setify.de/webhook/dc_dossier_analysis</span>
+            </label>
+            <label class="dc-dossier-webhook-option">
+              <input type="radio" name="webhook_mode" value="test">
+              <span class="dc-dossier-webhook-option-label">Testversion</span>
+              <span class="dc-dossier-webhook-option-url">https://n8n.setify.de/webhook-test/dc_dossier_analysis</span>
+            </label>
+          </div>
+        `;
+      }
+
       return `
         <div class="dc-dossier-modal" data-step="summary">
           <div class="dc-dossier-header">
@@ -1681,6 +1700,7 @@
             <div class="dc-dossier-summary">
               ${summaryHtml}
             </div>
+            ${webhookModeHtml}
           </div>
           <div class="dc-dossier-footer">
             <div class="dc-dossier-steps">Schritt ${currentStep} von ${totalSteps}</div>
@@ -1720,6 +1740,9 @@
     create: function () {
       const self = this;
 
+      // Get selected webhook mode (default: live)
+      const webhookMode = $('input[name="webhook_mode"]:checked').val() || 'live';
+
       // Show loading state in modal
       self.renderProcessing();
 
@@ -1735,6 +1758,7 @@
           dcpi_entry_id: self.selectedDcpiEntryId || 0,
           comparison_session_id: self.selectedComparisonSessionId || 0,
           comparison_dcpi_entry_id: self.selectedComparisonDcpiEntryId || 0,
+          webhook_mode: webhookMode,
         },
         success: function (response) {
           if (response.success && response.data.request_id) {

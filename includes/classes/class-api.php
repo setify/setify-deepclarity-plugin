@@ -42,13 +42,13 @@ class API
     private $webhook_session_analysis_url = 'https://n8n.setify.de/webhook-test/dc_session_analysis';
 
     /**
-     * Webhook URLs for dossier analysis (production and test)
+     * Webhook URLs for dossier analysis
      *
      * @var array
      */
     private $webhook_dossier_urls = array(
-        // 'https://n8n.setify.de/webhook/dc_dossier_analysis',
-        'https://n8n.setify.de/webhook-test/dc_dossier_analysis',
+        'live' => 'https://n8n.setify.de/webhook/dc_dossier_analysis',
+        'test' => 'https://n8n.setify.de/webhook-test/dc_dossier_analysis',
     );
 
     /**
@@ -441,9 +441,10 @@ class API
      *
      * @param array  $dossier_data Dossier data from ajax_create_dossier.
      * @param string $request_id   Unique request ID for tracking.
+     * @param string $webhook_mode 'live' or 'test'.
      * @return array|\WP_Error Response array from n8n (with success, error, errors, etc.), or WP_Error on failure.
      */
-    public function send_dossier_webhook($dossier_data, $request_id)
+    public function send_dossier_webhook($dossier_data, $request_id, $webhook_mode = 'live')
     {
         $client_id               = $dossier_data['client_id'];
         $anamnese_entry_id       = $dossier_data['anamnese_entry_id'];
@@ -637,16 +638,11 @@ class API
             'skills'           => $skills_data,
         );
 
-        // Send to all webhook URLs (async, fire and forget)
-        $last_result = true;
-        foreach ($this->webhook_dossier_urls as $url) {
-            $result = $this->send_webhook($url, $webhook_data);
-            if (is_wp_error($result)) {
-                $last_result = $result;
-            }
-        }
+        // Determine webhook URL based on mode
+        $mode = in_array($webhook_mode, array('live', 'test'), true) ? $webhook_mode : 'live';
+        $url = $this->webhook_dossier_urls[$mode];
 
-        return $last_result;
+        return $this->send_webhook($url, $webhook_data);
     }
 
     /**
