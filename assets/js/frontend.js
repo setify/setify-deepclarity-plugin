@@ -7,6 +7,11 @@
 (function ($) {
   "use strict";
 
+  // Log plugin version
+  if (typeof deepClarityFrontend !== 'undefined' && deepClarityFrontend.version) {
+    console.log('Deep Clarity v' + deepClarityFrontend.version);
+  }
+
   /**
    * Mail Compose Module
    */

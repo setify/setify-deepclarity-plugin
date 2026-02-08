@@ -4,7 +4,7 @@
  * Plugin Name: Deep Clarity 2
  * Plugin URI: https://example.com/deep-clarity
  * Description: A powerful analytics and visualization plugin for WordPress.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Your Name
  * Author URI: https://example.com
  * License: GPL-2.0+
@@ -21,7 +21,7 @@ if (! defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('DEEP_CLARITY_VERSION', '1.0.0');
+define('DEEP_CLARITY_VERSION', '1.1.0');
 define('DEEP_CLARITY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('DEEP_CLARITY_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('DEEP_CLARITY_PLUGIN_BASENAME', plugin_basename(__FILE__));
