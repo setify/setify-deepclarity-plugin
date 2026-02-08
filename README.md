@@ -4,6 +4,58 @@ WordPress Plugin für Deep Clarity.
 
 **Website:** https://deepclarity.de/
 
+## Shortcodes
+
+### Client
+
+| Shortcode | Parameter | Beschreibung |
+|-----------|-----------|--------------|
+| `[client_fullname]` | `post_id` | Vor- und Nachname des Clients |
+| `[client_firstname]` | `post_id` | Vorname des Clients |
+| `[client_lastname]` | `post_id` | Nachname des Clients |
+| `[client_birthday_until]` | `post_id` | Zeit bis zum nächsten Geburtstag (z.B. "6 Monate 18 Tage") |
+| `[client_birthday_until_raw]` | `post_id` | Tage bis zum nächsten Geburtstag (Zahl) |
+
+### Session
+
+| Shortcode | Parameter | Beschreibung |
+|-----------|-----------|--------------|
+| `[session_client_name]` | `field_first`, `field_last`, `separator`, `fallback` | Name des verknüpften Clients |
+| `[session_client_link]` | — | URL zum Client-Profil der Session |
+| `[session_client_id]` | — | Post-ID des verknüpften Clients |
+
+### Dossier
+
+| Shortcode | Parameter | Beschreibung |
+|-----------|-----------|--------------|
+| `[dossier_pdf_url]` | `post_id` | URL der generierten PDF-Datei |
+| `[dossier_structural_analysis]` | `post_id`, `empty_message` | Strukturanalyse als HTML (Markdown → HTML) |
+| `[dossier_client_link]` | — | URL zum Client-Profil des Dossiers |
+
+### ACF-Felder
+
+| Shortcode | Parameter | Beschreibung |
+|-----------|-----------|--------------|
+| `[acf field="feldname"]` | `field` (Pflicht), `post_id` | Beliebiges ACF-Feld ausgeben |
+| `[acf_field field="feldname"]` | `field` (Pflicht), `post_id`, `date_format`, `fallback` | ACF-Feld mit Datumsformatierung und Fallback |
+
+### Formulare & Daten
+
+| Shortcode | Parameter | Beschreibung |
+|-----------|-----------|--------------|
+| `[form_url page_id="123"]` | `page_id` (Pflicht), `field_first`, `field_last` | URL zur Formularseite mit Client-Daten als Query-Parameter |
+| `[client_forms_list]` | `empty_message` | Liste der eingereichten Formulare eines Clients |
+| `[notes_client_list]` | `empty_message` | Liste der Notizen eines Clients mit Bearbeiten/Löschen |
+| `[check_url_client_id]` | — | Prüft ob `client_id` URL-Parameter gültig ist ("true" oder leer) |
+
+### Utility
+
+| Shortcode | Parameter | Beschreibung |
+|-----------|-----------|--------------|
+| `[post_id]` | — | ID des aktuellen Posts |
+| `[edit_url page_id="123"]` | `page_id` (Pflicht), `param` | URL zu einer Seite mit aktueller Post-ID als Parameter |
+| `[dc_signature_generator]` | — | Interaktiver E-Mail-Signatur-Generator |
+
 ## Buttons
 
 ### HTML Struktur
