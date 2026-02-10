@@ -35,11 +35,14 @@ class API
     );
 
     /**
-     * Webhook URL for session analysis
+     * Webhook URLs for session analysis
      *
-     * @var string
+     * @var array
      */
-    private $webhook_session_analysis_url = 'https://n8n.setify.de/webhook-test/dc_session_analysis';
+    private $webhook_session_analysis_urls = array(
+        'live' => 'https://n8n.setify.de/webhook/dc_session_analysis',
+        'test' => 'https://n8n.setify.de/webhook-test/dc_session_analysis',
+    );
 
     /**
      * Webhook URLs for dossier analysis
@@ -233,13 +236,14 @@ class API
     /**
      * Send session analysis request to n8n webhook
      *
-     * @param int    $session_id Session post ID.
-     * @param int    $client_id  Client post ID.
-     * @param string $request_id Unique request ID for tracking.
-     * @param array  $fields     Selected fields to analyze.
+     * @param int    $session_id   Session post ID.
+     * @param int    $client_id    Client post ID.
+     * @param string $request_id   Unique request ID for tracking.
+     * @param array  $fields       Selected fields to analyze.
+     * @param string $webhook_mode 'live' or 'test'.
      * @return bool|\WP_Error True on success, WP_Error on failure.
      */
-    public function send_session_analysis_webhook($session_id, $client_id, $request_id, $fields = array())
+    public function send_session_analysis_webhook($session_id, $client_id, $request_id, $fields = array(), $webhook_mode = 'live')
     {
         if (! function_exists('get_field')) {
             return new \WP_Error('acf_missing', 'ACF not available');
@@ -280,7 +284,10 @@ class API
             'setting_prompt_analysis'       => $setting_prompt_analysis,
         );
 
-        return $this->send_webhook($this->webhook_session_analysis_url, $data);
+        $mode = in_array($webhook_mode, array('live', 'test'), true) ? $webhook_mode : 'live';
+        $url = $this->webhook_session_analysis_urls[$mode];
+
+        return $this->send_webhook($url, $data);
     }
 
     /**

@@ -2324,6 +2324,20 @@
               ${fieldsHtml}
             </div>
           </div>
+          ${deepClarityFrontend.isAdmin ? `
+          <div class="dc-dossier-webhook-mode">
+            <label class="dc-dossier-webhook-option">
+              <input type="radio" name="session_webhook_mode" value="live" checked>
+              <span class="dc-dossier-webhook-option-label">Live Version</span>
+              <span class="dc-dossier-webhook-option-url">https://n8n.setify.de/webhook/dc_session_analysis</span>
+            </label>
+            <label class="dc-dossier-webhook-option">
+              <input type="radio" name="session_webhook_mode" value="test">
+              <span class="dc-dossier-webhook-option-label">Testversion</span>
+              <span class="dc-dossier-webhook-option-url">https://n8n.setify.de/webhook-test/dc_session_analysis</span>
+            </label>
+          </div>
+          ` : ''}
           <div class="dc-dossier-footer">
             <div class="dc-dossier-steps"></div>
             <div class="dc-dossier-actions">
@@ -2416,6 +2430,7 @@
           nonce: deepClarityFrontend.nonce,
           session_id: self.sessionId,
           fields: self.selectedFields,
+          webhook_mode: $('input[name="session_webhook_mode"]:checked').val() || 'live',
         },
         success: function (response) {
           if (response.success) {

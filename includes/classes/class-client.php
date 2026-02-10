@@ -902,8 +902,9 @@ class Client
             wp_send_json_error(array('message' => 'Invalid nonce'));
         }
 
-        $session_id = isset($_POST['session_id']) ? intval($_POST['session_id']) : 0;
-        $fields     = isset($_POST['fields']) ? array_map('sanitize_text_field', (array) $_POST['fields']) : array();
+        $session_id   = isset($_POST['session_id']) ? intval($_POST['session_id']) : 0;
+        $fields       = isset($_POST['fields']) ? array_map('sanitize_text_field', (array) $_POST['fields']) : array();
+        $webhook_mode = isset($_POST['webhook_mode']) && current_user_can('manage_options') ? sanitize_text_field($_POST['webhook_mode']) : 'live';
 
         if (! $session_id) {
             wp_send_json_error(array('message' => 'Missing session ID'));
@@ -955,7 +956,7 @@ class Client
 
         // Send webhook to n8n via API class
         $api = API::get_instance();
-        $result = $api->send_session_analysis_webhook($session_id, $client_id, $request_id, $selected_fields);
+        $result = $api->send_session_analysis_webhook($session_id, $client_id, $request_id, $selected_fields, $webhook_mode);
 
         if (is_wp_error($result)) {
             // Delete transient on error
