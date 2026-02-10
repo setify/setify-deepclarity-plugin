@@ -119,11 +119,6 @@ class API
             return;
         }
 
-        // Skip webhook if update comes from REST API
-        if (self::$skip_webhook) {
-            return;
-        }
-
         // Get ACF fields
         $client_firstname = '';
         $client_lastname = '';
@@ -133,6 +128,31 @@ class API
             $client_firstname = get_field('client_firstname', $post_id) ?: '';
             $client_lastname = get_field('client_lastname', $post_id) ?: '';
             $client_email = get_field('client_email', $post_id) ?: '';
+        }
+
+        // Auto-update post title to "firstname lastname | email"
+        $name = trim($client_firstname . ' ' . $client_lastname);
+        $new_title = '';
+        if ($name && $client_email) {
+            $new_title = $name . ' | ' . $client_email;
+        } elseif ($name) {
+            $new_title = $name;
+        } elseif ($client_email) {
+            $new_title = $client_email;
+        }
+
+        if ($new_title && $new_title !== $post->post_title) {
+            remove_action('save_post_client', array($this, 'on_client_save'), 20);
+            wp_update_post(array(
+                'ID'         => $post_id,
+                'post_title' => $new_title,
+            ));
+            add_action('save_post_client', array($this, 'on_client_save'), 20, 3);
+        }
+
+        // Skip webhook if update comes from REST API
+        if (self::$skip_webhook) {
+            return;
         }
 
         // Prepare webhook data
